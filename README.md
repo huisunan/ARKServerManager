@@ -2,8 +2,8 @@
 Released under the GNU GENERAL PUBLIC LICENSE V3 License, see license.txt for full license information.
 
 Requirements
-- VS 2012 or greater
-- .NET 4.5
+- VS 2017 or greater
+- .NET 4.6.2
 
 Find the Guide page for this tool at:
 http://arkservermanager.freeforums.net/
