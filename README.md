@@ -1,8 +1,8 @@
-# ARK-Dedicated-Server-Tool and the Ark Server Manager
+# Ark Server Manager
 Released under the GNU GENERAL PUBLIC LICENSE V3 License, see license.txt for full license information.
 
 Requirements
-- VS 2017 or greater
+- VS 2019 or greater
 - .NET 4.6.2
 
 Find the Guide page for this tool at:
