@@ -1,0 +1,20 @@
+﻿ARK Server Manager
+
+
+winexe
+C#
+.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARK Server Manager\obj\Debug\
+ARK_Server_Manager
+none
+false
+TRACE;DEBUG
+D:\GitHub\ARK-Dedicated-Server-Tool\ARK Server Manager\App.xaml
+22-764690743
+151525774299
+156358482648
+86-1450362485
+Windows\AddSteamUserWindow.xaml;Windows\PlayerListWindow.xaml;Windows\ProfileSyncWindow.xaml;Windows\CustomConfigDataWindow.xaml;Windows\PluginsWindow.xaml;Windows\VersionFeedWindow.xaml;Windows\WorldSaveRestoreWindow.xaml;Windows\WorkshopFilesWindow.xaml;Windows\ShutdownWindow.xaml;Windows\ModDetailsWindow.xaml;Windows\ProgressWindow.xaml;WPFControls\AnnotatedSlider.xaml;Windows\AutoUpdateWindow.xaml;Windows\OpenRCONWindow.xaml;Windows\PlayerProfileWindow.xaml;Windows\TribeProfileWindow.xaml;Windows\CommandLineWindow.xaml;Windows\GlobalSettingsControl.xaml;Windows\MainWindow.xaml;Windows\RCONWindow.xaml;Windows\ServerSettingsControl.xaml;Windows\SettingsWindow.xaml;
+
+True
+
