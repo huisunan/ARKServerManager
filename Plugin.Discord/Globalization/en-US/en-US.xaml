@@ -4,7 +4,7 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     >
 
-    <!-- Global -->
+    <!--#region Global -->
     <sys:String x:Key="Global_CancelButtonLabel">Cancel</sys:String>
     <sys:String x:Key="Global_CloseButtonLabel">Close</sys:String>
     <sys:String x:Key="Global_OkButtonLabel">OK</sys:String>
@@ -13,10 +13,12 @@
     <sys:String x:Key="Global_BetaModeLabel"> (Beta Mode)</sys:String>
     <sys:String x:Key="Global_NewVersionAvailableLabel">A new version of the plugin is available.</sys:String>
     <sys:String x:Key="Global_DownloadNewVersionTooltip">Download the latest version.</sys:String>
+    <!--#endregion-->
 
-    <!-- Config Window -->
+    <!--#region Config Window -->
     <sys:String x:Key="ConfigWindow_Title">Discord Plugin Configuration</sys:String>
-    
+
+    <sys:String x:Key="ConfigWindow_PatchNotesTooltip">View the Patch Notes.</sys:String>
     <sys:String x:Key="ConfigWindow_AddConfigProfileTooltip">Add Profile</sys:String>
     <sys:String x:Key="ConfigWindow_ClearConfigProfilesTooltip">Delete All Profiles</sys:String>
     <sys:String x:Key="ConfigWindow_DeleteConfigProfileTooltip">Delete Profile</sys:String>
@@ -44,8 +46,9 @@
     <sys:String x:Key="ConfigWindow_EditErrorLabel">An error occurred while trying to edit a profile.</sys:String>
     <sys:String x:Key="ConfigWindow_SaveErrorTitle">Save Action Error</sys:String>
     <sys:String x:Key="ConfigWindow_SaveErrorLabel">An error occurred while trying to perform the save.</sys:String>
+    <!--#endregion-->
 
-    <!-- Config Item Window -->
+    <!--#region Config Item Window -->
     <sys:String x:Key="ConfigProfileWindow_Title">Profile Configuration</sys:String>
 
     <sys:String x:Key="ConfigProfileWindow_NameLabel">Name:</sys:String>
@@ -58,20 +61,29 @@
     <sys:String x:Key="ConfigProfileWindow_BotNameTooltip">This will override the name you setup in your webhook. Leave blank to use default.</sys:String>
     <sys:String x:Key="ConfigProfileWindow_UseTTSLabel">Use Text to Speech (TTS)</sys:String>
     <sys:String x:Key="ConfigProfileWindow_UseTTSTooltip">If enabled, will make the bot announce with Text to Speech, otherwise will turn off Text to Speech.</sys:String>
-    <sys:String x:Key="ConfigProfileWindow_PrefixMessageWithProfileNameLabel">Prefix Message with ASM Profile Name</sys:String>
-    <sys:String x:Key="ConfigProfileWindow_PrefixMessageWithProfileNameTooltip">If enabled, the alert message will be sent prefixed with the ASM profile name.</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_PrefixMessageWithProfileNameLabel">Prefix Message with Profile Name</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_PrefixMessageWithProfileNameTooltip">If enabled, the alert message will be sent prefixed with the server manager profile name.</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsLabel">Message Options</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsBoldLabel">Bold</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsBoldTooltip">If enabled, will show the message in bold.</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsUnderlineLabel">Underline</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsUnderlineTooltip">If enabled, will show the message with an underline.</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsItalicLabel">Italic</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsItalicTooltip">If enabled, will show the message in italic.</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsCodeBlockLabel">Embedded Code Block</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_MessageOptionsCodeBlockTooltip">CIf enabled, will show the message in an embedded code block.</sys:String>
     <sys:String x:Key="ConfigProfileWindow_ProfileNamesLabel">Profile Names</sys:String>
     <sys:String x:Key="ConfigProfileWindow_AlertTypesLabel">Alert Types</sys:String>
 
-    <sys:String x:Key="ConfigProfileWindow_AddProfileNameTooltip">Add ASM Profile Name</sys:String>
-    <sys:String x:Key="ConfigProfileWindow_ClearProfileNamesTooltip">Delete All ASM Profile Names</sys:String>
-    <sys:String x:Key="ConfigProfileWindow_DeleteProfileNameTooltip">Delete ASM Profile Name</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_AddProfileNameTooltip">Add Server Manager Profile Name</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_ClearProfileNamesTooltip">Delete All Server Manager Profile Names</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_DeleteProfileNameTooltip">Delete Server Manager Profile Name</sys:String>
 
     <sys:String x:Key="ConfigProfileWindow_AddAlertTypeTooltip">Add Alert Type</sys:String>
     <sys:String x:Key="ConfigProfileWindow_ClearAlertTypesTooltip">Delete All Alert Types</sys:String>
     <sys:String x:Key="ConfigProfileWindow_DeleteAlertTypeTooltip">Delete Alert Type</sys:String>
 
-    <sys:String x:Key="ConfigProfileWindow_ProfileNameColumnLabel">ASM Profile Name</sys:String>
+    <sys:String x:Key="ConfigProfileWindow_ProfileNameColumnLabel">Server Manager Profile Name</sys:String>
     <sys:String x:Key="ConfigProfileWindow_AlertTypeColumnLabel">Alert Type</sys:String>
 
     <sys:String x:Key="ConfigProfileWindow_TestButtonLabel">Test</sys:String>
@@ -94,5 +106,14 @@
     <sys:String x:Key="ConfigProfileWindow_TestErrorTitle">Test Action Error</sys:String>
     <sys:String x:Key="ConfigProfileWindow_TestErrorLabel">An error occurred while trying to test the config profile.</sys:String>
     <sys:String x:Key="ConfigProfileWindow_TestEnabledErrorLabel">The profile is not enabled and cannot be tested.</sys:String>
+    <!--#endregion-->
+
+    <!--#region Version Feed Window -->
+    <sys:String x:Key="VersionFeedWindow_Title">Discord Plugin Version Details</sys:String>
+    <sys:String x:Key="VersionFeedWindow_Load_FailedTitle">Load Feed Error</sys:String>
+
+    <sys:String x:Key="VersionFeedWindow_VersionFilterLabel">Version:</sys:String>
+    <sys:String x:Key="VersionFeedWindow_VersionFilterTooltip">Select the version to view details.</sys:String>
+    <!--#endregion-->
 
 </ResourceDictionary>

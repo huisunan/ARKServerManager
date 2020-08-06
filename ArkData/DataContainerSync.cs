@@ -56,7 +56,7 @@ namespace ArkData
             // need to make multiple calls of 100 steam id's.
             var lastSteamUpdateUtc = DateTime.UtcNow;
             var startIndex = 0;
-            var playerSteamIds = Players.Where(p => p.LastSteamUpdateUtc.AddMinutes(steamUpdateInterval) < DateTime.UtcNow).Select(p => p.SteamId).ToArray();
+            var playerSteamIds = Players.Where(p => p.LastPlatformUpdateUtc.AddMinutes(steamUpdateInterval) < DateTime.UtcNow).Select(p => p.PlayerId).ToArray();
 
             while (true)
             {
@@ -78,15 +78,6 @@ namespace ArkData
                         using (var reader = new StreamReader(response.Content.ReadAsStreamAsync().Result))
                         {
                             LinkSteamProfiles(reader.ReadToEnd(), lastSteamUpdateUtc);
-                        }
-                    else
-                        throw new System.Net.WebException("The Steam API request was unsuccessful. Are you using a valid key?");
-
-                    response = client.GetAsync(string.Format("ISteamUser/GetPlayerBans/v1/?key={0}&steamids={1}", apiKey, builder)).Result;
-                    if (response.IsSuccessStatusCode)
-                        using (var reader = new StreamReader(response.Content.ReadAsStreamAsync().Result))
-                        {
-                            LinkSteamBans(reader.ReadToEnd());
                         }
                     else
                         throw new System.Net.WebException("The Steam API request was unsuccessful. Are you using a valid key?");

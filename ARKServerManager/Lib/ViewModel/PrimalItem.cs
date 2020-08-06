@@ -1,21 +1,15 @@
-﻿using System;
+﻿using ServerManagerTool.Enums;
+using System;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib.ViewModel
+namespace ServerManagerTool.Lib.ViewModel
 {
     public class PrimalItem : DependencyObject
     {
-        public static readonly DependencyProperty ArkApplicationProperty = DependencyProperty.Register(nameof(ArkApplication), typeof(ArkApplication), typeof(PrimalItem), new PropertyMetadata(ArkApplication.SurvivalEvolved));
         public static readonly DependencyProperty ClassNameProperty = DependencyProperty.Register(nameof(ClassName), typeof(string), typeof(PrimalItem), new PropertyMetadata(String.Empty));
         public static readonly DependencyProperty ModProperty = DependencyProperty.Register(nameof(Mod), typeof(string), typeof(PrimalItem), new PropertyMetadata(String.Empty));
         public static readonly DependencyProperty KnownItemProperty = DependencyProperty.Register(nameof(KnownItem), typeof(bool), typeof(PrimalItem), new PropertyMetadata(false));
         public static readonly DependencyProperty CategoryProperty = DependencyProperty.Register(nameof(Category), typeof(string), typeof(PrimalItem), new PropertyMetadata(String.Empty));
-
-        public ArkApplication ArkApplication
-        {
-            get { return (ArkApplication)GetValue(ArkApplicationProperty); }
-            set { SetValue(ArkApplicationProperty, value); }
-        }
 
         public string ClassName
         {
@@ -42,6 +36,8 @@ namespace ARK_Server_Manager.Lib.ViewModel
         }
 
         public string DisplayName => GameData.FriendlyItemNameForClass(ClassName);
+
+        public string DisplayMod => GameData.FriendlyNameForClass($"Mod_{Mod}", true) ?? Mod;
 
         public PrimalItem Duplicate()
         {

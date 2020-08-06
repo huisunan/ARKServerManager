@@ -10,21 +10,21 @@ namespace WPFSharp.Globalizer
 {
     public class AvailableLanguages : List<string>, INotifyPropertyChanged
     {
-        private AvailableLanguages()
-        {
-            GlobalizedApplication.Instance.GlobalizationManager.ResourceDictionaryChangedEvent += GlobalizationManager_ResourceDictionaryChangedEvent;
-        }
-
-        private void GlobalizationManager_ResourceDictionaryChangedEvent(object sender, EventArgs e)
-        {
-            NotifyPropertyChanged("SelectedLanguage");
-        }
-
         public static AvailableLanguages Instance { get; set; }
 
         public static void CreateInstance()
         {
             Instance = new AvailableLanguages();
+        }
+
+        private AvailableLanguages()
+        {
+            GlobalizedApplication.Instance.GlobalizationManager.ResourceDictionaryChangedEvent += GlobalizationManager_ResourceDictionaryChangedEvent;
+        }
+
+        private void GlobalizationManager_ResourceDictionaryChangedEvent(object sender, ResourceDictionaryChangedEventArgs e)
+        {
+            NotifyPropertyChanged("SelectedLanguage");
         }
 
         public string SelectedLanguage
@@ -71,10 +71,7 @@ namespace WPFSharp.Globalizer
             }
         }
 
-        public Dictionary<string, string> CultureInfoMap
-        {
-            get { return _CultureInfoMap ?? (_CultureInfoMap = new Dictionary<string, string>()); }
-        } private Dictionary<string, string> _CultureInfoMap;
+        public Dictionary<string, string> CultureInfoMap { get; } = new Dictionary<string, string>();
     }
 }
 

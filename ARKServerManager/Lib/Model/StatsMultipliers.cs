@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     public class StatsMultipliers

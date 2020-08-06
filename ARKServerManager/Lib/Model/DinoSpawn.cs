@@ -1,9 +1,12 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Attibutes;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Enums;
+using System;
 using System.Runtime.Serialization;
 using System.Windows;
 using System.Xml.Serialization;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     public class DinoSpawn : AggregateIniValue
@@ -12,7 +15,6 @@ namespace ARK_Server_Manager.Lib
         public const float DEFAULT_SPAWN_LIMIT_PERCENTAGE = ClassMultiplier.DEFAULT_MULTIPLIER;
         public const float DEFAULT_SPAWN_WEIGHT_MULTIPLIER = ClassMultiplier.DEFAULT_MULTIPLIER;
 
-        public static readonly DependencyProperty ArkApplicationProperty = DependencyProperty.Register(nameof(ArkApplication), typeof(ArkApplication), typeof(DinoSpawn), new PropertyMetadata(ArkApplication.SurvivalEvolved));
         public static readonly DependencyProperty ClassNameProperty = DependencyProperty.Register(nameof(ClassName), typeof(string), typeof(DinoSpawn), new PropertyMetadata(String.Empty));
         public static readonly DependencyProperty ModProperty = DependencyProperty.Register(nameof(Mod), typeof(string), typeof(DinoSpawn), new PropertyMetadata(String.Empty));
         public static readonly DependencyProperty KnownDinoProperty = DependencyProperty.Register(nameof(KnownDino), typeof(bool), typeof(DinoSpawn), new PropertyMetadata(false));
@@ -20,13 +22,6 @@ namespace ARK_Server_Manager.Lib
         public static readonly DependencyProperty OverrideSpawnLimitPercentageProperty = DependencyProperty.Register(nameof(OverrideSpawnLimitPercentage), typeof(bool), typeof(DinoSpawn), new PropertyMetadata(DEFAULT_OVERRIDE_SPAWN_LIMIT_PERCENTAGE));
         public static readonly DependencyProperty SpawnLimitPercentageProperty = DependencyProperty.Register(nameof(SpawnLimitPercentage), typeof(float), typeof(DinoSpawn), new PropertyMetadata(DEFAULT_SPAWN_LIMIT_PERCENTAGE));
         public static readonly DependencyProperty SpawnWeightMultiplierProperty = DependencyProperty.Register(nameof(SpawnWeightMultiplier), typeof(float), typeof(DinoSpawn), new PropertyMetadata(DEFAULT_SPAWN_WEIGHT_MULTIPLIER));
-
-        [DataMember]
-        public ArkApplication ArkApplication
-        {
-            get { return (ArkApplication)GetValue(ArkApplicationProperty); }
-            set { SetValue(ArkApplicationProperty, value); }
-        }
 
         [DataMember]
         public string ClassName
@@ -83,6 +78,8 @@ namespace ARK_Server_Manager.Lib
         }
 
         public string DisplayName => GameData.FriendlyCreatureNameForClass(ClassName);
+
+        public string DisplayMod => GameData.FriendlyNameForClass($"Mod_{Mod}", true) ?? Mod;
 
         public static DinoSpawn FromINIValue(string iniValue)
         {

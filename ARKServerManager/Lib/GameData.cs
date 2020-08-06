@@ -1,69 +1,58 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib.ViewModel;
+using ServerManagerTool.Utils;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using ARK_Server_Manager.Lib.Utils;
-using ARK_Server_Manager.Lib.ViewModel;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
-    [DefaultValue(SurvivalEvolved)]
-    public enum ArkApplication
-    {
-        /// <summary>
-        /// All has been added only for filter selection.
-        /// </summary>
-        All = 0,
-        SurvivalEvolved,
-        PrimitivePlus,
-        ScorchedEarth,
-        Ragnarok,
-        Aberration,
-        Unknown,
-    }
-
-    [DefaultValue(False)]
-    public enum DinoTamable
-    {
-        False,
-        True,
-        ByBreeding,
-    }
-
     public static class GameData
     {
+        public const string MOD_ALL = "All";
+        public const string MOD_UNKNOWN = "Unknown";
+
+        public static string MainDataFolder = Path.Combine(Environment.CurrentDirectory, Config.Default.GameDataDir);
+        public static string UserDataFolder = Path.Combine(Config.Default.DataDir, Config.Default.GameDataDir);
+
         public static int DefaultMaxExperiencePointsDino = 10;
         public static int DefaultMaxExperiencePointsPlayer = 5;
 
-        private static BaseGameData gameData = null;
+        private static MainGameData gameData = null;
 
         public static void Initialize()
         {
             // read static game data
-            GameDataUtils.ReadAllData(out gameData);
+            GameDataUtils.ReadAllData(out gameData, MainDataFolder, Config.Default.GameDataExtension, Config.Default.GameDataApplication);
 
             // read user game data
-            var dataFolder = System.IO.Path.Combine(Config.Default.DataDir, Config.Default.GameDataDir);
-            GameDataUtils.ReadAllData(out BaseGameData userGameData, dataFolder, true);
+            MainGameData userGameData = new MainGameData();
+            if (!UserDataFolder.Equals(MainDataFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                GameDataUtils.ReadAllData(out userGameData, UserDataFolder, Config.Default.GameDataExtension, Config.Default.GameDataApplication, true);
+            }
 
             // creatures
             gameData.Creatures.AddRange(userGameData.Creatures);
 
-            dinoSpawns = gameData.Creatures.ConvertAll(item => new DinoSpawn { ClassName = item.ClassName, Mod = item.Mod, KnownDino = true, DinoNameTag = item.NameTag, ArkApplication = item.ArkApplication }).ToArray();
+            dinoSpawns = gameData.Creatures.ConvertAll(item => new DinoSpawn { ClassName = item.ClassName, Mod = item.Mod, KnownDino = true, DinoNameTag = item.NameTag }).ToArray();
             dinoMultipliers = gameData.Creatures.ConvertAll(item => new ClassMultiplier { ClassName = item.ClassName }).ToArray();
 
             // engrams
             gameData.Engrams.AddRange(userGameData.Engrams);
 
-            engrams = gameData.Engrams.ConvertAll(item => new EngramEntry { EngramClassName = item.ClassName, Mod = item.Mod, KnownEngram = true, EngramLevelRequirement = item.Level, EngramPointsCost = item.Points, IsTekgram = item.IsTekGram, ArkApplication = item.ArkApplication }).ToArray();
+            engrams = gameData.Engrams.ConvertAll(item => new Engram { EngramClassName = item.ClassName, EngramLevelRequirement = item.Level, EngramPointsCost = item.Points, Mod = item.Mod, KnownEngram = true, IsTekgram = item.IsTekGram }).ToArray();
 
             // items
             gameData.Items.AddRange(userGameData.Items);
 
-            items = gameData.Items.ConvertAll(item => new PrimalItem { ClassName = item.ClassName, Mod = item.Mod, KnownItem = true, Category = item.Category, ArkApplication = item.ArkApplication }).ToArray();
+            items = gameData.Items.ConvertAll(item => new PrimalItem { ClassName = item.ClassName, Mod = item.Mod, KnownItem = true, Category = item.Category }).ToArray();
 
             // resources
-            resourceMultipliers = gameData.Items.Where(item => item.IsHarvestable).ToList().ConvertAll(item => new ResourceClassMultiplier { ClassName = item.ClassName, Mod = item.Mod, KnownResource = true, ArkApplication = item.ArkApplication }).ToArray();
+            resourceMultipliers = gameData.Items.Where(item => item.IsHarvestable).ToList().ConvertAll(item => new ResourceClassMultiplier { ClassName = item.ClassName, Mod = item.Mod, KnownResource = true }).ToArray();
 
             // map spawners
             gameData.MapSpawners.AddRange(userGameData.MapSpawners);
@@ -124,11 +113,16 @@ namespace ARK_Server_Manager.Lib
             if (userGameData.PlayerLevels.Count > 0)
                 gameData.PlayerLevels = userGameData.PlayerLevels;
 
+            LevelsPlayerAdditional = userGameData.PlayerAdditionalLevels;
+
             if (gameData.PlayerLevels.Count > 0)
             {
                 levelsPlayer = gameData.PlayerLevels.ConvertAll(item => new Level { EngramPoints = item.EngramPoints, XPRequired = item.XPRequired }).ToArray();
                 DefaultMaxExperiencePointsPlayer = levelsPlayer.Max(l => l.XPRequired) + 1;
             }
+
+            if (gameData.PlayerAdditionalLevels > LevelsPlayerAdditional)
+                LevelsPlayerAdditional = gameData.PlayerAdditionalLevels;
 
             // branches
             gameData.Branches.AddRange(userGameData.Branches);
@@ -142,6 +136,28 @@ namespace ARK_Server_Manager.Lib
 
                 branches = branches1.ToArray();
                 branchesSotF = branches2.ToArray();
+            }
+
+            // events
+            gameData.Events.AddRange(userGameData.Events);
+
+            if (gameData.Events.Count > 0)
+            {
+                var events1 = events.ToList();
+                events1.AddRange(gameData.Events.Where(item => !item.IsSotF).ToList().ConvertAll(item => new ComboBoxItem { ValueMember = item.EventName, DisplayMember = item.Description }));
+                var events2 = eventsSotF.ToList();
+                events2.AddRange(gameData.Events.Where(item => item.IsSotF).ToList().ConvertAll(item => new ComboBoxItem { ValueMember = item.EventName, DisplayMember = item.Description }));
+
+                events = events1.ToArray();
+                eventsSotF = events2.ToArray();
+            }
+
+            // official mods
+            gameData.OfficialMods.AddRange(userGameData.OfficialMods);
+
+            if (gameData.OfficialMods.Count > 0)
+            {
+                ModUtils.AddOfficialMods(gameData.OfficialMods.Where(m => !string.IsNullOrWhiteSpace(m.ModId)).Select(m => m.ModId));
             }
         }
 
@@ -168,11 +184,13 @@ namespace ARK_Server_Manager.Lib
         #endregion
 
         #region Engrams
-        private static EngramEntry[] engrams = new EngramEntry[0];
+        private static Engram[] engrams = new Engram[0];
 
-        public static IEnumerable<EngramEntry> GetEngrams() => engrams.Select(d => d.Duplicate<EngramEntry>());
+        public static IEnumerable<Engram> GetEngrams() => engrams.Select(d => d.Duplicate());
 
-        public static EngramEntry GetEngramForClass(string className) => engrams.FirstOrDefault(e => e.EngramClassName.Equals(className));
+        public static IEnumerable<EngramEntry> GetEngramEntries() => engrams.Select(d => new EngramEntry() { EngramClassName = d.EngramClassName, EngramLevelRequirement = d.EngramLevelRequirement, EngramPointsCost = d.EngramPointsCost });
+
+        public static Engram GetEngramForClass(string className) => engrams.FirstOrDefault(e => e.EngramClassName.Equals(className));
 
         public static bool HasEngramForClass(string className) => engrams.Any(e => e.EngramClassName.Equals(className));
 
@@ -232,7 +250,7 @@ namespace ARK_Server_Manager.Lib
         #region Game Maps
         private static ComboBoxItem[] gameMaps = new[]
         {
-            new ComboBoxItem { ValueMember=Config.Default.DefaultServerMap, DisplayMember=FriendlyNameForClass(Config.Default.DefaultServerMap) },
+            new ComboBoxItem { ValueMember="", DisplayMember="" },
         };
 
         public static IEnumerable<ComboBoxItem> GetGameMaps() => gameMaps.Select(d => d.Duplicate());
@@ -241,7 +259,7 @@ namespace ARK_Server_Manager.Lib
 
         private static ComboBoxItem[] gameMapsSotF = new[]
         {
-            new ComboBoxItem { ValueMember=Config.Default.DefaultServerMap, DisplayMember=FriendlyNameForClass(Config.Default.DefaultServerMap) },
+            new ComboBoxItem { ValueMember="", DisplayMember="" },
         };
 
         public static IEnumerable<ComboBoxItem> GetGameMapsSotF() => gameMapsSotF.Select(d => d.Duplicate());
@@ -270,22 +288,6 @@ namespace ARK_Server_Manager.Lib
         #endregion
 
         #region Stats Multipliers
-        public enum StatsMultiplier
-        {
-            Health = 0,
-            Stamina = 1,
-            Torpidity = 2,
-            Oxygen = 3,
-            Food = 4,
-            Water = 5,
-            Temperature = 6,
-            Weight = 7,
-            Melee = 8,
-            Speed = 9,
-            Fortitude = 10,
-            Crafting = 11
-        };
-
         internal static IEnumerable<float> GetPerLevelStatsMultipliers_DinoWild()
         {
             return new float[] { 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f };
@@ -318,22 +320,22 @@ namespace ARK_Server_Manager.Lib
 
         internal static bool[] GetStatMultiplierInclusions_DinoWildPerLevel()
         {
-            return new bool[] { true, true, false, true, true, false, true, true, true, true, false, false };
+            return new bool[] { true, true, false, true, true, false, true, true, true, true, false, true };
         }
 
         internal static bool[] GetStatMultiplierInclusions_DinoTamedPerLevel()
         {
-            return new bool[] { true, true, false, true, true, false, true, true, true, true, false, false };
+            return new bool[] { true, true, false, true, true, false, true, true, true, true, false, true };
         }
 
         internal static bool[] GetStatMultiplierInclusions_DinoTamedAdd()
         {
-            return new bool[] { true, true, true, true, true, true, true, true, true, true, true, false };
+            return new bool[] { true, true, true, true, true, true, true, true, true, true, true, true };
         }
 
         internal static bool[] GetStatMultiplierInclusions_DinoTamedAffinity()
         {
-            return new bool[] { true, true, true, true, true, true, true, true, true, true, true, false };
+            return new bool[] { true, true, true, true, true, true, true, true, true, true, true, true };
         }
 
         internal static bool[] GetStatMultiplierInclusions_PlayerBase()
@@ -361,12 +363,14 @@ namespace ARK_Server_Manager.Lib
         public static IEnumerable<Level> LevelsDino => levelsDino.Select(l => l.Duplicate());
 
         public static IEnumerable<Level> LevelsPlayer => levelsPlayer.Select(l => l.Duplicate());
+
+        public static int LevelsPlayerAdditional = 0;
         #endregion
 
         #region Branches
         private static ComboBoxItem[] branches = new[]
         {
-            new ComboBoxItem { ValueMember="", DisplayMember=FriendlyNameForClass($"Branch_{Config.Default.DefaultServerBranchName}") },
+            new ComboBoxItem { ValueMember="", DisplayMember=FriendlyNameForClass(Config.Default.DefaultServerBranchName) },
         };
 
         public static IEnumerable<ComboBoxItem> GetBranches() => branches.Select(d => d.Duplicate());
@@ -375,12 +379,32 @@ namespace ARK_Server_Manager.Lib
 
         private static ComboBoxItem[] branchesSotF = new[]
         {
-            new ComboBoxItem { ValueMember="", DisplayMember=FriendlyNameForClass($"Branch_{Config.Default.DefaultServerBranchName}") },
+            new ComboBoxItem { ValueMember="", DisplayMember=FriendlyNameForClass(Config.Default.DefaultServerBranchName) },
         };
 
         public static IEnumerable<ComboBoxItem> GetBranchesSotF() => branchesSotF.Select(d => d.Duplicate());
 
         public static string FriendlyBranchSotFName(string branchName, bool returnEmptyIfNotFound = false) => string.IsNullOrWhiteSpace(branchName) ? string.Empty : GlobalizedApplication.Instance.GetResourceString(branchName) ?? gameData?.Branches?.FirstOrDefault(i => i.BranchName.Equals(branchName) && i.IsSotF)?.Description ?? (returnEmptyIfNotFound ? string.Empty : branchName);
+        #endregion
+
+        #region Events
+        private static ComboBoxItem[] events = new[]
+        {
+            new ComboBoxItem { ValueMember="", DisplayMember=string.Empty },
+        };
+
+        public static IEnumerable<ComboBoxItem> GetEvents() => events.Select(d => d.Duplicate());
+
+        public static string FriendlyEventName(string eventName, bool returnEmptyIfNotFound = false) => string.IsNullOrWhiteSpace(eventName) ? string.Empty : GlobalizedApplication.Instance.GetResourceString(eventName) ?? gameData?.Events?.FirstOrDefault(i => i.EventName.Equals(eventName) && !i.IsSotF)?.Description ?? (returnEmptyIfNotFound ? string.Empty : eventName);
+
+        private static ComboBoxItem[] eventsSotF = new[]
+        {
+            new ComboBoxItem { ValueMember="", DisplayMember=string.Empty },
+        };
+
+        public static IEnumerable<ComboBoxItem> GetEventsSotF() => eventsSotF.Select(d => d.Duplicate());
+
+        public static string FriendlyEventSotFName(string eventName, bool returnEmptyIfNotFound = false) => string.IsNullOrWhiteSpace(eventName) ? string.Empty : GlobalizedApplication.Instance.GetResourceString(eventName) ?? gameData?.Events?.FirstOrDefault(i => i.EventName.Equals(eventName) && i.IsSotF)?.Description ?? (returnEmptyIfNotFound ? string.Empty : eventName);
         #endregion
     }
 }

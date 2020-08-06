@@ -1,7 +1,7 @@
 {
   "Application": "ark",
-  "Version": "1.0.0",
-  "Created": "2018-04-21T11:00:00.0000000Z",
+  "Version": "1.1.0",
+  "Created": "2020-05-20T00:00:00.0000000Z",
   "Creatures": [
     {
       "NameTag": "Griffin",
@@ -9,8 +9,7 @@
       "IsTameable": "True",
       "ClassName": "Griffin_Character_BP_C",
       "Description": "Griffin",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -18,8 +17,7 @@
       "IsTameable": "True",
       "ClassName": "Polar_Bear_C",
       "Description": "Polar Bear",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": "Ice Wyvern",
@@ -27,8 +25,7 @@
       "IsTameable": "ByBreeding",
       "ClassName": "Ragnarok_Wyvern_Override_Ice_C",
       "Description": "Ice Wyvern",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -36,8 +33,7 @@
       "IsTameable": "False",
       "ClassName": "Iceworm_Queen_Character_BP_C",
       "Description": "Ice Worm",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -45,8 +41,7 @@
       "IsTameable": "False",
       "ClassName": "LavaGolem_Character_BP_C",
       "Description": "Lava Golem",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -54,8 +49,7 @@
       "IsTameable": "False",
       "ClassName": "Dragon_Character_BP_Boss_Easy_Ragnarok_C",
       "Description": "Dragon (Easy Variant)",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -63,8 +57,7 @@
       "IsTameable": "False",
       "ClassName": "Dragon_Character_BP_Boss_Medium_Ragnarok_C",
       "Description": "Dragon (Medium Variant)",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -72,8 +65,7 @@
       "IsTameable": "False",
       "ClassName": "Dragon_Character_BP_Boss_Hard_Ragnarok_C",
       "Description": "Dragon (Hard Variant)",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -81,8 +73,7 @@
       "IsTameable": "False",
       "ClassName": "Manticore_Character_BP_Easy_Ragnarok_C",
       "Description": "Manticore (Easy Variant)",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -90,8 +81,7 @@
       "IsTameable": "False",
       "ClassName": "Manticore_Character_BP_Medium_Ragnarok_C",
       "Description": "Manticore (Medium Variant)",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     },
     {
       "NameTag": null,
@@ -99,8 +89,7 @@
       "IsTameable": "False",
       "ClassName": "Manticore_Character_BP_Hard_Ragnarok_C",
       "Description": "Manticore (Hard Variant)",
-      "Mod": "Ragnarok",
-      "ArkApplication": "Ragnarok"
+      "Mod": "Ragnarok"
     }
   ],
   "MapSpawners": [
@@ -190,12 +179,29 @@
       "Mod": "Ragnarok"
     }
   ],
+  "SupplyCrates": [
+    {
+      "ClassName": "SupplyCrate_Chest_Treasure_JacksonL_C_C",
+      "Description": "Treasure Chest",
+      "Mod": "Ragnarok"
+    },
+    {
+      "ClassName": "SupplyCrateBaseBP_Instantaneous_DamLogs_Child_C",
+      "Description": "Large Beaver Dam",
+      "Mod": "Ragnarok"
+    },
+    {
+      "ClassName": "SupplyCrateBaseBP_Instantaneous_DenLogs_Child2_C",
+      "Description": "Beaver Den",
+      "Mod": "Ragnarok"
+    }
+  ],
   "GameMaps": [
     {
       "IsSotF": false,
       "ClassName": "Ragnarok",
       "Description": "Ragnarok",
-      "Mod": "SurvivalEvolved"
+      "Mod": "Ragnarok"
     }
   ]
 }

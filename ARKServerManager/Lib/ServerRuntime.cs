@@ -1,5 +1,13 @@
-﻿using ARK_Server_Manager.Lib.Model;
-using ArkServerManager.Plugin.Common;
+﻿using NLog;
+using ServerManagerTool.Common;
+using ServerManagerTool.Common.Interfaces;
+using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib.Model;
+using ServerManagerTool.Plugin.Common;
+using ServerManagerTool.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,44 +22,28 @@ using System.Threading.Tasks;
 using System.Windows;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     public class ServerRuntime : DependencyObject, IDisposable
     {
         private const int DIRECTORIES_PER_LINE = 200;
         private const int MOD_STATUS_QUERY_DELAY = 900000; // milliseconds
+        private const int RCON_MAXRETRIES = 3;
 
         public event EventHandler StatusUpdate;
 
-        public enum ServerStatus
-        {
-            Unknown,
-            Stopping,
-            Stopped,
-            Initializing,
-            Running,
-            Updating,
-            Uninstalled
-        }
-
-        public enum SteamStatus
-        {
-            Unknown,
-            NeedPublicIP,
-            Unavailable,
-            WaitingForPublication,
-            Available
-        }
-
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private readonly GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
         private readonly List<PropertyChangeNotifier> profileNotifiers = new List<PropertyChangeNotifier>();
         private Process serverProcess;
         private IAsyncDisposable updateRegistration;
         private DateTime lastModStatusQuery = DateTime.MinValue;
+        private System.Timers.Timer motdIntervalTimer = new System.Timers.Timer(3600000);
+        private QueryMaster.Rcon _rconConsole = null;
 
         #region Properties
 
-        public static readonly DependencyProperty SteamProperty = DependencyProperty.Register(nameof(Steam), typeof(SteamStatus), typeof(ServerRuntime), new PropertyMetadata(SteamStatus.Unknown));
+        public static readonly DependencyProperty AvailabilityProperty = DependencyProperty.Register(nameof(Availability), typeof(AvailabilityStatus), typeof(ServerRuntime), new PropertyMetadata(AvailabilityStatus.Unknown));
         public static readonly DependencyProperty StatusProperty = DependencyProperty.Register(nameof(Status), typeof(ServerStatus), typeof(ServerRuntime), new PropertyMetadata(ServerStatus.Unknown));
         public static readonly DependencyProperty StatusStringProperty = DependencyProperty.Register(nameof(StatusString), typeof(string), typeof(ServerRuntime), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty MaxPlayersProperty = DependencyProperty.Register(nameof(MaxPlayers), typeof(int), typeof(ServerRuntime), new PropertyMetadata(0));
@@ -61,10 +53,10 @@ namespace ARK_Server_Manager.Lib
         public static readonly DependencyProperty TotalModCountProperty = DependencyProperty.Register(nameof(TotalModCount), typeof(int), typeof(ServerRuntime), new PropertyMetadata(0));
         public static readonly DependencyProperty OutOfDateModCountProperty = DependencyProperty.Register(nameof(OutOfDateModCount), typeof(int), typeof(ServerRuntime), new PropertyMetadata(0));
 
-        public SteamStatus Steam
+        public AvailabilityStatus Availability
         {
-            get { return (SteamStatus)GetValue(SteamProperty); }
-            protected set { SetValue(SteamProperty, value); }
+            get { return (AvailabilityStatus)GetValue(AvailabilityProperty); }
+            protected set { SetValue(AvailabilityProperty, value); }
         }
 
         public ServerStatus Status
@@ -115,10 +107,20 @@ namespace ARK_Server_Manager.Lib
             protected set { SetValue(OutOfDateModCountProperty, value); }
         }
 
+        public static bool EnableUpdateModStatus { get; set; } = true;
+
         #endregion
 
         public void Dispose()
         {
+            if (this.motdIntervalTimer != null)
+            {
+                this.motdIntervalTimer.Stop();
+                this.motdIntervalTimer.Elapsed -= async (sender, e) => await HandleMotDIntervalTimer();
+                this.motdIntervalTimer.Dispose();
+                this.motdIntervalTimer = null;
+            }
+
             this.updateRegistration?.DisposeAsync().DoNotWait();
         }
 
@@ -133,14 +135,18 @@ namespace ARK_Server_Manager.Lib
         {
             UnregisterForUpdates();
 
+            if (this.ProfileSnapshot == null)
+                this.lastModStatusQuery = DateTime.MinValue;
             this.ProfileSnapshot = ServerProfileSnapshot.Create(profile);
+
+            // setup the MotD timer
+            this.motdIntervalTimer = new System.Timers.Timer(this.ProfileSnapshot.MOTDInterval * 60 * 1000);
+            this.motdIntervalTimer.Elapsed += async (sender, e) => await HandleMotDIntervalTimer();
 
             if (Version.TryParse(profile.LastInstalledVersion, out Version lastInstalled))
             {
                 this.Version = lastInstalled;
             }
-
-            this.lastModStatusQuery = DateTime.MinValue;
 
             RegisterForUpdates();
         }
@@ -166,6 +172,8 @@ namespace ARK_Server_Manager.Lib
                     ServerProfile.ServerMapProperty,
                     ServerProfile.ServerModIdsProperty,
                     ServerProfile.TotalConversionModIdProperty,
+
+                    ServerProfile.MOTDIntervalProperty,
                 },
                 (s, p) =>
                 {
@@ -184,14 +192,13 @@ namespace ARK_Server_Manager.Lib
             //
             // Get the local endpoint for querying the local network
             //
-            if (!ushort.TryParse(this.ProfileSnapshot.QueryPort.ToString(), out ushort port))
+            if (!ushort.TryParse(this.ProfileSnapshot.QueryPort.ToString(), out _))
             {
                 Debug.WriteLine($"Port is out of range ({this.ProfileSnapshot.QueryPort})");
                 return;
             }
 
-            IPAddress localServerIpAddress;
-            if (!String.IsNullOrWhiteSpace(this.ProfileSnapshot.ServerIP) && IPAddress.TryParse(this.ProfileSnapshot.ServerIP, out localServerIpAddress))
+            if (!String.IsNullOrWhiteSpace(this.ProfileSnapshot.ServerIP) && IPAddress.TryParse(this.ProfileSnapshot.ServerIP, out IPAddress localServerIpAddress))
             {
                 // Use the explicit Server IP
                 localServerQueryEndPoint = new IPEndPoint(localServerIpAddress, Convert.ToUInt16(this.ProfileSnapshot.QueryPort));
@@ -208,8 +215,7 @@ namespace ARK_Server_Manager.Lib
             steamServerQueryEndPoint = null;
             if (!String.IsNullOrWhiteSpace(Config.Default.MachinePublicIP))
             {
-                IPAddress steamServerIpAddress;
-                if (IPAddress.TryParse(Config.Default.MachinePublicIP, out steamServerIpAddress))
+                if (IPAddress.TryParse(Config.Default.MachinePublicIP, out IPAddress steamServerIpAddress))
                 {
                     // Use the Public IP explicitly specified
                     steamServerQueryEndPoint = new IPEndPoint(steamServerIpAddress, Convert.ToUInt16(this.ProfileSnapshot.QueryPort));
@@ -233,15 +239,9 @@ namespace ARK_Server_Manager.Lib
             }
         }
 
-        public string GetServerExe()
-        {
-            return Path.Combine(this.ProfileSnapshot.InstallDirectory, Config.Default.ServerBinaryRelativePath, Config.Default.ServerExe);
-        }
+        public string GetServerExe() => Path.Combine(this.ProfileSnapshot.InstallDirectory, Config.Default.ServerBinaryRelativePath, Config.Default.ServerExe);
 
-        public string GetServerLauncherFile()
-        {
-            return Path.Combine(this.ProfileSnapshot.InstallDirectory, Config.Default.ServerConfigRelativePath, Config.Default.LauncherFile);
-        }
+        public string GetServerLauncherFile() => Path.Combine(this.ProfileSnapshot.InstallDirectory, Config.Default.ServerConfigRelativePath, Config.Default.LauncherFile);
 
         private void ProcessStatusUpdate(IAsyncDisposable registration, ServerStatusWatcher.ServerStatusUpdate update)
         {
@@ -255,36 +255,54 @@ namespace ARK_Server_Manager.Lib
                 var oldStatus = this.Status;
                 switch (update.Status)
                 {
-                    case ServerStatusWatcher.ServerStatus.NotInstalled:
-                        UpdateServerStatus(ServerStatus.Uninstalled, SteamStatus.Unavailable, false);
+                    case WatcherServerStatus.NotInstalled:
+                        if (oldStatus != ServerStatus.Updating)
+                            UpdateServerStatus(ServerStatus.Uninstalled, AvailabilityStatus.Unavailable, false);
+                        if (this.motdIntervalTimer != null && this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Stop();
                         break;
 
-                    case ServerStatusWatcher.ServerStatus.Initializing:
-                        UpdateServerStatus(ServerStatus.Initializing, SteamStatus.Unavailable, oldStatus != ServerStatus.Initializing && oldStatus != ServerStatus.Unknown);
+                    case WatcherServerStatus.Initializing:
+                        if (oldStatus != ServerStatus.Stopping)
+                            UpdateServerStatus(ServerStatus.Initializing, AvailabilityStatus.Unavailable, oldStatus != ServerStatus.Initializing && oldStatus != ServerStatus.Unknown);
+                        if (this.motdIntervalTimer != null && this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Stop();
                         break;
 
-                    case ServerStatusWatcher.ServerStatus.Stopped:
-                        UpdateServerStatus(ServerStatus.Stopped, SteamStatus.Unavailable, oldStatus == ServerStatus.Initializing || oldStatus == ServerStatus.Running || oldStatus == ServerStatus.Stopping);
+                    case WatcherServerStatus.Stopped:
+                        if (oldStatus != ServerStatus.Updating)
+                            UpdateServerStatus(ServerStatus.Stopped, AvailabilityStatus.Unavailable, oldStatus == ServerStatus.Initializing || oldStatus == ServerStatus.Running || oldStatus == ServerStatus.Stopping);
+                        if (this.motdIntervalTimer != null && this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Stop();
                         break;
 
-                    case ServerStatusWatcher.ServerStatus.Unknown:
-                        UpdateServerStatus(ServerStatus.Unknown, SteamStatus.Unknown, false);
+                    case WatcherServerStatus.Unknown:
+                        if (oldStatus != ServerStatus.Updating)
+                            UpdateServerStatus(ServerStatus.Unknown, AvailabilityStatus.Unknown, false);
+                        if (this.motdIntervalTimer != null && this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Stop();
                         break;
 
-                    case ServerStatusWatcher.ServerStatus.RunningLocalCheck:
-                        UpdateServerStatus(ServerStatus.Running, this.Steam != SteamStatus.Available ? SteamStatus.WaitingForPublication : this.Steam, oldStatus != ServerStatus.Running && oldStatus != ServerStatus.Unknown);
+                    case WatcherServerStatus.RunningLocalCheck:
+                        if (oldStatus != ServerStatus.Stopping)
+                            UpdateServerStatus(ServerStatus.Running, this.Availability != AvailabilityStatus.Available ? AvailabilityStatus.WaitingForPublication : this.Availability, oldStatus != ServerStatus.Running && oldStatus != ServerStatus.Unknown);
+                        if (this.ProfileSnapshot.MOTDIntervalEnabled && this.motdIntervalTimer != null && !this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Start();
                         break;
 
-                    case ServerStatusWatcher.ServerStatus.RunningExternalCheck:
-                        UpdateServerStatus(ServerStatus.Running, SteamStatus.WaitingForPublication, oldStatus != ServerStatus.Running && oldStatus != ServerStatus.Unknown);
+                    case WatcherServerStatus.RunningExternalCheck:
+                        if (oldStatus != ServerStatus.Stopping)
+                            UpdateServerStatus(ServerStatus.Running, AvailabilityStatus.WaitingForPublication, oldStatus != ServerStatus.Running && oldStatus != ServerStatus.Unknown);
+                        if (this.ProfileSnapshot.MOTDIntervalEnabled && this.motdIntervalTimer != null && !this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Start();
                         break;
 
-                    case ServerStatusWatcher.ServerStatus.Published:
-                        UpdateServerStatus(ServerStatus.Running, SteamStatus.Available, oldStatus != ServerStatus.Running && oldStatus != ServerStatus.Unknown);
+                    case WatcherServerStatus.Published:
+                        if (oldStatus != ServerStatus.Stopping)
+                            UpdateServerStatus(ServerStatus.Running, AvailabilityStatus.Available, oldStatus != ServerStatus.Running && oldStatus != ServerStatus.Unknown);
+                        if (this.ProfileSnapshot.MOTDIntervalEnabled && this.motdIntervalTimer != null && !this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Start();
+                        break;
+
+                    default:
+                        if (this.motdIntervalTimer != null && this.motdIntervalTimer.Enabled) this.motdIntervalTimer.Stop();
                         break;
                 }
 
-                this.Players = update.Players?.Count ?? 0;
+                this.Players = update.OnlinePlayerCount;
                 this.MaxPlayers = update.ServerInfo?.MaxPlayers ?? this.ProfileSnapshot.MaxPlayerCount;
 
                 if (update.ServerInfo != null)
@@ -310,7 +328,7 @@ namespace ARK_Server_Manager.Lib
 
         private async void UpdateModStatus()
         {
-            if (DateTime.Now < this.lastModStatusQuery.AddMilliseconds(MOD_STATUS_QUERY_DELAY))
+            if (!EnableUpdateModStatus || DateTime.Now < this.lastModStatusQuery.AddMilliseconds(MOD_STATUS_QUERY_DELAY))
                 return;
 
             var totalModCount = 0;
@@ -323,22 +341,28 @@ namespace ARK_Server_Manager.Lib
                 modIdList.Add(this.ProfileSnapshot.TotalConversionModId);
             modIdList.AddRange(this.ProfileSnapshot.ServerModIds);
 
-            var newModIdList = ModUtils.ValidateModList(modIdList);
-            totalModCount = newModIdList.Count;
+            modIdList = ModUtils.ValidateModList(modIdList);
+            totalModCount = modIdList.Count;
 
             if (totalModCount > 0)
             {
-                var response = await Task.Run(() => SteamUtils.GetSteamModDetails(newModIdList));
+                var response = await Task.Run(() => SteamUtils.GetSteamModDetails(modIdList));
+                var modsRootFolder = Path.Combine(this.ProfileSnapshot.InstallDirectory, Config.Default.ServerModsRelativePath);
+                var modDetails = ModDetailList.GetModDetails(modIdList, modsRootFolder, null, response);
 
-                var modDetails = ModDetailList.GetModDetails(response, Path.Combine(this.ProfileSnapshot.InstallDirectory, Config.Default.ServerModsRelativePath), newModIdList);
                 outOfdateModCount = modDetails.Count(m => !m.UpToDate);
+            }
+
+            if (outOfdateModCount > 0 && this.OutOfDateModCount != outOfdateModCount && !string.IsNullOrWhiteSpace(Config.Default.Alert_ModUpdateDetected))
+            {
+                PluginHelper.Instance.ProcessAlert(AlertType.ModUpdateDetected, this.ProfileSnapshot.ProfileName, $"{Config.Default.Alert_ModUpdateDetected} {outOfdateModCount}");
             }
 
             this.TotalModCount = totalModCount;
             this.OutOfDateModCount = outOfdateModCount;
             this.lastModStatusQuery = DateTime.Now;
 
-            Debug.WriteLine($"UpdateModStatus performed - {this.ProfileSnapshot.ProfileName} - {outOfdateModCount} / {totalModCount}");
+            _logger.Debug($"{nameof(UpdateModStatus)} performed - {this.ProfileSnapshot.ProfileName} - {outOfdateModCount} / {totalModCount}");
         }
 
         private void RegisterForUpdates()
@@ -355,29 +379,19 @@ namespace ARK_Server_Manager.Lib
 
         private void UnregisterForUpdates()
         {
+            this.motdIntervalTimer.Stop();
+            this.motdIntervalTimer.Elapsed -= async (sender, e) => await HandleMotDIntervalTimer();
+
             this.updateRegistration?.DisposeAsync().DoNotWait();
             this.updateRegistration = null;
         }
 
 
-        private void CheckServerWorldFileExists()
-        {
-            var serverApp = new ServerApp()
-            {
-                BackupWorldFile = false,
-                DeleteOldServerBackupFiles = false,
-                SendAlerts = false,
-                SendEmails = false,
-                OutputLogs = false
-            };
-            serverApp.CheckServerWorldFileExists(ProfileSnapshot);
-        }
-
         public Task StartAsync()
         {
             if(!Environment.Is64BitOperatingSystem)
             {
-                MessageBox.Show("ARK: Survival Evolved(tm) Server requires a 64-bit operating system to run.  Your operating system is 32-bit and therefore the Ark Server Manager cannot start the server.  You may still load and save profiles and settings files for use on other machines.", "64-bit OS Required", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("The server requires a 64-bit operating system to run. Your operating system is 32-bit and therefore the Ark Server Manager cannot start the server. You may still load and save profiles and settings files for use on other machines.", "64-bit OS Required", MessageBoxButton.OK, MessageBoxImage.Error);
                 return TaskUtils.FinishedTask;
             }
 
@@ -386,31 +400,42 @@ namespace ARK_Server_Manager.Lib
                 case ServerStatus.Running:
                 case ServerStatus.Initializing:
                 case ServerStatus.Stopping:
-                    Debug.WriteLine("Server {0} already running.", this.ProfileSnapshot.ProfileName);
+                    _logger.Debug($"{nameof(StartAsync)} - Server {this.ProfileSnapshot.ProfileName} already running.");
                     return TaskUtils.FinishedTask;
             }
 
             UnregisterForUpdates();
-            UpdateServerStatus(ServerStatus.Initializing, this.Steam, true);
 
             var serverExe = GetServerExe();
             var launcherExe = GetServerLauncherFile();
 
             if (Config.Default.ManageFirewallAutomatically)
             {
-                var ports = new List<int>() { this.ProfileSnapshot.ServerPort , this.ProfileSnapshot.QueryPort };
-                if(this.ProfileSnapshot.UseRawSockets)
+                if (SecurityUtils.IsAdministrator())
                 {
-                    ports.Add(this.ProfileSnapshot.ServerPort + 1);
-                }
-                if (this.ProfileSnapshot.RCONEnabled)
-                {
-                    ports.Add(this.ProfileSnapshot.RCONPort);
-                }
+                    var ports = new List<int>() { this.ProfileSnapshot.ServerPort };
+                    if (this.ProfileSnapshot.UseAdditionalServerPort)
+                    {
+                        ports.Add(this.ProfileSnapshot.ServerPort + 1);
+                    }
+                    ports.Add(this.ProfileSnapshot.QueryPort);
+                    if (this.ProfileSnapshot.RCONEnabled)
+                    {
+                        ports.Add(this.ProfileSnapshot.RCONPort);
+                    }
 
-                if (!FirewallUtils.EnsurePortsOpen(serverExe, ports.ToArray(), $"{Config.Default.FirewallRulePrefix} {this.ProfileSnapshot.ServerName}"))
+                    if (!FirewallUtils.CreateFirewallRules(serverExe, ports, $"{Config.Default.FirewallRulePrefix} {this.ProfileSnapshot.ServerName}"))
+                    {
+                        var result = MessageBox.Show("Failed to automatically set firewall rules. If you are running custom firewall software, you may need to set your firewall rules manually. You may turn off automatic firewall management in Settings.\r\n\r\nWould you like to continue running the server anyway?", "Automatic Firewall Management Error", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        if (result == MessageBoxResult.No)
+                        {
+                            return TaskUtils.FinishedTask;
+                        }
+                    }
+                }
+                else
                 {
-                    var result = MessageBox.Show("Failed to automatically set firewall rules.  If you are running custom firewall software, you may need to set your firewall rules manually.  You may turn off automatic firewall management in Settings.\r\n\r\nWould you like to continue running the server anyway?", "Automatic Firewall Management Error", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    var result = MessageBox.Show("Failed to automatically set firewall rules. You must be running the server manager as an administrator to manage the firewall rules.\r\n\r\nWould you like to continue running the server anyway?", "Automatic Firewall Management Error", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                     if (result == MessageBoxResult.No)
                     {
                         return TaskUtils.FinishedTask;
@@ -419,6 +444,7 @@ namespace ARK_Server_Manager.Lib
             }
 
             CheckServerWorldFileExists();
+            UpdateServerStatus(ServerStatus.Initializing, this.Availability, false);
 
             try
             {
@@ -432,7 +458,8 @@ namespace ARK_Server_Manager.Lib
             }
             catch (Win32Exception ex)
             {
-                throw new FileNotFoundException(String.Format("Unable to find {0} at {1}.  Server Install Directory: {2}", Config.Default.LauncherFile, launcherExe, this.ProfileSnapshot.InstallDirectory), launcherExe, ex);
+                UpdateServerStatus(ServerStatus.Unknown, AvailabilityStatus.Unavailable, false);
+                throw new FileNotFoundException($"Unable to find {Config.Default.LauncherFile} at {launcherExe}. Server Install Directory: {this.ProfileSnapshot.InstallDirectory}", launcherExe, ex);
             }
             finally
             {
@@ -452,27 +479,29 @@ namespace ARK_Server_Manager.Lib
                     {
                         if (this.serverProcess != null)
                         {
-                            UpdateServerStatus(ServerStatus.Stopping, SteamStatus.Unavailable, false);
+                            UpdateServerStatus(ServerStatus.Stopping, AvailabilityStatus.Unavailable, true);
 
-                            await ProcessUtils.SendStop(this.serverProcess);
-                        }
-
-                        if (this.serverProcess.HasExited)
-                        {
-                            CheckServerWorldFileExists();
+                            await ProcessUtils.SendStopAsync(this.serverProcess)
+                                .ContinueWith(async t1 =>
+                                {
+                                    if (this.serverProcess.HasExited)
+                                    {
+                                        await TaskUtils.RunOnUIThreadAsync(() => CheckServerWorldFileExists());
+                                    }
+                                })
+                                .ContinueWith(async t2 =>
+                                {
+                                    await TaskUtils.RunOnUIThreadAsync(() => UpdateServerStatus(ServerStatus.Stopped, AvailabilityStatus.Unavailable, false));
+                                });
                         }
                     }
                     catch(InvalidOperationException)
-                    {                    
-                    }
-                    finally
                     {
-                        UpdateServerStatus(ServerStatus.Stopped, SteamStatus.Unavailable, true);
+                        UpdateServerStatus(ServerStatus.Unknown, AvailabilityStatus.Unavailable, false);
                     }
                     break;
             }            
         }
-
 
         public async Task<bool> UpgradeAsync(CancellationToken cancellationToken, bool updateServer, ServerBranchSnapshot branch, bool validate, bool updateMods, ProgressDelegate progressCallback)
         {
@@ -496,10 +525,10 @@ namespace ARK_Server_Manager.Lib
 
                 bool isNewInstallation = this.Status == ServerStatus.Uninstalled;
 
-                UpdateServerStatus(ServerStatus.Updating, Steam, false);
+                UpdateServerStatus(ServerStatus.Updating, Availability, false);
 
                 // Run the SteamCMD to install the server
-                var steamCmdFile = SteamCmdUpdater.GetSteamCmdFile();
+                var steamCmdFile = SteamCmdUpdater.GetSteamCmdFile(Config.Default.DataDir);
                 if (string.IsNullOrWhiteSpace(steamCmdFile) || !File.Exists(steamCmdFile))
                 {
                     progressCallback?.Invoke(0, $"{SteamCmdUpdater.OUTPUT_PREFIX} ***********************************");
@@ -578,10 +607,12 @@ namespace ARK_Server_Manager.Lib
                         }
                     };
 
+                    var steamCmdRemoveQuit = CommonConfig.Default.SteamCmdRemoveQuit && !Config.Default.SteamCmdRedirectOutput;
                     var steamCmdInstallServerArgsFormat = this.ProfileSnapshot.SotFEnabled ? Config.Default.SteamCmdInstallServerArgsFormat_SotF : Config.Default.SteamCmdInstallServerArgsFormat;
                     var steamCmdArgs = String.Format(steamCmdInstallServerArgsFormat, this.ProfileSnapshot.InstallDirectory, steamCmdInstallServerBetaArgs, validate ? "validate" : string.Empty);
+                    var workingDirectory = Config.Default.DataDir;
 
-                    success = await ServerUpdater.UpgradeServerAsync(steamCmdFile, steamCmdArgs, this.ProfileSnapshot.InstallDirectory, Config.Default.SteamCmdRedirectOutput ? serverOutputHandler : null, cancellationToken, ProcessWindowStyle.Minimized);
+                    success = await ServerUpdater.UpgradeServerAsync(steamCmdFile, steamCmdArgs, workingDirectory, null, null, this.ProfileSnapshot.InstallDirectory, Config.Default.SteamCmdRedirectOutput ? serverOutputHandler : null, cancellationToken, steamCmdRemoveQuit ? ProcessWindowStyle.Normal : ProcessWindowStyle.Minimized);
                     if (success && downloadSuccessful)
                     {
                         progressCallback?.Invoke(0, $"{SteamCmdUpdater.OUTPUT_PREFIX} Finished server update.");
@@ -638,11 +669,12 @@ namespace ARK_Server_Manager.Lib
 
                         // get the details of the mods to be processed.
                         var modDetails = SteamUtils.GetSteamModDetails(modIdList);
+                        var forceUpdateMods = Config.Default.ServerUpdate_ForceUpdateModsIfNoSteamInfo || string.IsNullOrWhiteSpace(SteamUtils.SteamWebApiKey);
 
                         // check if the mod details were retrieved
-                        if (modDetails == null && Config.Default.ServerUpdate_ForceUpdateModsIfNoSteamInfo)
+                        if (modDetails == null && forceUpdateMods)
                         {
-                            modDetails = new Model.PublishedFileDetailsResponse();
+                            modDetails = new PublishedFileDetailsResponse();
                         }
 
                         if (modDetails != null)
@@ -687,7 +719,7 @@ namespace ARK_Server_Manager.Lib
                                     }
                                     else if (modDetail == null)
                                     {
-                                        if (Config.Default.ServerUpdate_ForceUpdateModsIfNoSteamInfo)
+                                        if (forceUpdateMods)
                                         {
                                             progressCallback?.Invoke(0, $"{SteamCmdUpdater.OUTPUT_PREFIX} Forcing mod download - Mod details not available and ASM setting is TRUE.");
                                         }
@@ -748,6 +780,7 @@ namespace ARK_Server_Manager.Lib
                                         progressCallback?.Invoke(0, $"{SteamCmdUpdater.OUTPUT_PREFIX} Starting mod download.\r\n");
 
                                         var steamCmdArgs = string.Empty;
+                                        var steamCmdRemoveQuit = CommonConfig.Default.SteamCmdRemoveQuit && !Config.Default.SteamCmdRedirectOutput;
                                         if (this.ProfileSnapshot.SotFEnabled)
                                         {
                                             if (Config.Default.SteamCmd_UseAnonymousCredentials)
@@ -762,8 +795,9 @@ namespace ARK_Server_Manager.Lib
                                             else
                                                 steamCmdArgs = string.Format(Config.Default.SteamCmdInstallModArgsFormat, Config.Default.SteamCmd_Username, modId);
                                         }
+                                        var workingDirectory = Config.Default.DataDir;
 
-                                        modSuccess = await ServerUpdater.UpgradeModsAsync(steamCmdFile, steamCmdArgs, Config.Default.SteamCmdRedirectOutput ? modOutputHandler : null, cancellationToken, ProcessWindowStyle.Minimized);
+                                        modSuccess = await ServerUpdater.UpgradeModsAsync(steamCmdFile, steamCmdArgs, workingDirectory, null, null, Config.Default.SteamCmdRedirectOutput ? modOutputHandler : null, cancellationToken, steamCmdRemoveQuit ? ProcessWindowStyle.Normal : ProcessWindowStyle.Minimized);
                                         if (modSuccess && downloadSuccessful)
                                         {
                                             progressCallback?.Invoke(0, $"{SteamCmdUpdater.OUTPUT_PREFIX} Finished mod download.");
@@ -922,7 +956,34 @@ namespace ARK_Server_Manager.Lib
             finally
             {
                 this.lastModStatusQuery = DateTime.MinValue;
-                UpdateServerStatus(ServerStatus.Stopped, Steam, false);
+                UpdateServerStatus(ServerStatus.Stopped, Availability, false);
+            }
+        }
+
+
+        private void CheckServerWorldFileExists()
+        {
+            var serverApp = new ServerApp()
+            {
+                BackupWorldFile = false,
+                DeleteOldServerBackupFiles = false,
+                SendAlerts = false,
+                SendEmails = false,
+                OutputLogs = false
+            };
+            serverApp.CheckServerWorldFileExists(ProfileSnapshot);
+        }
+
+        public void DeleteFirewallRules()
+        {
+            if (Config.Default.ManageFirewallAutomatically)
+            {
+                if (SecurityUtils.IsAdministrator())
+                {
+                    var serverExe = GetServerExe();
+
+                    FirewallUtils.DeleteFirewallRules(serverExe);
+                }
             }
         }
 
@@ -931,15 +992,15 @@ namespace ARK_Server_Manager.Lib
             this.lastModStatusQuery = DateTime.MinValue;
         }
 
-        private void UpdateServerStatus(ServerStatus serverStatus, SteamStatus steamStatus, bool sendAlert)
+        public void UpdateServerStatus(ServerStatus serverStatus, AvailabilityStatus availabilityStatus, bool sendAlert)
         {
             this.Status = serverStatus;
-            this.Steam = steamStatus;
+            this.Availability = availabilityStatus;
 
             UpdateServerStatusString();
 
             if (!string.IsNullOrWhiteSpace(Config.Default.Alert_ServerStatusChange) && sendAlert)
-                PluginHelper.Instance.ProcessAlert(AlertType.ServerStatusChange, this.ProfileSnapshot.ProfileName, $"{Config.Default.Alert_ServerStatusChange} {Status}");
+                PluginHelper.Instance.ProcessAlert(AlertType.ServerStatusChange, this.ProfileSnapshot.ProfileName, $"{Config.Default.Alert_ServerStatusChange} {StatusString}");
         }
 
         public void UpdateServerStatusString()
@@ -971,6 +1032,139 @@ namespace ARK_Server_Manager.Lib
                     StatusString = _globalizer.GetResourceString("ServerSettings_RuntimeStatusUnknownLabel");
                     break;
             }
+        }
+
+        public void DisableMotDIntervalTimer()
+        {
+            var snapshot = this.ProfileSnapshot;
+            snapshot.MOTDIntervalEnabled = false;
+            this.ProfileSnapshot = snapshot;
+
+            this.motdIntervalTimer.Stop();
+        }
+
+        private async Task HandleMotDIntervalTimer()
+        {
+            await TaskUtils.RunOnUIThreadAsync(async () =>
+            {
+                if (string.IsNullOrWhiteSpace(this.ProfileSnapshot.MOTD))
+                    return;
+
+                if (this.ProfileSnapshot.RCONEnabled)
+                {
+                    try
+                    {
+                        await SendMessageAsync(this.ProfileSnapshot.MOTD, CancellationToken.None);
+                        _logger.Debug($"Message of the Day shown.");
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    finally
+                    {
+                        CloseRconConsole();
+                    }
+                }
+
+                await Task.Delay(1);
+            });
+        }
+
+        private void CloseRconConsole()
+        {
+            if (_rconConsole != null)
+            {
+                _rconConsole.Dispose();
+                _rconConsole = null;
+
+                Task.Delay(1000).Wait();
+            }
+        }
+
+        private void SetupRconConsole()
+        {
+            CloseRconConsole();
+
+            if (this.ProfileSnapshot == null || !this.ProfileSnapshot.RCONEnabled)
+                return;
+
+            try
+            {
+                var endPoint = new IPEndPoint(IPAddress.Parse(this.ProfileSnapshot.ServerIP), this.ProfileSnapshot.RCONPort);
+                var server = QueryMaster.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, endPoint, sendTimeOut: 10000, receiveTimeOut: 10000);
+
+                if (server == null)
+                {
+                    return;
+                }
+
+                Task.Delay(1000).Wait();
+
+                _rconConsole = server.GetControl(this.ProfileSnapshot.AdminPassword);
+            }
+            catch (Exception)
+            {
+                _rconConsole = null;
+            }
+        }
+
+        private async Task<bool> SendCommandAsync(string command, bool retryIfFailed)
+        {
+            if (this.ProfileSnapshot == null || !this.ProfileSnapshot.RCONEnabled)
+                return false;
+            if (string.IsNullOrWhiteSpace(command))
+                return false;
+
+            int retries = 0;
+            int rconRetries = 0;
+            int maxRetries = retryIfFailed ? RCON_MAXRETRIES : 1;
+
+            while (retries < maxRetries && rconRetries < RCON_MAXRETRIES)
+            {
+                SetupRconConsole();
+    
+                if (_rconConsole == null)
+                {
+                    rconRetries++;
+                }
+                else
+                {
+                    rconRetries = 0;
+
+                    try
+                    {
+                        _rconConsole.SendCommand(command);
+
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    retries++;
+                }
+            }
+
+            return false;
+        }
+
+        private async Task<bool> SendMessageAsync(string message, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return false;
+
+            var sent = await SendCommandAsync($"broadcast {message}", false);
+
+            if (sent)
+            {
+                try
+                {
+                    Task.Delay(Config.Default.SendMessageDelay, token).Wait(token);
+                }
+                catch { }
+            }
+
+            return sent;
         }
     }
 }

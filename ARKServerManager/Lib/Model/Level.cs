@@ -8,17 +8,19 @@ using System.Diagnostics;
 using System.Xml.Serialization;
 using TinyCsvParser.Mapping;
 using System.Runtime.Serialization;
+using ServerManagerTool.Common.Model;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     public class LevelList : SortableObservableCollection<Level>
     {
         const bool WORKAROUND_FOR_ENGRAM_LIST = true;
-        const int ASCENSION_LEVELS = 30;
 
         public static readonly Regex XPRegex = new Regex(@"ExperiencePointsForLevel\[(?<level>\d*)]=(?<xp>\d*)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
         public static readonly Regex EngramRegex = new Regex(@"OverridePlayerLevelEngramPoints=(?<points>\d*)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
+
+        public static int AdditionalLevels = GameData.LevelsPlayerAdditional;
 
         public void RemoveLevel(Level level)
         {
@@ -68,7 +70,7 @@ namespace ARK_Server_Manager.Lib
                 existingLevel.EngramTotal = engramTotal;
 
                 existingLevel.LevelIndex = index;
-                existingLevel.ShowColored = index >= this.Count - ASCENSION_LEVELS;
+                existingLevel.ShowColored = index >= this.Count - AdditionalLevels;
                 index++;
             }
 

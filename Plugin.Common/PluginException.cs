@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using System.Security;
 
-namespace ArkServerManager.Plugin.Common
+namespace ServerManagerTool.Plugin.Common
 {
     public class PluginException : Exception
     {

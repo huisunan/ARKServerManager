@@ -1,22 +1,48 @@
-﻿using ARK_Server_Manager.Lib;
+﻿using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for ProfileSyncWindow.xaml
     /// </summary>
     public partial class ProfileSyncWindow : Window
     {
-        public class ProfileSection : DependencyObject
+        public class SyncProfile : DependencyObject
         {
-            public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(nameof(Selected), typeof(bool), typeof(ProfileSection), new PropertyMetadata(false));
-            public static readonly DependencyProperty SectionNameProperty = DependencyProperty.Register(nameof(SectionName), typeof(string), typeof(ProfileSection), new PropertyMetadata(string.Empty));
-            public static readonly DependencyProperty SectionProperty = DependencyProperty.Register(nameof(Section), typeof(ServerProfileCategory), typeof(ProfileSection));
+            public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(nameof(Selected), typeof(bool), typeof(SyncProfile), new PropertyMetadata(false));
+            public static readonly DependencyProperty ProfileNameProperty = DependencyProperty.Register(nameof(ProfileName), typeof(string), typeof(SyncProfile), new PropertyMetadata(string.Empty));
+            public static readonly DependencyProperty ProfileProperty = DependencyProperty.Register(nameof(Profile), typeof(ServerProfile), typeof(SyncProfile), new PropertyMetadata(null));
+
+            public bool Selected
+            {
+                get { return (bool)GetValue(SelectedProperty); }
+                set { SetValue(SelectedProperty, value); }
+            }
+            public string ProfileName
+            {
+                get { return (string)GetValue(ProfileNameProperty); }
+                set { SetValue(ProfileNameProperty, value); }
+            }
+            public ServerProfile Profile
+            {
+                get { return (ServerProfile)GetValue(ProfileProperty); }
+                set { SetValue(ProfileProperty, value); }
+            }
+        }
+
+        public class SyncSection : DependencyObject
+        {
+            public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(nameof(Selected), typeof(bool), typeof(SyncSection), new PropertyMetadata(false));
+            public static readonly DependencyProperty SectionNameProperty = DependencyProperty.Register(nameof(SectionName), typeof(string), typeof(SyncSection), new PropertyMetadata(string.Empty));
+            public static readonly DependencyProperty CategoryProperty = DependencyProperty.Register(nameof(Category), typeof(ServerProfileCategory), typeof(SyncSection));
 
             public bool Selected
             {
@@ -28,28 +54,29 @@ namespace ARK_Server_Manager
                 get { return (string)GetValue(SectionNameProperty); }
                 set { SetValue(SectionNameProperty, value); }
             }
-            public ServerProfileCategory Section
+            public ServerProfileCategory Category
             {
-                get { return (ServerProfileCategory)GetValue(SectionProperty); }
-                set { SetValue(SectionProperty, value); }
+                get { return (ServerProfileCategory)GetValue(CategoryProperty); }
+                set { SetValue(CategoryProperty, value); }
             }
         }
 
         private readonly GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
 
-        public static readonly DependencyProperty ProfilesProperty = DependencyProperty.Register(nameof(Profiles), typeof(ObservableCollection<ServerProfile>), typeof(ProfileSyncWindow), new PropertyMetadata(new ObservableCollection<ServerProfile>()));
-        public static readonly DependencyProperty ProfileSectionsProperty = DependencyProperty.Register(nameof(ProfileSections), typeof(ObservableCollection<ProfileSection>), typeof(ProfileSyncWindow), new PropertyMetadata(new ObservableCollection<ProfileSection>()));
-        public static readonly DependencyProperty SelectedProfileIdProperty = DependencyProperty.Register(nameof(SelectedProfileId), typeof(string), typeof(ProfileSyncWindow), new PropertyMetadata(string.Empty));
+        public static readonly DependencyProperty SyncProfilesProperty = DependencyProperty.Register(nameof(SyncProfiles), typeof(ObservableCollection<SyncProfile>), typeof(ProfileSyncWindow), new PropertyMetadata(new ObservableCollection<SyncProfile>()));
+        public static readonly DependencyProperty SyncSectionsProperty = DependencyProperty.Register(nameof(SyncSections), typeof(ObservableCollection<SyncSection>), typeof(ProfileSyncWindow), new PropertyMetadata(new ObservableCollection<SyncSection>()));
 
-        public ProfileSyncWindow(ServerManager serverManager, ServerProfile profile)
+        public ProfileSyncWindow(ServerManager serverManager, ServerProfile serverProfile)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
-            this.Title = string.Format(_globalizer.GetResourceString("ProfileSyncWindow_ProfileTitle"), profile?.ProfileName);
+            OverlayGrid.Visibility = Visibility.Collapsed;
+
+            this.Title = string.Format(_globalizer.GetResourceString("ProfileSyncWindow_ProfileTitle"), serverProfile?.ProfileName);
 
             this.ServerManager = serverManager;
-            this.Profile = profile;
+            this.ServerProfile = serverProfile;
             this.DataContext = this;
         }
 
@@ -59,36 +86,30 @@ namespace ARK_Server_Manager
             private set;
         }
 
-        public ObservableCollection<ServerProfile> Profiles
-        {
-            get { return (ObservableCollection<ServerProfile>)GetValue(ProfilesProperty); }
-            set { SetValue(ProfilesProperty, value); }
-        }
-
-        public ObservableCollection<ProfileSection> ProfileSections
-        {
-            get { return (ObservableCollection<ProfileSection>)GetValue(ProfileSectionsProperty); }
-            set { SetValue(ProfileSectionsProperty, value); }
-        }
-
-        public ServerProfile Profile
+        public ServerProfile ServerProfile
         {
             get;
             private set;
         }
 
-        public string SelectedProfileId
+        public ObservableCollection<SyncProfile> SyncProfiles
         {
-            get { return (string)GetValue(SelectedProfileIdProperty); }
-            set { SetValue(SelectedProfileIdProperty, value); }
+            get { return (ObservableCollection<SyncProfile>)GetValue(SyncProfilesProperty); }
+            set { SetValue(SyncProfilesProperty, value); }
+        }
+
+        public ObservableCollection<SyncSection> SyncSections
+        {
+            get { return (ObservableCollection<SyncSection>)GetValue(SyncSectionsProperty); }
+            set { SetValue(SyncSectionsProperty, value); }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                CreateProfileList();
-                CreateProfileSectionList();
+                CreateSyncProfileList();
+                CreateSyncSectionList();
             }
             catch (Exception ex)
             {
@@ -96,35 +117,37 @@ namespace ARK_Server_Manager
             }
         }
 
-        private void Process_Click(object sender, RoutedEventArgs e)
+        private async void Process_Click(object sender, RoutedEventArgs e)
         {
             var cursor = this.Cursor;
 
             try
             {
-                if (string.IsNullOrWhiteSpace(SelectedProfileId))
+                if (!SyncProfiles.Any(s => s.Selected))
                 {
-                    MessageBox.Show(_globalizer.GetResourceString("ProfileSyncWindow_Process_NoProfileSelectedLabel"), _globalizer.GetResourceString("ProfileSyncWindow_Process_Title"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(_globalizer.GetResourceString("ProfileSyncWindow_Process_NoProfilesSelectedLabel"), _globalizer.GetResourceString("ProfileSyncWindow_Process_Title"), MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                if (!ProfileSections.Any(s => s.Selected))
+                if (!SyncSections.Any(s => s.Selected))
                 {
                     MessageBox.Show(_globalizer.GetResourceString("ProfileSyncWindow_Process_NoSectionsSelectedLabel"), _globalizer.GetResourceString("ProfileSyncWindow_Process_Title"), MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
-                if (MessageBox.Show(_globalizer.GetResourceString("ProfileSyncWindow_Process_Label"), _globalizer.GetResourceString("ProfileSyncWindow_Process_Title"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                if (MessageBox.Show(_globalizer.GetResourceString("ProfileSyncWindow_Process_ConfirmLabel"), _globalizer.GetResourceString("ProfileSyncWindow_Process_Title"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     return;
 
                 Application.Current.Dispatcher.Invoke(() => this.Cursor = System.Windows.Input.Cursors.Wait);
 
-                PerformProfileSync();
+                OverlayProfile.Content = string.Empty;
+                OverlaySection.Content = string.Empty;
+                OverlayGrid.Visibility = Visibility.Visible;
+                await Task.Delay(100);
 
-                MessageBox.Show(_globalizer.GetResourceString("ProfileSyncWindow_Process_SuccessLabel"), _globalizer.GetResourceString("ProfileSyncWindow_Process_Label"), MessageBoxButton.OK, MessageBoxImage.Information);
+                await PerformProfileSync();
 
-                DialogResult = true;
-                Close();
+                MessageBox.Show(_globalizer.GetResourceString("ProfileSyncWindow_Process_SuccessLabel"), _globalizer.GetResourceString("ProfileSyncWindow_Process_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -132,81 +155,115 @@ namespace ARK_Server_Manager
             }
             finally
             {
+                OverlayGrid.Visibility = Visibility.Collapsed;
+
                 Application.Current.Dispatcher.Invoke(() => this.Cursor = cursor);
             }
         }
 
-        private void SelectAll_Click(object sender, RoutedEventArgs e)
+        private void ProfileSelectAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var section in ProfileSections)
+            foreach (var profile in SyncProfiles)
+            {
+                profile.Selected = true;
+            }
+        }
+
+        private void ProfileUnselectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var profile in SyncProfiles)
+            {
+                profile.Selected = false;
+            }
+        }
+
+        private void SectionSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var section in SyncSections)
             {
                 section.Selected = true;
             }
         }
 
-        private void UnselectAll_Click(object sender, RoutedEventArgs e)
+        private void SectionUnselectAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var section in ProfileSections)
+            foreach (var section in SyncSections)
             {
                 section.Selected = false;
             }
         }
 
-        private void CreateProfileList()
+        private void CreateSyncProfileList()
         {
-            Profiles.Clear();
+            SyncProfiles.Clear();
 
             if (this.ServerManager == null || this.ServerManager.Servers == null)
                 return;
 
             foreach (var server in this.ServerManager.Servers)
             {
-                if (server.Profile == Profile)
+                if (server.Profile == ServerProfile)
                     continue;
 
-                Profiles.Add(server.Profile);
+                SyncProfiles.Add(new SyncProfile() { Selected = false, Profile = server.Profile , ProfileName = server.Profile.ProfileName});
             }
         }
 
-        private void CreateProfileSectionList()
+        private void CreateSyncSectionList()
         {
-            ProfileSections.Clear();
+            SyncSections.Clear();
 
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.Administration, SectionName = _globalizer.GetResourceString("ServerSettings_AdministrationSectionLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.AutomaticManagement, SectionName = _globalizer.GetResourceString("ServerSettings_AutomaticManagementLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.Rules, SectionName = _globalizer.GetResourceString("ServerSettings_RulesLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.ChatAndNotifications, SectionName = _globalizer.GetResourceString("ServerSettings_ChatAndNotificationsLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.HudAndVisuals, SectionName = _globalizer.GetResourceString("ServerSettings_HUDAndVisualsLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.Players, SectionName = _globalizer.GetResourceString("ServerSettings_PlayerSettingsLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.Dinos, SectionName = _globalizer.GetResourceString("ServerSettings_DinoSettingsLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.Environment, SectionName = _globalizer.GetResourceString("ServerSettings_EnvironmentLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.Structures, SectionName = _globalizer.GetResourceString("ServerSettings_StructuresLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.Engrams, SectionName = _globalizer.GetResourceString("ServerSettings_EngramsLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.ServerFiles, SectionName = _globalizer.GetResourceString("ServerSettings_ServerFilesLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.CustomSettings, SectionName = _globalizer.GetResourceString("ServerSettings_CustomSettingsLabel") });
-            ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.CustomLevels, SectionName = _globalizer.GetResourceString("ServerSettings_CustomLevelProgressionsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.Administration, SectionName = _globalizer.GetResourceString("ServerSettings_AdministrationSectionLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.AutomaticManagement, SectionName = _globalizer.GetResourceString("ServerSettings_AutomaticManagementLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.Rules, SectionName = _globalizer.GetResourceString("ServerSettings_RulesLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.ChatAndNotifications, SectionName = _globalizer.GetResourceString("ServerSettings_ChatAndNotificationsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.HudAndVisuals, SectionName = _globalizer.GetResourceString("ServerSettings_HUDAndVisualsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.Players, SectionName = _globalizer.GetResourceString("ServerSettings_PlayerSettingsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.Dinos, SectionName = _globalizer.GetResourceString("ServerSettings_DinoSettingsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.Environment, SectionName = _globalizer.GetResourceString("ServerSettings_EnvironmentLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.Structures, SectionName = _globalizer.GetResourceString("ServerSettings_StructuresLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.Engrams, SectionName = _globalizer.GetResourceString("ServerSettings_EngramsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.ServerFiles, SectionName = _globalizer.GetResourceString("ServerSettings_ServerFilesLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.CustomGameUserSettings, SectionName = _globalizer.GetResourceString("ServerSettings_CustomGameUserSettingsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.CustomGameSettings, SectionName = _globalizer.GetResourceString("ServerSettings_CustomGameSettingsLabel") });
+            if (Config.Default.SectionCustomEngineSettingsEnabled)
+                SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.CustomEngineSettings, SectionName = _globalizer.GetResourceString("ServerSettings_CustomEngineSettingsLabel") });
+            SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.CustomLevels, SectionName = _globalizer.GetResourceString("ServerSettings_LevelProgressionsLabel") });
             if (Config.Default.SectionCraftingOverridesEnabled)
-                ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.CraftingOverrides, SectionName = _globalizer.GetResourceString("ServerSettings_CraftingOverridesLabel") });
+                SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.CraftingOverrides, SectionName = _globalizer.GetResourceString("ServerSettings_CraftingOverridesLabel") });
             if (Config.Default.SectionMapSpawnerOverridesEnabled)
-                ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.MapSpawnerOverrides, SectionName = _globalizer.GetResourceString("ServerSettings_MapSpawnerOverridesLabel") });
+                SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.MapSpawnerOverrides, SectionName = _globalizer.GetResourceString("ServerSettings_MapSpawnerOverridesLabel") });
             if (Config.Default.SectionSupplyCrateOverridesEnabled)
-                ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.SupplyCrateOverrides, SectionName = _globalizer.GetResourceString("ServerSettings_SupplyCrateOverridesLabel") });
+                SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.SupplyCrateOverrides, SectionName = _globalizer.GetResourceString("ServerSettings_SupplyCrateOverridesLabel") });
+            if (Config.Default.SectionStackSizeOverridesEnabled)
+                SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.StackSizeOverrides, SectionName = _globalizer.GetResourceString("ServerSettings_StackSizeOverridesLabel") });
             if (Config.Default.SectionPGMEnabled)
-                ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.PGM, SectionName = _globalizer.GetResourceString("ServerSettings_PGMLabel") });
+                SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.PGM, SectionName = _globalizer.GetResourceString("ServerSettings_PGMLabel") });
             if (Config.Default.SectionSOTFEnabled)
-                ProfileSections.Add(new ProfileSection() { Selected = false, Section = ServerProfileCategory.SOTF, SectionName = _globalizer.GetResourceString("ServerSettings_SOTFLabel") });
+                SyncSections.Add(new SyncSection() { Selected = false, Category = ServerProfileCategory.SOTF, SectionName = _globalizer.GetResourceString("ServerSettings_SOTFLabel") });
         }
 
-        private void PerformProfileSync()
+        private async Task PerformProfileSync()
         {
-            var sourceProfile = Profiles.FirstOrDefault(p => p.ProfileID.Equals(SelectedProfileId));
-
-            foreach (var section in ProfileSections)
+            foreach (var syncProfile in SyncProfiles)
             {
-                if (!section.Selected)
+                if (!syncProfile.Selected)
                     continue;
 
-                Profile.SyncSettings(section.Section, sourceProfile);
+                OverlayProfile.Content = syncProfile.ProfileName ?? string.Empty;
+
+                foreach (var syncSection in SyncSections)
+                {
+                    if (!syncSection.Selected)
+                        continue;
+
+                    OverlaySection.Content = syncSection.SectionName;
+                    await Task.Delay(100);
+
+                    syncProfile.Profile?.SyncSettings(syncSection.Category, ServerProfile);
+                }
+
+                syncProfile.Profile?.Save(false, false, null);
             }
         }
     }

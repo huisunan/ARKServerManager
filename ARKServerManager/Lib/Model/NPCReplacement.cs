@@ -1,8 +1,10 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Attibutes;
+using ServerManagerTool.Common.Model;
+using System;
 using System.Runtime.Serialization;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     public class NPCReplacement : AggregateIniValue

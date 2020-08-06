@@ -1,4 +1,10 @@
-﻿using System;
+﻿using NLog;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Lib;
+using ServerManagerTool.Lib.Model;
+using ServerManagerTool.Utils;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -8,33 +14,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Navigation;
-using ARK_Server_Manager.Lib;
-using ARK_Server_Manager.Lib.Model;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
-    public class ProfileEventArgs : EventArgs
-    {
-        public ProfileEventArgs(ServerProfile profile)
-        {
-            Profile = profile;
-        }
-
-        public ServerProfile Profile;
-    }
-
     /// <summary>
     /// Interaction logic for ModDetailsWindow.xaml
     /// </summary>
     public partial class ModDetailsWindow : Window
     {
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
         public EventHandler<ProfileEventArgs> SavePerformed;
 
         private readonly GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
@@ -46,11 +40,13 @@ namespace ARK_Server_Manager
         public static readonly DependencyProperty ModDetailsChangedProperty = DependencyProperty.Register(nameof(ModDetailsChanged), typeof(bool), typeof(ModDetailsWindow), new PropertyMetadata(false));
         public static readonly DependencyProperty ModDetailsViewProperty = DependencyProperty.Register(nameof(ModDetailsView), typeof(ICollectionView), typeof(ModDetailsWindow), new PropertyMetadata(null));
         public static readonly DependencyProperty ModDetailsFilterStringProperty = DependencyProperty.Register(nameof(ModDetailsFilterString), typeof(string), typeof(ModDetailsWindow), new PropertyMetadata(string.Empty));
+        public static readonly DependencyProperty ModDetailsStatusMessageProperty = DependencyProperty.Register(nameof(ModDetailsStatusMessage), typeof(string), typeof(ModDetailsWindow), new PropertyMetadata(string.Empty));
+        public static readonly DependencyProperty WorkshopFilesProperty = DependencyProperty.Register(nameof(WorkshopFiles), typeof(WorkshopFileList), typeof(ModDetailsWindow), new PropertyMetadata(null));
 
         public ModDetailsWindow(ServerProfile profile)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             _profile = profile;
             this.Title = string.Format(_globalizer.GetResourceString("ModDetails_ProfileTitle"), _profile?.ProfileName);
@@ -91,11 +87,24 @@ namespace ARK_Server_Manager
             set { SetValue(ModDetailsFilterStringProperty, value); }
         }
 
+        public string ModDetailsStatusMessage
+        {
+            get { return (string)GetValue(ModDetailsStatusMessageProperty); }
+            set { SetValue(ModDetailsStatusMessageProperty, value); }
+        }
+
+        public WorkshopFileList WorkshopFiles
+        {
+            get { return GetValue(WorkshopFilesProperty) as WorkshopFileList; }
+            set { SetValue(WorkshopFilesProperty, value); }
+        }
+
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
+                WorkshopFiles = await LoadWorkshopItemsAsync(_profile.SOTF_Enabled);
                 await LoadModsFromProfile();
             }
             catch (Exception ex)
@@ -112,11 +121,6 @@ namespace ARK_Server_Manager
                 if (result == MessageBoxResult.No)
                     e.Cancel = true;
             }
-        }
-
-        private void Filter_SourceUpdated(object sender, DataTransferEventArgs e)
-        {
-            ModDetailsView?.Refresh();
         }
 
         private async void ModDetails_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -145,10 +149,19 @@ namespace ARK_Server_Manager
             }
         }
 
-        private void WorkshopFilesWindow_Closed(object sender, EventArgs e)
+        private async void WorkshopFilesWindow_Closed(object sender, EventArgs e)
         {
             _workshopFilesWindow = null;
             this.Activate();
+
+            try
+            {
+                WorkshopFiles = await LoadWorkshopItemsAsync(_profile.SOTF_Enabled);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ModDetails_Load_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Mod_RequestNavigate(object sender, RequestNavigateEventArgs e)
@@ -206,6 +219,12 @@ namespace ARK_Server_Manager
             ModDetails.MoveUp(mod);
         }
 
+        private void OpenModFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var modDirectory = new DirectoryInfo(Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath));
+            Process.Start("explorer.exe", modDirectory.FullName);
+        }
+
         private async void PurgeModsFolder_Click(object sender, RoutedEventArgs e)
         {
             if (_profile == null)
@@ -215,7 +234,7 @@ namespace ARK_Server_Manager
 
             try
             {
-                if (MessageBox.Show("You are about to purge ALL unused mods from your server's Mod folder. Do you want to continue?", _globalizer.GetResourceString("ModDetails_Purge_Title"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                if (MessageBox.Show(_globalizer.GetResourceString("ModDetails_Purge_Label"), _globalizer.GetResourceString("ModDetails_Purge_Title"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     return;
 
                 Application.Current.Dispatcher.Invoke(() => this.Cursor = System.Windows.Input.Cursors.Wait);
@@ -226,7 +245,10 @@ namespace ARK_Server_Manager
 
                 PurgeModsFromServerFolder(out folderCount, out fileCount);
 
-                MessageBox.Show($"Mod purge complete, a total of {folderCount} mod folder(s) and {fileCount} mod file(s) were purged.", _globalizer.GetResourceString("ModDetails_Purge_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
+                var message = _globalizer.GetResourceString("ModDetails_Purge_SuccessLabel");
+                message = message.Replace("{folderCount}", folderCount.ToString());
+                message = message.Replace("{fileCount}", fileCount.ToString());
+                MessageBox.Show(message, _globalizer.GetResourceString("ModDetails_Purge_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -402,20 +424,6 @@ namespace ARK_Server_Manager
             }
         }
 
-        public bool Filter(object obj)
-        {
-            var data = obj as ModDetail;
-            if (data == null)
-                return false;
-
-            var filterString = ModDetailsFilterString.ToLower();
-
-            if (string.IsNullOrWhiteSpace(filterString))
-                return true;
-
-            return data.ModId.Contains(filterString) || data.TitleFilterString.Contains(filterString);
-        }
-
         protected void OnSavePerformed()
         {
             SavePerformed?.Invoke(this, new ProfileEventArgs(_profile));
@@ -426,34 +434,22 @@ namespace ARK_Server_Manager
             return ModDetailsGrid.SelectedIndex;
         }
 
-        private async Task<PublishedFileDetailsResponse> GetModDetails(List<string> modIdList)
-        {
-            if (modIdList == null || modIdList.Count == 0)
-                return new PublishedFileDetailsResponse();
-
-            try
-            {
-                var newModIdList = ModUtils.ValidateModList(modIdList);
-
-                // get the details of the mods to be processed.
-                return await Task.Run( () => SteamUtils.GetSteamModDetails(newModIdList) );
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(string.Format(_globalizer.GetResourceString("ModDetails_Load_FailedLabel"), ex.Message), _globalizer.GetResourceString("ModDetails_Load_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-                return null;
-            }
-        }
-
         private async Task LoadModsFromList()
         {
-            var modIdList = ModDetails.Select(m => m.ModId).ToList();
+            // build a list of mods to be processed
+            var modIdList = new List<string>();
+
+            modIdList.AddRange(ModDetails.Select(m => m.ModId));
             modIdList = ModUtils.ValidateModList(modIdList);
 
-            var response = await GetModDetails(modIdList);
-            var modDetails = ModDetailList.GetModDetails(response, Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath), modIdList);
+            var response = await Task.Run(() => SteamUtils.GetSteamModDetails(modIdList));
+            var workshopFiles = WorkshopFiles;
+            var modsRootFolder = Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath);
+            var modDetails = ModDetailList.GetModDetails(modIdList, modsRootFolder, workshopFiles, response);
+
             UpdateModDetailsList(modDetails);
 
+            ModDetailsStatusMessage = modDetails.Count > 0 && response?.publishedfiledetails == null ? _globalizer.GetResourceString("ModDetails_ModDetailFetchFailed_Label") : string.Empty;
             ModDetailsChanged = true;
         }
 
@@ -472,10 +468,14 @@ namespace ARK_Server_Manager
             modIdList.AddRange(ModUtils.GetModIdList(_profile.ServerModIds));
             modIdList = ModUtils.ValidateModList(modIdList);
 
-            var response = await GetModDetails(modIdList);
-            var modDetails = ModDetailList.GetModDetails(response, Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath), modIdList);
+            var response = await Task.Run(() => SteamUtils.GetSteamModDetails(modIdList));
+            var workshopFiles = WorkshopFiles;
+            var modsRootFolder = Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath);
+            var modDetails = ModDetailList.GetModDetails(modIdList, modsRootFolder, workshopFiles, response);
+
             UpdateModDetailsList(modDetails);
 
+            ModDetailsStatusMessage = modDetails.Count > 0 && response?.publishedfiledetails == null ? _globalizer.GetResourceString("ModDetails_ModDetailFetchFailed_Label") : string.Empty;
             ModDetailsChanged = false;
         }
 
@@ -485,26 +485,39 @@ namespace ARK_Server_Manager
             var modIdList = new List<string>();
 
             var modDirectory = new DirectoryInfo(Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath));
-            foreach (var directory in modDirectory.GetDirectories())
+            foreach (var file in modDirectory.GetFiles("*.mod"))
             {
-                var modId = directory.Name;
+                var modId = Path.GetFileNameWithoutExtension(file.Name);
                 if (ModUtils.IsOfficialMod(modId))
                     continue;
 
-                var modFile = $"{directory.FullName}.mod";
-                if (File.Exists(modFile))
-                {
-                    modIdList.Add(Path.GetFileNameWithoutExtension(modFile));
-                }
+                modIdList.Add(modId);
             }
-
             modIdList = ModUtils.ValidateModList(modIdList);
 
-            var response = await GetModDetails(modIdList);
-            var modDetails = ModDetailList.GetModDetails(response, Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath), modIdList);
+            var response = await Task.Run(() => SteamUtils.GetSteamModDetails(modIdList));
+            var workshopFiles = WorkshopFiles;
+            var modsRootFolder = Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath);
+            var modDetails = ModDetailList.GetModDetails(modIdList, modsRootFolder, workshopFiles, response);
+
             UpdateModDetailsList(modDetails);
 
+            ModDetailsStatusMessage = modDetails.Count > 0 && response?.publishedfiledetails == null ? _globalizer.GetResourceString("ModDetails_ModDetailFetchFailed_Label") : string.Empty;
             ModDetailsChanged = true;
+        }
+
+        private async Task<WorkshopFileList> LoadWorkshopItemsAsync(bool isSotF)
+        {
+            WorkshopFileDetailResponse localCache = null;
+
+            await Task.Run(() => {
+                var file = Path.Combine(Config.Default.DataDir, isSotF ? Config.Default.WorkshopCacheFile_SotF : Config.Default.WorkshopCacheFile);
+
+                // try to load the cache file.
+                localCache = WorkshopFileDetailResponse.Load(file);
+            });
+
+            return WorkshopFileList.GetList(localCache);
         }
 
         private void PurgeModsFromServerFolder(out int folderCount, out int fileCount)
@@ -516,30 +529,33 @@ namespace ARK_Server_Manager
             var modIdList = ModDetails.Select(m => m.ModId).ToList();
 
             var modDirectory = new DirectoryInfo(Path.Combine(_profile.InstallDirectory, Config.Default.ServerModsRelativePath));
-            foreach (var directory in modDirectory.GetDirectories())
+            if (Directory.Exists(modDirectory.FullName))
             {
-                var modId = directory.Name;
-                if (ModUtils.IsOfficialMod(modId))
-                    continue;
+                foreach (var directory in modDirectory.GetDirectories())
+                {
+                    var modId = directory.Name;
+                    if (ModUtils.IsOfficialMod(modId))
+                        continue;
 
-                if (modIdList.Contains(modId))
-                    continue;
+                    if (modIdList.Contains(modId))
+                        continue;
 
-                directory.Delete(true);
-                folderCount++;
-            }
+                    directory.Delete(true);
+                    folderCount++;
+                }
 
-            foreach (var file in modDirectory.GetFiles("*.mod"))
-            {
-                var modId = Path.GetFileNameWithoutExtension(file.Name);
-                if (ModUtils.IsOfficialMod(modId))
-                    continue;
+                foreach (var file in modDirectory.GetFiles("*.mod"))
+                {
+                    var modId = Path.GetFileNameWithoutExtension(file.Name);
+                    if (ModUtils.IsOfficialMod(modId))
+                        continue;
 
-                if (modIdList.Contains(modId))
-                    continue;
+                    if (modIdList.Contains(modId))
+                        continue;
 
-                file.Delete();
-                fileCount++;
+                    file.Delete();
+                    fileCount++;
+                }
             }
         }
 
@@ -645,6 +661,27 @@ namespace ARK_Server_Manager
             ModDetailsGrid.IsReadOnly = false;
         }
 
+        #endregion
+
+        #region Filtering
+        private void FilterMods_Click(object sender, RoutedEventArgs e)
+        {
+            ModDetailsView?.Refresh();
+        }
+
+        public bool Filter(object obj)
+        {
+            var data = obj as ModDetail;
+            if (data == null)
+                return false;
+
+            var filterString = ModDetailsFilterString.ToLower();
+
+            if (string.IsNullOrWhiteSpace(filterString))
+                return true;
+
+            return data.ModId.Contains(filterString) || data.TitleFilterString.Contains(filterString);
+        }
         #endregion
     }
 }

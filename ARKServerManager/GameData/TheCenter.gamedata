@@ -9,8 +9,7 @@
       "IsTameable": "False",
       "ClassName": "SpiderL_Character_BP_TheCenter_C",
       "Description": "Broodmother Lysrix (Easy Variant)",
-      "Mod": "TheCenter",
-      "ArkApplication": "SurvivalEvolved"
+      "Mod": "TheCenter"
     },
     {
       "NameTag": null,
@@ -18,8 +17,7 @@
       "IsTameable": "False",
       "ClassName": "SpiderL_Character_BP_TheCenterMedium_C",
       "Description": "Broodmother Lysrix (Medium Variant)",
-      "Mod": "TheCenter",
-      "ArkApplication": "SurvivalEvolved"
+      "Mod": "TheCenter"
     },
     {
       "NameTag": null,
@@ -27,8 +25,7 @@
       "IsTameable": "False",
       "ClassName": "SpiderL_Character_BP_TheCenterHard_C",
       "Description": "Broodmother Lysrix (Hard Variant)",
-      "Mod": "TheCenter",
-      "ArkApplication": "SurvivalEvolved"
+      "Mod": "TheCenter"
     },
     {
       "NameTag": null,
@@ -36,8 +33,7 @@
       "IsTameable": "False",
       "ClassName": "Gorilla_Character_BP_TheCenter_C",
       "Description": "Megapithecus (Easy Variant)",
-      "Mod": "TheCenter",
-      "ArkApplication": "SurvivalEvolved"
+      "Mod": "TheCenter"
     },
     {
       "NameTag": null,
@@ -45,8 +41,7 @@
       "IsTameable": "False",
       "ClassName": "Gorilla_Character_BP_TheCenter_Medium_C",
       "Description": "Megapithecus (Medium Variant)",
-      "Mod": "TheCenter",
-      "ArkApplication": "SurvivalEvolved"
+      "Mod": "TheCenter"
     },
     {
       "NameTag": null,
@@ -54,8 +49,7 @@
       "IsTameable": "False",
       "ClassName": "Gorilla_Character_BP_TheCenter_Hard_C",
       "Description": "Megapithecus (Hard Variant)",
-      "Mod": "TheCenter",
-      "ArkApplication": "SurvivalEvolved"
+      "Mod": "TheCenter"
     }
   ],
   "MapSpawners": [
@@ -153,12 +147,32 @@
   "Inventories": [
     {
       "ClassName": "DinoDropInventoryComponent_BossSpider_TheCenter_C",
-      "Description": "Boss Inventory - Broodmother",
+      "Description": "Boss Inventory - Broodmother (Easy)",
+      "Mod": "TheCenter"
+    },
+    {
+      "ClassName": "DinoDropInventoryComponent_BossSpider_TheCenter_Medium_C",
+      "Description": "Boss Inventory - Broodmother (Medium)",
+      "Mod": "TheCenter"
+    },
+    {
+      "ClassName": "DinoDropInventoryComponent_BossSpider_TheCenter_Hard_C",
+      "Description": "Boss Inventory - Broodmother (Hard)",
       "Mod": "TheCenter"
     },
     {
       "ClassName": "DinoDropInventoryComponent_BossGorilla_TheCenter_C",
-      "Description": "Boss Inventory - Megapithecus",
+      "Description": "Boss Inventory - Megapithecus (Easy)",
+      "Mod": "TheCenter"
+    },
+    {
+      "ClassName": "DinoDropInventoryComponent_BossGorilla_TheCenter_Medium_C",
+      "Description": "Boss Inventory - Megapithecus (Medium)",
+      "Mod": "TheCenter"
+    },
+    {
+      "ClassName": "DinoDropInventoryComponent_BossGorilla_TheCenter_Hard_C",
+      "Description": "Boss Inventory - Megapithecus (Hard)",
       "Mod": "TheCenter"
     }
   ],
@@ -167,7 +181,7 @@
       "IsSotF": false,
       "ClassName": "TheCenter",
       "Description": "The Center",
-      "Mod": "SurvivalEvolved"
+      "Mod": "TheCenter"
     }
   ]
 }

@@ -1,4 +1,10 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Attibutes;
+using ServerManagerTool.Common.Interfaces;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Interface;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -6,7 +12,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
@@ -25,14 +31,6 @@ namespace ARK_Server_Manager.Lib
         /// </summary>
         [DataMember]
         public List<NPCSpawnContainerType> ContainerTypes;
-    }
-
-    [DefaultValue(Override)]
-    public enum NPCSpawnContainerType
-    {
-        Add = 1,
-        Subtract,
-        Override,
     }
 
     [DataContract]
@@ -507,15 +505,5 @@ namespace ARK_Server_Manager.Lib
         }
 
         public bool IsValid => !string.IsNullOrWhiteSpace(NPCClassString);
-    }
-
-    public interface ISpawnIniValuesCollection
-    {
-        IEnumerable<string> ToIniValues(NPCSpawnContainerType containerType);
-    }
-
-    public interface ISpawnIniValue
-    {
-        string ToIniValue(NPCSpawnContainerType containerType);
     }
 }

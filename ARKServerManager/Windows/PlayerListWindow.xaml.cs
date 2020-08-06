@@ -1,19 +1,20 @@
-﻿using ARK_Server_Manager.Lib;
-using ARK_Server_Manager.Lib.ViewModel;
-using ARK_Server_Manager.Lib.ViewModel.RCON;
+﻿using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib;
+using ServerManagerTool.Lib.ViewModel.RCON;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for PlayerListWindow.xaml
@@ -25,18 +26,17 @@ namespace ARK_Server_Manager
         private GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
 
         public static readonly DependencyProperty ConfigProperty = DependencyProperty.Register(nameof(Config), typeof(Config), typeof(PlayerListWindow), new PropertyMetadata(Config.Default));
-        public static readonly DependencyProperty PlayerFilteringProperty = DependencyProperty.Register(nameof(PlayerFiltering), typeof(PlayerFilterType), typeof(PlayerListWindow), new PropertyMetadata(PlayerFilterType.Online | PlayerFilterType.Offline | PlayerFilterType.Banned));
+        public static readonly DependencyProperty PlayerFilteringProperty = DependencyProperty.Register(nameof(PlayerFiltering), typeof(PlayerFilterType), typeof(PlayerListWindow), new PropertyMetadata(PlayerFilterType.Online | PlayerFilterType.Offline));
         public static readonly DependencyProperty PlayerListParametersProperty = DependencyProperty.Register(nameof(PlayerListParameters), typeof(PlayerListParameters), typeof(PlayerListWindow), new PropertyMetadata(null));
         public static readonly DependencyProperty PlayerListFilterStringProperty = DependencyProperty.Register(nameof(PlayerListFilterString), typeof(string), typeof(PlayerListWindow), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty PlayerListViewProperty = DependencyProperty.Register(nameof(PlayerListView), typeof(ICollectionView), typeof(PlayerListWindow), new PropertyMetadata(null));
         public static readonly DependencyProperty PlayerSortingProperty = DependencyProperty.Register(nameof(PlayerSorting), typeof(PlayerSortType), typeof(PlayerListWindow), new PropertyMetadata(PlayerSortType.Name));
         public static readonly DependencyProperty ServerPlayersProperty = DependencyProperty.Register(nameof(ServerPlayers), typeof(ServerPlayers), typeof(PlayerListWindow), new PropertyMetadata(null));
-        public static readonly DependencyProperty PlayerAvatarWidthProperty = DependencyProperty.Register(nameof(PlayerAvatarWidth), typeof(int), typeof(PlayerListWindow), new PropertyMetadata(50));
 
         public PlayerListWindow(PlayerListParameters parameters)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.PlayerFiltering = (PlayerFilterType)Config.Default.PlayerListFilter;
             this.PlayerSorting = (PlayerSortType)Config.Default.PlayerListSort;
@@ -48,8 +48,6 @@ namespace ARK_Server_Manager
 
             this.PlayerListView = CollectionViewSource.GetDefaultView(this.ServerPlayers.Players);
             this.PlayerListView.Filter = new Predicate<object>(PlayerListFilter);
-
-            this.PlayerAvatarWidth = Config.RCON_ShowPlayerAvatars ? 50 : 0;
 
             this.DataContext = this;
 
@@ -115,10 +113,27 @@ namespace ARK_Server_Manager
             set { SetValue(ServerPlayersProperty, value); }
         }
 
-        public int PlayerAvatarWidth
+        public ICommand CopyIDCommand
         {
-            get { return (int)GetValue(PlayerAvatarWidthProperty); }
-            set { SetValue(PlayerAvatarWidthProperty, value); }
+            get
+            {
+                return new RelayCommand<PlayerInfo>(
+                    execute: (player) =>
+                    {
+                        try
+                        {
+                            System.Windows.Clipboard.SetText(player.PlayerId.ToString());
+                            MessageBox.Show($"{_globalizer.GetResourceString("RCON_CopyIdLabel")} {player.PlayerName}", _globalizer.GetResourceString("RCON_CopyIdTitle"), MessageBoxButton.OK);
+                        }
+                        catch
+                        {
+                            MessageBox.Show($"{_globalizer.GetResourceString("RCON_ClipboardErrorLabel")}", _globalizer.GetResourceString("RCON_ClipboardErrorTitle"), MessageBoxButton.OK);
+                        }
+                    },
+                    canExecute: (player) => player != null
+                    );
+
+            }
         }
 
         public ICommand CopyPlayerIDCommand
@@ -132,8 +147,8 @@ namespace ARK_Server_Manager
                         {
                             try
                             {
-                                System.Windows.Clipboard.SetText(player.PlayerData.Id.ToString());
-                                MessageBox.Show($"{_globalizer.GetResourceString("RCON_CopyPlayerIdLabel")} {player.SteamName}", _globalizer.GetResourceString("RCON_CopyPlayerIdTitle"), MessageBoxButton.OK);
+                                System.Windows.Clipboard.SetText(player.PlayerData.CharacterId.ToString());
+                                MessageBox.Show($"{_globalizer.GetResourceString("RCON_CopyPlayerIdLabel")} {player.PlayerName}", _globalizer.GetResourceString("RCON_CopyPlayerIdTitle"), MessageBoxButton.OK);
                             }
                             catch
                             {
@@ -142,29 +157,6 @@ namespace ARK_Server_Manager
                         }
                     },
                     canExecute: (player) => player?.PlayerData != null && player.IsValid
-                    );
-
-            }
-        }
-
-        public ICommand CopySteamIDCommand
-        {
-            get
-            {
-                return new RelayCommand<PlayerInfo>(
-                    execute: (player) =>
-                    {
-                        try
-                        {
-                            System.Windows.Clipboard.SetText(player.SteamId.ToString());
-                            MessageBox.Show($"{_globalizer.GetResourceString("RCON_CopySteamIdLabel")} {player.SteamName}", _globalizer.GetResourceString("RCON_CopySteamIdTitle"), MessageBoxButton.OK);
-                        }
-                        catch
-                        {
-                            MessageBox.Show($"{_globalizer.GetResourceString("RCON_ClipboardErrorLabel")}", _globalizer.GetResourceString("RCON_ClipboardErrorTitle"), MessageBoxButton.OK);
-                        }
-                    },
-                    canExecute: (player) => player != null
                     );
 
             }
@@ -201,20 +193,6 @@ namespace ARK_Server_Manager
             }
         }
 
-        public ICommand ViewPlayerSteamProfileCommand
-        {
-            get
-            {
-                return new RelayCommand<PlayerInfo>(
-                    execute: (player) =>
-                    {
-                        Process.Start($"http://steamcommunity.com/profiles/{player.SteamId}");
-                    },
-                    canExecute: (player) => player != null
-                );
-            }
-        }
-
         public ICommand ViewPlayerProfileCommand
         {
             get
@@ -247,20 +225,6 @@ namespace ARK_Server_Manager
             }
         }
 
-        public ICommand ShowAvatarsCommand
-        {
-            get
-            {
-                return new RelayCommand<object>(
-                    execute: (_) =>
-                    {
-                        PlayerAvatarWidth = Config.RCON_ShowPlayerAvatars ? 50 : 0;
-                    },
-                    canExecute: (_) => true
-                );
-            }
-        }
-
         private void Players_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             PlayerListView?.Refresh();
@@ -272,11 +236,6 @@ namespace ARK_Server_Manager
             this.PlayerListView.Filter = new Predicate<object>(PlayerListFilter);
 
             SortPlayers();
-            PlayerListView?.Refresh();
-        }
-
-        private void PlayerListFilter_SourceUpdated(object sender, DataTransferEventArgs e)
-        {
             PlayerListView?.Refresh();
         }
 
@@ -326,6 +285,7 @@ namespace ARK_Server_Manager
                     ServerMap = ServerProfile.GetProfileMapName(server?.Profile),
                     InstallDirectory = server.Runtime.ProfileSnapshot.InstallDirectory,
                     ProfileName = server.Runtime.ProfileSnapshot.ProfileName,
+                    ProfileId = server.Runtime.ProfileSnapshot.ProfileId,
                 });
                 Windows[server] = window;
             }
@@ -351,6 +311,39 @@ namespace ARK_Server_Manager
             base.OnClosing(e);
         }
 
+        public void SortPlayers()
+        {
+            this.PlayerListView.SortDescriptions.Clear();
+
+            switch (this.PlayerSorting)
+            {
+                case PlayerSortType.Name:
+                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.PlayerName), ListSortDirection.Ascending));
+                    break;
+
+                case PlayerSortType.Online:
+                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.IsOnline), ListSortDirection.Descending));
+                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.PlayerName), ListSortDirection.Ascending));
+                    break;
+
+                case PlayerSortType.Tribe:
+                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.TribeName), ListSortDirection.Ascending));
+                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.PlayerName), ListSortDirection.Ascending));
+                    break;
+
+                case PlayerSortType.LastUpdated:
+                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.LastUpdated), ListSortDirection.Descending));
+                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.PlayerName), ListSortDirection.Ascending));
+                    break;
+            }
+        }
+
+        #region Filtering
+        private void FilterPlayerList_Click(object sender, RoutedEventArgs e)
+        {
+            PlayerListView?.Refresh();
+        }
+
         public bool PlayerListFilter(object obj)
         {
             var player = obj as PlayerInfo;
@@ -360,7 +353,6 @@ namespace ARK_Server_Manager
             var result = (this.PlayerFiltering.HasFlag(PlayerFilterType.Online) && player.IsOnline) ||
                          (this.PlayerFiltering.HasFlag(PlayerFilterType.Offline) && !player.IsOnline) ||
                          (this.PlayerFiltering.HasFlag(PlayerFilterType.Admin) && player.IsAdmin) ||
-                         (this.PlayerFiltering.HasFlag(PlayerFilterType.Banned) && player.HasBan) ||
                          (this.PlayerFiltering.HasFlag(PlayerFilterType.Whitelisted) && player.IsWhitelisted) ||
                          (this.PlayerFiltering.HasFlag(PlayerFilterType.Invalid) && !player.IsValid);
             if (!result)
@@ -371,38 +363,12 @@ namespace ARK_Server_Manager
             if (string.IsNullOrWhiteSpace(filterString))
                 return true;
 
-            result = player.SteamNameFilterString != null && player.SteamNameFilterString.Contains(filterString) ||
+            result = player.PlayerNameFilterString != null && player.PlayerNameFilterString.Contains(filterString) ||
                     player.TribeNameFilterString != null && player.TribeNameFilterString.Contains(filterString) ||
                     player.CharacterNameFilterString != null && player.CharacterNameFilterString.Contains(filterString);
 
             return result;
         }
-
-        public void SortPlayers()
-        {
-            this.PlayerListView.SortDescriptions.Clear();
-
-            switch (this.PlayerSorting)
-            {
-                case PlayerSortType.Name:
-                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.SteamName), ListSortDirection.Ascending));
-                    break;
-
-                case PlayerSortType.Online:
-                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.IsOnline), ListSortDirection.Descending));
-                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.SteamName), ListSortDirection.Ascending));
-                    break;
-
-                case PlayerSortType.Tribe:
-                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.TribeName), ListSortDirection.Ascending));
-                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.SteamName), ListSortDirection.Ascending));
-                    break;
-
-                case PlayerSortType.LastUpdated:
-                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.LastUpdated), ListSortDirection.Descending));
-                    this.PlayerListView.SortDescriptions.Add(new SortDescription(nameof(PlayerInfo.SteamName), ListSortDirection.Ascending));
-                    break;
-            }
-        }
+        #endregion
     }
 }

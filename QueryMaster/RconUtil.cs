@@ -36,7 +36,9 @@ namespace QueryMaster
                 if (body.Length == 2)
                     packet.Body = string.Empty;
                 else
-                    packet.Body = Util.BytesToString(body, 0, body.Length - 3);
+                {
+                    packet.Body = Util.BytesToString(body).TrimEnd('\0', ' ');
+                }
             }
             catch (Exception e)
             {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -10,6 +9,11 @@ namespace QueryMaster
         private byte[] Data = null;
         private int CurrentPosition = -1;
         private int LastPosition;
+
+        internal bool HasUnParsedBytes
+        {
+            get { return CurrentPosition < LastPosition; }
+        }
 
         internal Parser(byte[] data)
         {

@@ -1,5 +1,5 @@
-﻿using ARK_Server_Manager.Common.Utils;
-using ARK_Server_Manager.Lib;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Windows;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for VersionFeedWindow.xaml
@@ -27,7 +27,7 @@ namespace ARK_Server_Manager
             this.AppInstance = App.Instance;
 
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.feedUri = feedUri;
 
@@ -85,7 +85,7 @@ namespace ARK_Server_Manager
             if (string.IsNullOrWhiteSpace(this.feedUri))
                 return;
 
-            var versionFeed = VersionFeedUtils.LoadVersionFeed(this.feedUri, App.Version);
+            var versionFeed = VersionFeedUtils.LoadVersionFeed(this.feedUri, App.Instance.Version);
             if (versionFeed == null)
                 return;
 

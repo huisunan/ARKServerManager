@@ -1,7 +1,8 @@
-﻿using ARK_Server_Manager.Lib;
-using ARK_Server_Manager.Lib.Utils;
-using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
+using ServerManagerTool.Common;
+using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Utils;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -13,7 +14,7 @@ using System.Windows.Controls;
 using System.Xml;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for GlobalSettingsControl.xaml
@@ -24,16 +25,19 @@ namespace ARK_Server_Manager
         private GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
 
         public static readonly DependencyProperty IsAdministratorProperty = DependencyProperty.Register(nameof(IsAdministrator), typeof(bool), typeof(GlobalSettingsControl), new PropertyMetadata(false));
-        
+        public static readonly DependencyProperty CurrentConfigProperty = DependencyProperty.Register(nameof(CurrentConfig), typeof(Config), typeof(GlobalSettingsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty CommonConfigProperty = DependencyProperty.Register(nameof(CommonConfig), typeof(CommonConfig), typeof(GlobalSettingsControl), new PropertyMetadata(null));
+
         public GlobalSettingsControl()
         {
             this.Version = GetDeployedVersion();
 
             this.CurrentConfig = Config.Default;
+            this.CommonConfig = CommonConfig.Default;
             this.DataContext = this;
 
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.IsAdministrator = SecurityUtils.IsAdministrator();
         }
@@ -46,8 +50,14 @@ namespace ARK_Server_Manager
 
         public Config CurrentConfig
         {
-            get;
-            set;
+            get { return GetValue(CurrentConfigProperty) as Config; }
+            set { SetValue(CurrentConfigProperty, value); }
+        }
+
+        public CommonConfig CommonConfig
+        {
+            get { return GetValue(CommonConfigProperty) as CommonConfig; }
+            set { SetValue(CommonConfigProperty, value); }
         }
 
         public bool IsAdministrator
@@ -123,7 +133,7 @@ namespace ARK_Server_Manager
                 dialog.IsFolderPicker = true;
                 dialog.Title = _globalizer.GetResourceString("Application_DataDirectoryTitle");
                 dialog.InitialDirectory = Config.Default.DataDir;
-                var result = dialog.ShowDialog();
+                var result = dialog.ShowDialog(Window.GetWindow(this));
 
                 if (result == CommonFileDialogResult.Ok)
                 {
@@ -188,7 +198,7 @@ namespace ARK_Server_Manager
             dialog.IsFolderPicker = true;
             dialog.Title = _globalizer.GetResourceString("GlobalSettings_DataDirectoryTitle");
             dialog.InitialDirectory = Config.Default.BackupPath;
-            var result = dialog.ShowDialog();
+            var result = dialog.ShowDialog(Window.GetWindow(this));
 
             if (result == CommonFileDialogResult.Ok)
             {
@@ -210,7 +220,7 @@ namespace ARK_Server_Manager
             dialog.IsFolderPicker = true;
             dialog.Title = _globalizer.GetResourceString("GlobalSettings_CacheDirectoryTitle");
             dialog.InitialDirectory = Config.Default.DataDir;
-            var result = dialog.ShowDialog();
+            var result = dialog.ShowDialog(Window.GetWindow(this));
 
             if (result == CommonFileDialogResult.Ok)
             {
@@ -238,7 +248,7 @@ namespace ARK_Server_Manager
                     return;
                 }
 
-                var steamCmdFile = SteamCmdUpdater.GetSteamCmdFile();
+                var steamCmdFile = SteamCmdUpdater.GetSteamCmdFile(Config.Default.DataDir);
                 if (string.IsNullOrWhiteSpace(steamCmdFile) || !File.Exists(steamCmdFile))
                 {
                     MessageBox.Show("Could not locate the SteamCMD executable. Try reinstalling SteamCMD.", "SteamCMD Authentication Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -249,7 +259,9 @@ namespace ARK_Server_Manager
                 await Task.Delay(500);
 
                 var steamCmdArgs = string.Format(Config.Default.SteamCmdAuthenticateArgs, Config.Default.SteamCmd_Username, Config.Default.SteamCmd_Password);
-                var result = await ProcessUtils.RunProcessAsync(steamCmdFile, steamCmdArgs, string.Empty, null, CancellationToken.None);
+                var workingDirectory = Config.Default.DataDir;
+
+                var result = await ProcessUtils.RunProcessAsync(steamCmdFile, steamCmdArgs, string.Empty, workingDirectory, null, null, null, CancellationToken.None);
                 if (result)
                     MessageBox.Show("The authentication was completed.", "SteamCMD Authentication", MessageBoxButton.OK, MessageBoxImage.Information);
                 else
@@ -333,6 +345,11 @@ namespace ARK_Server_Manager
                 Config.Default.UpgradeConfig = false;
                 Config.Default.Save();
                 Config.Default.Reload();
+
+                CommonConfig.Default.Reset();
+                CommonConfig.Default.UpgradeConfig = false;
+                CommonConfig.Default.Save();
+                CommonConfig.Default.Reload();
             }
             catch (Exception ex)
             {

@@ -56,7 +56,7 @@ namespace WPFSharp.Globalizer
         /// If a resource dictionary is loaded, and this value is set, then the specified 
         /// style resource dictionary is loaded.
         /// </summary>
-        public String LinkedStyle { get; set; }
+        public string LinkedStyle { get; set; }
 
         #endregion
 
@@ -70,7 +70,7 @@ namespace WPFSharp.Globalizer
         /// </returns>
         public override object ProvideValue(IServiceProvider inServiceProvider)
         {
-            if (ResourceKey == null || String.IsNullOrWhiteSpace(ResourceKey.ToString()))
+            if (ResourceKey == null || string.IsNullOrWhiteSpace(ResourceKey.ToString()))
                 throw new InvalidOperationException("ResourceKey cannot be null or empty.");
 
             if (GlobalizedApplication.Instance == null)

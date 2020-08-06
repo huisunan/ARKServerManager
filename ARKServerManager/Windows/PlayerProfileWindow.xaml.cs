@@ -1,15 +1,15 @@
-﻿using System;
+﻿using ArkData;
+using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Lib.ViewModel.RCON;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using ARK_Server_Manager.Lib;
-using ARK_Server_Manager.Lib.ViewModel;
-using ARK_Server_Manager.Lib.ViewModel.RCON;
-using ArkData;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for PlayerProfileWindow.xaml
@@ -21,7 +21,7 @@ namespace ARK_Server_Manager
         public PlayerProfileWindow(PlayerInfo player, String serverFolder)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.Player = player;
             this.ServerFolder = serverFolder;
@@ -46,34 +46,17 @@ namespace ARK_Server_Manager
 
         public String CreatedDate => PlayerData?.FileCreated.ToString("G");
 
-        public Boolean IsTribeOwner => PlayerData != null && TribeData != null && TribeData.OwnerId == PlayerData.Id;
+        public Boolean IsTribeOwner => PlayerData != null && TribeData != null && TribeData.OwnerId == PlayerData.CharacterId;
 
-        public String PlayerLink => String.IsNullOrWhiteSpace(ServerFolder) ? null : $"/select, {Path.Combine(ServerFolder, $"{Player.SteamId}{Config.Default.PlayerFileExtension}")}";
-
-        public String ProfileLink => PlayerData?.ProfileUrl;
+        public String PlayerLink => String.IsNullOrWhiteSpace(ServerFolder) ? null : $"/select, {Path.Combine(ServerFolder, !String.IsNullOrWhiteSpace(Player?.PlayerData?.File) ? Player?.PlayerData?.Filename : $"{Player.PlayerId}{Config.Default.PlayerFileExtension}")}";
 
         public String TribeLink => String.IsNullOrWhiteSpace(ServerFolder) || TribeData == null ? null : $"/select, {Path.Combine(ServerFolder, $"{TribeData.Id}{Config.Default.TribeFileExtension}")}";
 
-        public String TribeOwner => TribeData != null && TribeData.Owner != null ? $"{TribeData.Owner.SteamName} ({TribeData.Owner.CharacterName})" : null;
+        public String TribeOwner => TribeData != null && TribeData.Owner != null ? $"{TribeData.Owner.CharacterName} ({TribeData.Owner.PlayerName})" : null;
 
         public String UpdatedDate => PlayerData?.FileUpdated.ToString("G");
 
-        public String WindowTitle => String.Format(_globalizer.GetResourceString("Profile_WindowTitle_Player"), Player.SteamName);
-
-        public ICommand DirectLinkCommand
-        {
-            get
-            {
-                return new RelayCommand<String>(
-                    execute: (action) =>
-                    {
-                        if (String.IsNullOrWhiteSpace(action)) return;
-                        Process.Start(action);
-                    },
-                    canExecute: (action) => true
-                );
-            }
-        }
+        public String WindowTitle => String.Format(_globalizer.GetResourceString("Profile_WindowTitle_Player"), Player.PlayerName);
 
         public ICommand ExplorerLinkCommand
         {

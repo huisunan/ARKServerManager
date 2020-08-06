@@ -124,19 +124,21 @@ namespace QueryMaster
                 ship.Duration = parser.ReadByte();
                 server.ShipInfo = ship;
             }
-
             server.GameVersion = parser.ReadString();
-            byte edf = parser.ReadByte();
-            ExtraInfo info = new ExtraInfo();
-            info.Port = (edf & 0x80) > 0 ? parser.ReadShort() : (short)0;
-            info.SteamID = (edf & 0x10) > 0 ? parser.ReadInt() : 0;
-            if ((edf & 0x40) > 0)
-                info.SpecInfo = new SourceTVInfo() { Port = parser.ReadShort(), Name = parser.ReadString() };
-            info.Keywords = (edf & 0x20) > 0 ? parser.ReadString() : string.Empty;
-            info.GameId = (edf & 0x10) > 0 ? parser.ReadInt() : 0;
-            server.Extra = info;
-            server.Address = socket.Address.Address + ":" + socket.Address.Port;
-            server.Ping = Latency;
+
+            if (parser.HasUnParsedBytes)
+            {
+                byte edf = parser.ReadByte();
+                ExtraInfo info = new ExtraInfo();
+                info.Port = (edf & 0x80) > 0 ? parser.ReadShort() : (short)0;
+                info.SteamID = (edf & 0x10) > 0 ? parser.ReadInt() : 0;
+                if ((edf & 0x40) > 0)
+                    info.SpecInfo = new SourceTVInfo() { Port = parser.ReadShort(), Name = parser.ReadString() };
+                info.Keywords = (edf & 0x20) > 0 ? parser.ReadString() : string.Empty;
+                info.GameId = (edf & 0x10) > 0 ? parser.ReadInt() : 0;
+                server.Extra = info;
+
+            }
             server.Address = socket.Address.Address + ":" + socket.Address.Port;
             server.Ping = Latency;
             return server;
@@ -187,21 +189,22 @@ namespace QueryMaster
         {
             byte[] recvData = null;
 
-                if (IsObsolete)
+            if (IsObsolete)
+            {
+                recvData = socket.GetResponse(QueryMsg.ObsoletePlayerQuery, Type);
+            }
+            else
+            {
+                if (PlayerChallengeId == null)
                 {
-                    recvData = socket.GetResponse(QueryMsg.ObsoletePlayerQuery, Type);
-                }
-                else
-                {
-                    if (PlayerChallengeId == null)
-                    {
-                        recvData = GetPlayerChallengeId();
-                        if (IsPlayerChallengeId)
-                            PlayerChallengeId = recvData;
-                    }
+                    recvData = GetPlayerChallengeId();
                     if (IsPlayerChallengeId)
-                        recvData = socket.GetResponse(Util.MergeByteArrays(QueryMsg.PlayerQuery, PlayerChallengeId), Type);
+                        PlayerChallengeId = recvData;
                 }
+                if (IsPlayerChallengeId)
+                    recvData = socket.GetResponse(Util.MergeByteArrays(QueryMsg.PlayerQuery, PlayerChallengeId), Type);
+            }
+
             try
             {
                 Parser parser = new Parser(recvData);

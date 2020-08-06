@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace ArkServerManager.Plugin.Discord
+namespace ServerManagerTool.Plugin.Discord
 {
     internal static class TaskUtils
     {

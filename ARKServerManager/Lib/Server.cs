@@ -1,25 +1,33 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Lib;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     public class Server : DependencyObject, IDisposable
     {
         public static readonly DependencyProperty ProfileProperty = DependencyProperty.Register(nameof(Profile), typeof(ServerProfile), typeof(Server), new PropertyMetadata((ServerProfile)null));
         public static readonly DependencyProperty RuntimeProperty = DependencyProperty.Register(nameof(Runtime), typeof(ServerRuntime), typeof(Server), new PropertyMetadata((ServerRuntime)null));
+        public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(nameof(Selected), typeof(bool), typeof(Server), new PropertyMetadata(false));
 
         public ServerProfile Profile
         {
             get { return (ServerProfile)GetValue(ProfileProperty); }
             protected set { SetValue(ProfileProperty, value); }
         }
-        
+
         public ServerRuntime Runtime
         {
             get { return (ServerRuntime)GetValue(RuntimeProperty); }
             protected set { SetValue(RuntimeProperty, value); }
+        }
+
+        public bool Selected
+        {
+            get { return (bool)GetValue(SelectedProperty); }
+            set { SetValue(SelectedProperty, value); }
         }
 
         private Server(ServerProfile profile)
@@ -40,14 +48,18 @@ namespace ARK_Server_Manager.Lib
             this.Profile.LastInstalledVersion = this.Runtime.Version.ToString();
         }
 
-        public void ImportFromPath(string path)
+        public void ImportFromPath(string path, ServerProfile profile = null)
         {
-            var profile = ServerProfile.LoadFrom(path);
-            InitializeFromProfile(profile);
+            var loadedProfile = ServerProfile.LoadFrom(path, profile);
+            if (loadedProfile != null)
+                InitializeFromProfile(loadedProfile);
         }
 
         private void InitializeFromProfile(ServerProfile profile)
         {
+            if (profile == null)
+                return;
+
             this.Profile = profile;
             this.Runtime = new ServerRuntime();
             this.Runtime.AttachToProfile(this.Profile).Wait();
@@ -57,14 +69,18 @@ namespace ARK_Server_Manager.Lib
 
         public static Server FromPath(string path)
         {
-            var profile = ServerProfile.LoadFrom(path);
-            return new Server(profile);
-        }   
-     
+            var loadedProfile = ServerProfile.LoadFrom(path);
+            if (loadedProfile == null)
+                return null;
+            return new Server(loadedProfile);
+        }
+
         public static Server FromDefaults()
         {
-            var profile = ServerProfile.FromDefaults();
-            return new Server(profile);
+            var loadedProfile = ServerProfile.FromDefaults();
+            if (loadedProfile == null)
+                return null;
+            return new Server(loadedProfile);
         }
 
         public async Task StartAsync()

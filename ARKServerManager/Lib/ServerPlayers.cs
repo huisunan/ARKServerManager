@@ -1,6 +1,9 @@
-﻿using ARK_Server_Manager.Lib.ViewModel.RCON;
-using ArkData;
+﻿using ArkData;
 using NLog;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib.ViewModel.RCON;
 using System;
 using System.Collections.Concurrent;
 using System.IO;
@@ -9,18 +12,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     public class ServerPlayers : DependencyObject
     {
         private const int PLAYER_LIST_INTERVAL = 5000;
         private const int STEAM_UPDATE_INTERVAL = 60;
-
-        private enum LogEventType
-        {
-            All,
-            Event,
-        }
 
         public event EventHandler PlayersCollectionUpdated;
 
@@ -28,7 +25,7 @@ namespace ARK_Server_Manager.Lib
         public static readonly DependencyProperty CountPlayersProperty = DependencyProperty.Register(nameof(CountPlayers), typeof(int), typeof(ServerPlayers), new PropertyMetadata(0));
         public static readonly DependencyProperty CountInvalidPlayersProperty = DependencyProperty.Register(nameof(CountInvalidPlayers), typeof(int), typeof(ServerPlayers), new PropertyMetadata(0));
 
-        private readonly ConcurrentDictionary<long, PlayerInfo> _players = new ConcurrentDictionary<long, PlayerInfo>();
+        private readonly ConcurrentDictionary<string, PlayerInfo> _players = new ConcurrentDictionary<string, PlayerInfo>();
         private readonly object _updatePlayerCollectionLock = new object();
         private CancellationTokenSource _cancellationTokenSource = null;
         private PlayerListParameters _playerListParameters;
@@ -45,10 +42,10 @@ namespace ARK_Server_Manager.Lib
 
             _playerListParameters = parameters;
 
-            _allLogger = App.GetProfileLogger(_playerListParameters.ProfileName, "PlayerList_All", LogLevel.Info, LogLevel.Info);
-            _eventLogger = App.GetProfileLogger(_playerListParameters.ProfileName, "PlayerList_Event", LogLevel.Info, LogLevel.Info);
-            _debugLogger = App.GetProfileLogger(_playerListParameters.ProfileName, "PlayerList_Debug", LogLevel.Trace, LogLevel.Debug);
-            _errorLogger = App.GetProfileLogger(_playerListParameters.ProfileName, "PlayerList_Error", LogLevel.Error, LogLevel.Fatal);
+            _allLogger = App.GetProfileLogger(_playerListParameters.ProfileId, "PlayerList_All", LogLevel.Info, LogLevel.Info);
+            _eventLogger = App.GetProfileLogger(_playerListParameters.ProfileId, "PlayerList_Event", LogLevel.Info, LogLevel.Info);
+            _debugLogger = App.GetProfileLogger(_playerListParameters.ProfileId, "PlayerList_Debug", LogLevel.Trace, LogLevel.Debug);
+            _errorLogger = App.GetProfileLogger(_playerListParameters.ProfileId, "PlayerList_Error", LogLevel.Error, LogLevel.Fatal);
 
             UpdatePlayersAsync().DoNotWait();
         }
@@ -85,11 +82,11 @@ namespace ARK_Server_Manager.Lib
             switch (eventType)
             {
                 case LogEventType.All:
-                    _allLogger.Info(message);
+                    _allLogger?.Info(message);
                     return;
 
                 case LogEventType.Event:
-                    _eventLogger.Info(message);
+                    _eventLogger?.Info(message);
                     return;
             }
         }
@@ -141,7 +138,7 @@ namespace ARK_Server_Manager.Lib
                 }
                 catch (Exception ex)
                 {
-                    _errorLogger.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: CreateAsync. {ex.Message}\r\n{ex.StackTrace}");
+                    _errorLogger?.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: CreateAsync. {ex.Message}\r\n{ex.StackTrace}");
                     return;
                 }
 
@@ -151,11 +148,12 @@ namespace ARK_Server_Manager.Lib
                     // update the player data with the latest steam update value from the players collection
                     foreach (var playerData in dataContainer.Players)
                     {
-                        if (!long.TryParse(playerData.SteamId, out long steamId))
+                        var id = playerData.PlayerId;
+                        if (string.IsNullOrWhiteSpace(id))
                             continue;
 
-                        _players.TryGetValue(steamId, out PlayerInfo player);
-                        player?.UpdateSteamData(playerData);
+                        _players.TryGetValue(id, out PlayerInfo player);
+                        player?.UpdatePlatformData(playerData);
                     }
                 }, token);
 
@@ -166,7 +164,7 @@ namespace ARK_Server_Manager.Lib
                 }
                 catch (Exception ex)
                 {
-                    _errorLogger.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: LoadSteamAsync. {ex.Message}\r\n{ex.StackTrace}");
+                    _errorLogger?.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: LoadSteamAsync. {ex.Message}\r\n{ex.StackTrace}");
                 }
 
                 token.ThrowIfCancellationRequested();
@@ -177,48 +175,46 @@ namespace ARK_Server_Manager.Lib
                     token.ThrowIfCancellationRequested();
                     await Task.Run(async () =>
                     {
-                        if (long.TryParse(playerData.SteamId, out long steamId))
+                        var id = playerData.PlayerId;
+                        if (!string.IsNullOrWhiteSpace(id))
                         {
-                            var validPlayer = new PlayerInfo(_debugLogger)
+                            var validPlayer = new PlayerInfo()
                             {
-                                SteamId = steamId,
-                                SteamName = playerData.SteamName,
+                                PlayerId = playerData.PlayerId,
+                                PlayerName = playerData.PlayerName,
                                 IsValid = true,
                             };
 
-                            _players.AddOrUpdate(steamId, validPlayer, (k, v) => { v.SteamName = playerData.SteamName; v.IsValid = true; return v; });
+                            _players.AddOrUpdate(id, validPlayer, (k, v) => { v.PlayerName = playerData.PlayerName; v.IsValid = true; return v; });
                         }
                         else
                         {
-                            var filename = Path.GetFileNameWithoutExtension(playerData.Filename);
-                            if (long.TryParse(filename, out steamId))
+                            id = Path.GetFileNameWithoutExtension(playerData.Filename);
+                            if (!string.IsNullOrWhiteSpace(id))
                             {
-                                var invalidPlayer = new PlayerInfo(_debugLogger)
+                                var invalidPlayer = new PlayerInfo()
                                 {
-                                    SteamId = steamId,
-                                    SteamName = "< corrupted profile >",
+                                    PlayerId = id,
+                                    PlayerName = "< corrupted profile >",
                                     IsValid = false,
                                 };
 
-                                _players.AddOrUpdate(steamId, invalidPlayer, (k, v) => { v.SteamName = "< corrupted profile >"; v.IsValid = false; return v; });
+                                _players.AddOrUpdate(id, invalidPlayer, (k, v) => { v.PlayerName = "< corrupted profile >"; v.IsValid = false; return v; });
                             }
                             else
                             {
-                                _debugLogger.Debug($"{nameof(UpdatePlayerDetailsAsync)} - Error: corrupted profile.\r\n{playerData.Filename}.");
+                                _debugLogger?.Debug($"{nameof(UpdatePlayerDetailsAsync)} - Error: corrupted profile.\r\n{playerData.Filename}.");
                             }
                         }
 
-                        if (_players.TryGetValue(steamId, out PlayerInfo player) && player != null)
+                        if (_players.TryGetValue(id, out PlayerInfo player) && player != null)
                         {
-                            player.UpdateData(playerData, lastSteamUpdateUtc);
+                            player.UpdateData(playerData);
 
                             await TaskUtils.RunOnUIThreadAsync(() =>
                             {
-                                player.IsAdmin = _playerListParameters?.Server?.Profile?.ServerFilesAdmins?.Any(u => u.SteamId.Equals(player.SteamId.ToString(), StringComparison.OrdinalIgnoreCase)) ?? false;
-                                player.IsWhitelisted = _playerListParameters?.Server?.Profile?.ServerFilesWhitelisted?.Any(u => u.SteamId.Equals(player.SteamId.ToString(), StringComparison.OrdinalIgnoreCase)) ?? false;
-
-                                if (totalPlayers <= Config.Default.RCON_MaximumPlayerAvatars && Config.Default.RCON_ShowPlayerAvatars)
-                                    player.UpdateAvatarImageAsync(savedPath).DoNotWait();
+                                player.IsAdmin = _playerListParameters?.Server?.Profile?.ServerFilesAdmins?.Any(u => u.PlayerId.Equals(player.PlayerId, StringComparison.OrdinalIgnoreCase)) ?? false;
+                                player.IsWhitelisted = _playerListParameters?.Server?.Profile?.ServerFilesWhitelisted?.Any(u => u.PlayerId.Equals(player.PlayerId, StringComparison.OrdinalIgnoreCase)) ?? false;
                             });
                         }
                     }, token);
@@ -227,10 +223,10 @@ namespace ARK_Server_Manager.Lib
                 token.ThrowIfCancellationRequested();
 
                 // remove any players that do not have a player file.
-                var droppedPlayers = _players.Values.Where(p => dataContainer.Players.FirstOrDefault(pd => pd.SteamId == p.SteamId.ToString()) == null).ToArray();
+                var droppedPlayers = _players.Values.Where(p => dataContainer.Players.FirstOrDefault(pd => pd.PlayerId.Equals(p.PlayerId, StringComparison.OrdinalIgnoreCase)) == null).ToArray();
                 foreach (var droppedPlayer in droppedPlayers)
                 {
-                    _players.TryRemove(droppedPlayer.SteamId, out PlayerInfo player);
+                    _players.TryRemove(droppedPlayer.PlayerId, out PlayerInfo player);
                 }
             }
         }

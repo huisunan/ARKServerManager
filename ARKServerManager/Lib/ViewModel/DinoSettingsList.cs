@@ -1,7 +1,9 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Enums;
+using System;
 using System.Linq;
 
-namespace ARK_Server_Manager.Lib.ViewModel
+namespace ServerManagerTool.Lib.ViewModel
 {
     public class DinoSettingsList : SortableObservableCollection<DinoSettings>
     {
@@ -32,7 +34,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
             Reset();
         }
 
-        private DinoSettings CreateDinoSetting(string className, string mod, bool knownDino, bool hasNameTag, bool hasClassName, ArkApplication arkApplication)
+        private DinoSettings CreateDinoSetting(string className, string mod, bool knownDino, bool hasNameTag, bool hasClassName)
         {
             var nameTag = GameData.NameTagForClass(className);
             var isSpawnable = GameData.IsSpawnableForClass(className);
@@ -40,14 +42,13 @@ namespace ARK_Server_Manager.Lib.ViewModel
 
             return new DinoSettings()
             {
-                ArkApplication = arkApplication,
                 ClassName = className,
                 Mod = mod,
                 KnownDino = knownDino,
                 NameTag = nameTag,
 
                 CanSpawn = true,
-                CanTame = isTameable == DinoTamable.True || isTameable == DinoTamable.ByBreeding,
+                CanTame = isTameable != DinoTamable.False,
                 ReplacementClass = className,
 
                 SpawnWeightMultiplier = DinoSpawn.DEFAULT_SPAWN_WEIGHT_MULTIPLIER,
@@ -69,19 +70,6 @@ namespace ARK_Server_Manager.Lib.ViewModel
             };
         }
 
-        public DinoSettingsList Clone()
-        {
-            DinoSettingsList clone = new DinoSettingsList();
-            clone.Clear();
-
-            foreach (var dinoSetting in this)
-            {
-                clone.Add(dinoSetting.Clone());
-            }
-
-            return clone;
-        }
-
         public void Reset()
         {
             this.Clear();
@@ -89,8 +77,10 @@ namespace ARK_Server_Manager.Lib.ViewModel
             var dinoSpawns = GameData.GetDinoSpawns();
             foreach (var entry in dinoSpawns)
             {
-                this.Add(CreateDinoSetting(entry.ClassName, entry.Mod, entry.KnownDino, entry.DinoNameTag != null, true, entry.ArkApplication));
+                this.Add(CreateDinoSetting(entry.ClassName, entry.Mod, entry.KnownDino, entry.DinoNameTag != null, true));
             }
+
+            Sort(d => d.NameSort);
         }
 
         public void RenderToView()
@@ -105,7 +95,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
                 var dinoSettings = this.Where(vi => vi.NameTag == entry.DinoNameTag).ToArray();
                 if (dinoSettings == null || dinoSettings.Length == 0)
                 {
-                    this.Add(CreateDinoSetting(entry.DinoNameTag, entry.Mod, entry.KnownDino, true, false, ArkApplication.Unknown));
+                    this.Add(CreateDinoSetting(entry.DinoNameTag, entry.Mod, entry.KnownDino, true, false));
                 }
 
                 dinoSettings = this.Where(vi => vi.NameTag == entry.DinoNameTag).ToArray();
@@ -129,7 +119,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
                 var dinoSettings = this.Where(vi => vi.ClassName == entry).ToArray();
                 if (dinoSettings == null || dinoSettings.Length == 0)
                 {
-                    this.Add(CreateDinoSetting(entry, string.Empty, false, false, true, ArkApplication.Unknown));
+                    this.Add(CreateDinoSetting(entry, GameData.MOD_UNKNOWN, false, false, true));
                 }
 
                 dinoSettings = this.Where(vi => vi.ClassName == entry).ToArray();
@@ -147,7 +137,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
                 var dinoSettings = this.Where(vi => vi.ClassName == entry.FromClassName).ToArray();
                 if (dinoSettings == null || dinoSettings.Length == 0)
                 {
-                    this.Add(CreateDinoSetting(entry.FromClassName, string.Empty, false, false, true, ArkApplication.Unknown));
+                    this.Add(CreateDinoSetting(entry.FromClassName, GameData.MOD_UNKNOWN, false, false, true));
                 }
 
                 dinoSettings = this.Where(vi => vi.ClassName == entry.FromClassName).ToArray();
@@ -166,7 +156,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
                 var dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
                 if (dinoSettings == null || dinoSettings.Length == 0)
                 {
-                    this.Add(CreateDinoSetting(entry.ClassName, string.Empty, false, false, true, ArkApplication.Unknown));
+                    this.Add(CreateDinoSetting(entry.ClassName, GameData.MOD_UNKNOWN, false, false, true));
                 }
 
                 dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
@@ -184,7 +174,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
                 var dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
                 if (dinoSettings == null || dinoSettings.Length == 0)
                 {
-                    this.Add(CreateDinoSetting(entry.ClassName, string.Empty, false, false, true, ArkApplication.Unknown));
+                    this.Add(CreateDinoSetting(entry.ClassName, GameData.MOD_UNKNOWN, false, false, true));
                 }
 
                 dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
@@ -202,7 +192,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
                 var dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
                 if (dinoSettings == null || dinoSettings.Length == 0)
                 {
-                    this.Add(CreateDinoSetting(entry.ClassName, string.Empty, false, false, true, ArkApplication.Unknown));
+                    this.Add(CreateDinoSetting(entry.ClassName, GameData.MOD_UNKNOWN, false, false, true));
                 }
 
                 dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
@@ -220,7 +210,7 @@ namespace ARK_Server_Manager.Lib.ViewModel
                 var dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
                 if (dinoSettings == null || dinoSettings.Length == 0)
                 {
-                    this.Add(CreateDinoSetting(entry.ClassName, string.Empty, false, false, true, ArkApplication.Unknown));
+                    this.Add(CreateDinoSetting(entry.ClassName, GameData.MOD_UNKNOWN, false, false, true));
                 }
 
                 dinoSettings = this.Where(vi => vi.ClassName == entry.ClassName).ToArray();
@@ -229,6 +219,8 @@ namespace ARK_Server_Manager.Lib.ViewModel
                     dinoSetting.WildResistanceMultiplier = entry.Multiplier;
                 }
             }
+
+            Sort(d => d.NameSort);
         }
 
         public void RenderToModel()
@@ -284,14 +276,14 @@ namespace ARK_Server_Manager.Lib.ViewModel
 
                 if (entry.HasClassName && !string.IsNullOrWhiteSpace(entry.ClassName))
                 {
-                    if ((entry.IsTameable == DinoTamable.True || entry.IsTameable == DinoTamable.ByBreeding) && !entry.CanTame)
+                    if ((entry.IsTameable != DinoTamable.False) && !entry.CanTame)
                     {
                         this.PreventDinoTameClassNames.Add(entry.ClassName);
                     }
 
                     this.NpcReplacements.Add(new NPCReplacement() { FromClassName = entry.ClassName, ToClassName = entry.CanSpawn ? entry.ReplacementClass : string.Empty });
 
-                    if (entry.IsTameable == DinoTamable.True || entry.IsTameable == DinoTamable.ByBreeding)
+                    if (entry.IsTameable != DinoTamable.False)
                     {
                         // check if the value has changed.
                         if (!entry.TamedDamageMultiplier.Equals(ClassMultiplier.DEFAULT_MULTIPLIER))

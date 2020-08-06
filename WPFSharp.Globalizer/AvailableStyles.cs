@@ -7,37 +7,27 @@ namespace WPFSharp.Globalizer
 {
     public class AvailableStyles : List<string>, INotifyPropertyChanged
     {
-        private AvailableStyles()
-        {
-            GlobalizedApplication.Instance.StyleManager.ResourceDictionaryChangedEvent += GlobalizationManager_ResourceDictionaryChangedEvent;
-        }
-
-        private void GlobalizationManager_ResourceDictionaryChangedEvent(object sender, ResourceDictionaryChangedEventArgs args)
-        {
-            if (args == null || args.ResourceDictionaryNames == null || args.ResourceDictionaryNames[0] == null)
-                return;
-
-            SelectedStyle = args.ResourceDictionaryNames[0];
-        }
-
         public static AvailableStyles Instance { get; set; }
-
-        public string SelectedStyle
-        {
-            get { return _SelectedStyle; }
-            set
-            {
-                if (_SelectedStyle == value)
-                    return;
-                _SelectedStyle = value;
-                NotifyPropertyChanged("SelectedStyle");
-            }
-        }
-        private string _SelectedStyle;
 
         public static void CreateInstance()
         {
             Instance = new AvailableStyles();
+        }
+
+        private AvailableStyles()
+        {
+            SelectedStyle = StyleManager.FallBackStyle;
+            GlobalizedApplication.Instance.StyleManager.ResourceDictionaryChangedEvent += GlobalizationManager_ResourceDictionaryChangedEvent;
+        }
+
+        private void GlobalizationManager_ResourceDictionaryChangedEvent(object sender, ResourceDictionaryChangedEventArgs e)
+        {
+            NotifyPropertyChanged("SelectedStyle");
+        }
+
+        public string SelectedStyle
+        {
+            get; internal set;
         }
 
         public void AddListFromSubDirectories(string inPath)

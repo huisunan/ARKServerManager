@@ -5,9 +5,10 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
-using ARK_Server_Manager.Lib;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Lib;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     public static class ErrorHandling
     {
@@ -33,7 +34,7 @@ namespace ARK_Server_Manager
                 details.AppendLine();
 
                 details.AppendLine($"Assembly: {Assembly.GetExecutingAssembly()}");
-                details.AppendLine($"Version: {App.Version}");
+                details.AppendLine($"Version: {App.Instance.Version}");
                 details.AppendLine($"IsAdministrator: {SecurityUtils.IsAdministrator()}");
                 details.AppendLine();
 

@@ -1,15 +1,16 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Lib;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using ARK_Server_Manager.Lib;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for WorldSaveRestoreWindow.xaml
@@ -119,7 +120,7 @@ namespace ARK_Server_Manager
         public WorldSaveRestoreWindow(ServerProfile profile)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             _profile = profile;
             this.Title = string.Format(_globalizer.GetResourceString("WorldSaveRestore_ProfileTitle"), _profile?.ProfileName);
@@ -153,8 +154,9 @@ namespace ARK_Server_Manager
             if (item == null)
                 return;
 
-            var message = $"You are about to delete backup file\r\n{item.FileName}.\r\n\r\nDo you want to continue?";
-            if (MessageBox.Show(this, message, "Delete Backup Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            var deleteMessage = _globalizer.GetResourceString("WorldSaveRestore_DeleteConfirmationLabel");
+            deleteMessage = deleteMessage.Replace("{fileName}", item.FileName);
+            if (MessageBox.Show(this, deleteMessage, _globalizer.GetResourceString("WorldSaveRestore_DeleteConfirmationTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
             var cursor = this.Cursor;
@@ -166,11 +168,11 @@ namespace ARK_Server_Manager
 
                 File.Delete(item.File);
 
-                MessageBox.Show(this, "The backup file has been deleted.", "Delete Backup Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(this, _globalizer.GetResourceString("WorldSaveRestore_DeleteSuccessLabel"), _globalizer.GetResourceString("WorldSaveRestore_DeleteSuccessTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Delete Backup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, _globalizer.GetResourceString("WorldSaveRestore_DeleteErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -209,16 +211,18 @@ namespace ARK_Server_Manager
             var restoreAll = true;
             if (item.IsArchiveFile)
             {
-                var message = $"You are about to restore backup file\r\n{item.FileName}.\r\n\r\nSelect Yes to restore the world save, player and tribe files.\r\nSelect No to only restore the world save.\r\nSelect Cancel to quit the restore.";
-                var result = MessageBox.Show(this, message, "Restore Backup Confirmation", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                var confirmationMessage = _globalizer.GetResourceString("WorldSaveRestore_RestoreConfirmationFullLabel");
+                confirmationMessage = confirmationMessage.Replace("{fileName}", item.FileName);
+                var result = MessageBox.Show(this, confirmationMessage, _globalizer.GetResourceString("WorldSaveRestore_RestoreConfirmationTitle"), MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Cancel)
                     return;
                 restoreAll = result == MessageBoxResult.Yes;
             }
             else
             {
-                var message = $"You are about to restore backup file\r\n{item.FileName}.\r\n\r\nDo you want to continue?";
-                if (MessageBox.Show(this, message, "Restore Backup Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                var confirmationMessage = _globalizer.GetResourceString("WorldSaveRestore_RestoreConfirmationLabel");
+                confirmationMessage = confirmationMessage.Replace("{fileName}", item.FileName);
+                if (MessageBox.Show(this, confirmationMessage, _globalizer.GetResourceString("WorldSaveRestore_RestoreConfirmationTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     return;
             }
 
@@ -231,11 +235,13 @@ namespace ARK_Server_Manager
 
                 var restoredFileCount = _profile.RestoreSaveFiles(item.File, item.IsArchiveFile, restoreAll);
 
-                MessageBox.Show(this, $"The backup file has been restored, {restoredFileCount} file(s) restored.", "Restore Backup Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                var successMessage = _globalizer.GetResourceString("WorldSaveRestore_RestoreSuccessLabel");
+                successMessage = successMessage.Replace("{fileCount}", restoredFileCount.ToString());
+                MessageBox.Show(this, successMessage, _globalizer.GetResourceString("WorldSaveRestore_RestoreSuccessTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, ex.Message, "Restore Backup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, ex.Message, _globalizer.GetResourceString("WorldSaveRestore_RestoreErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -270,7 +276,7 @@ namespace ARK_Server_Manager
                     WorldSaveFiles.Add(new WorldSaveFile { File = file.FullName , FileName = file.Name, CreatedDate = file.CreationTime, UpdatedDate = file.LastWriteTime, IsArchiveFile = false, IsActiveFile = file.Name.Equals(mapFileName, StringComparison.OrdinalIgnoreCase) });
                 }
 
-                var backupFolder = ServerApp.GetServerBackupFolder(_profile.ProfileName);
+                var backupFolder = ServerApp.GetServerBackupFolder(_profile);
                 if (Directory.Exists(backupFolder))
                 {
                     var backupFolderInfo = new DirectoryInfo(backupFolder);

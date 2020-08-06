@@ -1,5 +1,6 @@
 ﻿// See license at bottom of file
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -19,7 +20,6 @@ namespace WPFSharp.Globalizer
         {
             // Make App a singleton
             Instance = this;
-
         }
 
         protected override void OnStartup(StartupEventArgs e)
@@ -28,14 +28,11 @@ namespace WPFSharp.Globalizer
         }
 
         #region Properties
-        public virtual String Directory
-        {
-            get { return _Directory ?? (_Directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)); }
-        }
-        private String _Directory;
 
+        public virtual String Directory { get; } = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
         public virtual EnhancedResourceDictionary FallbackResourceDictionary { get; private set; }
+
         #endregion
 
         #region Methods
@@ -44,20 +41,28 @@ namespace WPFSharp.Globalizer
             GlobalizationManager = new GlobalizationManager(Resources.MergedDictionaries);
             StyleManager = new StyleManager(Resources.MergedDictionaries);
 
-            // Load the default style
-            CreateAvailableStyles();
-            StyleManager.SwitchStyle(StyleManager.DefaultStyle);
-
             // Get current 5 character language and load the appropriate Globalization file
             CreateAvailableLanguages();
             try
             {
                 GlobalizationManager.SwitchLanguage(Thread.CurrentThread.CurrentCulture.Name, true);
             }
-            catch (CultureNotFoundException)
+            catch (Exception ex)
             {
                 // Try the fallback
                 GlobalizationManager.SwitchLanguage(GlobalizationManager.FallBackLanguage, true);
+                Debug.WriteLine($"{nameof(GlobalizationManager.SwitchLanguage)} error.\r\n{ex.Message}");
+            }
+
+            // Load the default style
+            CreateAvailableStyles();
+            try
+            {
+                StyleManager.SwitchStyle(StyleManager.FallBackStyle, true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{nameof(StyleManager.SwitchStyle)} error.\r\n{ex.Message}");
             }
 
             // Create the FallbackResourceDictionary
@@ -69,9 +74,8 @@ namespace WPFSharp.Globalizer
         {
             if (string.IsNullOrWhiteSpace(inKey))
                 throw new ArgumentNullException(inKey, "parameter cannot be null.");
-            return (Instance.Resources.Contains(inKey))
-                ? Instance.Resources[inKey]
-                : null;
+
+            return (Instance.Resources.Contains(inKey)) ? Instance.Resources[inKey] : null;
         }
 
         public virtual string GetResourceString(string inKey)

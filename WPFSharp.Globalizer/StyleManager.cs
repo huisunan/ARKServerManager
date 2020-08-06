@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Markup;
+using WPFSharp.Globalizer.Exceptions;
 
 namespace WPFSharp.Globalizer
 {
@@ -13,7 +14,7 @@ namespace WPFSharp.Globalizer
     {
         #region Members
 
-        public static String DefaultStyle = "Default.xaml";
+        internal static string FallBackStyle = "Default";
 
         #endregion
 
@@ -31,24 +32,58 @@ namespace WPFSharp.Globalizer
         /// <summary>
         /// Dynamically load a Localization ResourceDictionary from a file
         /// </summary>
-        public void SwitchStyle(String inFileName, string inResourceDictionaryName = null)
+        public void SwitchStyle(string inStyleName, bool inForceSwitch = false)
         {
-            string path = inFileName;
-            if (!File.Exists(path) && !path.Contains(@":\"))
-                path = Path.Combine(GlobalizedApplication.Instance.Directory, SubDirectory, inFileName);
-            if (File.Exists(path))
-            {
-                RemoveResourceDictionaries();
-                MergedDictionaries.Add(LoadFromFile(path) as StyleResourceDictionary);
-                var args = new ResourceDictionaryChangedEventArgs();
-                args.ResourceDictionaryNames.Add(Path.GetFileNameWithoutExtension(inFileName));
-                args.ResourceDictionaryPaths.Add(path);
+            if (AvailableStyles.Instance.SelectedStyle.Equals(inStyleName) && !inForceSwitch)
+                return;
 
-                NotifyResourceDictionaryChanged(args);
-            }
-            else
+            if (!AvailableStyles.Instance.Contains(inStyleName))
             {
-                Debug.WriteLine("ResourceDictionary not found: " + inFileName);
+                throw new StyleNotFoundException(String.Format("The style {0} is not available.", inStyleName));
+            }
+
+            // Set the new style
+            AvailableStyles.Instance.SelectedStyle = inStyleName;
+
+            FileNames = new List<string>();
+            string[] xamlFiles;
+
+            // check if the switch to style matches the fallback style
+            if (!inStyleName.Equals(FallBackStyle))
+            {
+                // switch to style is different, must load the fallback style first
+                xamlFiles = Directory.GetFiles(DefaultPath, $"{FallBackStyle}.xaml");
+                if (xamlFiles.Length > 0)
+                    FileNames.AddRange(xamlFiles);
+            }
+
+            // load the switch to style
+            xamlFiles = Directory.GetFiles(DefaultPath, $"{inStyleName}.xaml");
+            if (xamlFiles.Length > 0)
+                FileNames.AddRange(xamlFiles);
+
+            // Remove previous ResourceDictionaries
+            RemoveResourceDictionaries();
+
+            // Add new Resource Dictionaries
+            LoadDictionariesFromFiles(FileNames);
+            var args = new ResourceDictionaryChangedEventArgs { ResourceDictionaryPaths = FileNames, ResourceDictionaryNames = FileNames.Select(f => Path.GetFileNameWithoutExtension(f)).ToList() };
+            NotifyResourceDictionaryChanged(args);
+        }
+
+        private void RemoveResourceDictionaries()
+        {
+            var dictionariesToRemove = new List<ResourceDictionary>();
+            foreach (ResourceDictionary rd in GlobalizedApplication.Instance.Resources.MergedDictionaries)
+            {
+                // Make sure to only remove Styles, but don't remove styles owned by the language
+                if (rd is StyleResourceDictionary && !(rd as StyleResourceDictionary).IsLinkedToLanguage)
+                    dictionariesToRemove.Add(rd);
+            }
+
+            foreach (var rd in dictionariesToRemove)
+            {
+                GlobalizedApplication.Instance.Resources.MergedDictionaries.Remove(rd);
             }
         }
 
@@ -58,9 +93,7 @@ namespace WPFSharp.Globalizer
             // Determine if the path is absolute or relative
             if (!Path.IsPathRooted(inFile))
             {
-                string exedir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                if (exedir != null)
-                    file = Path.Combine(exedir, inFile);
+                file = Path.Combine(DefaultPath, inFile);
             }
 
             if (!File.Exists(file))
@@ -69,28 +102,26 @@ namespace WPFSharp.Globalizer
             using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // Read in ResourceDictionary File or preferably an EnhancedResourceDictionary file
-                var styleResourceDictionary = XamlReader.Load(fs) as StyleResourceDictionary;
-
-                if (styleResourceDictionary == null)
+                var rd = XamlReader.Load(fs) as StyleResourceDictionary;
+                if (rd == null)
                     return null;
 
-                styleResourceDictionary.Source = inFile;
-                return styleResourceDictionary;
+                //rd.Source = inFile;
+                return rd;
             }
         }
 
-        private void RemoveResourceDictionaries()
+        public override void LoadDictionariesFromFiles(List<string> inList)
         {
-            var dictionariesToRemove = new List<ResourceDictionary>();
-            foreach (ResourceDictionary srd in GlobalizedApplication.Instance.Resources.MergedDictionaries)
+            foreach (var filePath in inList)
             {
-                // Make sure to only remove Styles, but don't remove styles owned by the language
-                if (srd is StyleResourceDictionary && !(srd as StyleResourceDictionary).IsLinkedToLanguage)
-                    dictionariesToRemove.Add(srd);
-            }
-            foreach (var rd in dictionariesToRemove)
-            {
-                GlobalizedApplication.Instance.Resources.MergedDictionaries.Remove(rd);
+                // Only Globalization resource dictionaries should be added
+                // Ignore other types
+                var rd = LoadFromFile(filePath) as StyleResourceDictionary;
+                if (rd == null)
+                    continue;
+
+                MergedDictionaries.Add(rd);
             }
         }
         #endregion

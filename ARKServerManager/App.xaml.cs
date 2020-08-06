@@ -1,84 +1,146 @@
-using ARK_Server_Manager.Lib;
+using ArkData;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
+using ServerManagerTool.Common;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib;
+using ServerManagerTool.Plugin.Common;
+using ServerManagerTool.Windows;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
 using WPFSharp.Globalizer;
-using System.Globalization;
-using System.Diagnostics;
-using System.Linq;
-using ArkServerManager.Plugin.Common;
-using System.Net;
-using ArkData;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : GlobalizedApplication
+    public partial class App : GlobalizedApplication, INotifyPropertyChanged
     {
-        public const string ARG_AUTOBACKUP = "-ab";
-        public const string ARG_AUTOSHUTDOWN1 = "-as1";
-        public const string ARG_AUTOSHUTDOWN2 = "-as2";
-        public const string ARG_AUTORESTART = "-ar";
-        public const string ARG_AUTOUPDATE = "-au";
-        public const string ARG_BETA = "-beta";
-        public const string ARG_RCON = "-rcon";
-
         public new static App Instance
         {
             get;
             private set;
         }
 
-        public static bool ApplicationStarted
-        {
-            get;
-            set;
-        }
-
-        public static string Version
-        {
-            get;
-            set;
-        }
+        public event PropertyChangedEventHandler PropertyChanged;
 
         private GlobalizedApplication _globalizer;
+        private bool _applicationStarted;
+        private string _args;
+        private bool _betaVersion;
+        private string _title;
+        private string _version;
 
         public App()
         {
             if (string.IsNullOrWhiteSpace(Config.Default.ASMUniqueKey))
                 Config.Default.ASMUniqueKey = Guid.NewGuid().ToString();
 
+            App.Instance = this;
             ApplicationStarted = false;
             Args = string.Empty;
             BetaVersion = false;
+            Title = string.Empty;
+            Version = AppUtils.GetDeployedVersion(Assembly.GetEntryAssembly());
 
             AppDomain.CurrentDomain.UnhandledException += ErrorHandling.CurrentDomain_UnhandledException;
-            App.Instance = this;
-            MigrateSettings();
 
+            MigrateSettings();
             ReconfigureLogging();
-            App.Version = App.GetDeployedVersion();
+        }
+
+        public bool ApplicationStarted
+        {
+            get
+            {
+                return _applicationStarted;
+            }
+            set
+            {
+                if (!Equals(value, _applicationStarted))
+                {
+                    _applicationStarted = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public string Args
         {
-            get;
-            set;
+            get
+            {
+                return _args;
+            }
+            set
+            {
+                if (!Equals(value, _args))
+                {
+                    _args = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public bool BetaVersion
         {
-            get;
-            set;
+            get
+            {
+                return _betaVersion;
+            }
+            set
+            {
+                if (!Equals(value, _betaVersion))
+                {
+                    _betaVersion = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string Title
+        {
+            get
+            {
+                return _title;
+            }
+            set
+            {
+                if (!Equals(value, _title))
+                {
+                    _title = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string Version
+        {
+            get
+            {
+                return _version;
+            }
+            set
+            {
+                if (!Equals(value, _version))
+                {
+                    _version = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public static async Task DiscoverMachinePublicIP(bool forceOverride)
@@ -96,41 +158,25 @@ namespace ARK_Server_Manager
             }));
         }
 
-        private static string GetDeployedVersion()
+        private IList<ServerManagerTool.Plugin.Common.Lib.Profile> FetchProfiles()
         {
-            try
-            {
-                XmlDocument xmlDoc = new XmlDocument();
-                Assembly asmCurrent = System.Reflection.Assembly.GetExecutingAssembly();
-                string executePath = new Uri(asmCurrent.GetName().CodeBase).LocalPath;
-
-                xmlDoc.Load(executePath + ".manifest");
-                XmlNamespaceManager ns = new XmlNamespaceManager(xmlDoc.NameTable);
-                ns.AddNamespace("asmv1", "urn:schemas-microsoft-com:asm.v1");
-                string xPath = "/asmv1:assembly/asmv1:assemblyIdentity/@version";
-                XmlNode node = xmlDoc.SelectSingleNode(xPath, ns);
-                string version = node.Value;
-                return version;
-            }
-            catch
-            {
-                return "Unknown";
-            }            
+            return ServerManager.Instance.Servers.Select(s => new ServerManagerTool.Plugin.Common.Lib.Profile() { ProfileName = s?.Profile?.ProfileName ?? string.Empty, InstallationFolder = s?.Profile?.InstallDirectory ?? string.Empty }).ToList();
         }
 
-        public static string GetProfileLogDir(string profileName)
-        {
-            var logFilePath = Path.Combine(Config.Default.DataDir, Config.Default.LogsDir, profileName);
-            return logFilePath;
-        }
+        public static string GetLogFolder() => IOUtils.NormalizePath(Path.Combine(Config.Default.DataDir, Config.Default.LogsDir));
 
-        public static Logger GetProfileLogger(string profileName, string name, LogLevel minLevel, LogLevel maxLevel)
+        public static string GetProfileLogFolder(string profileId) => IOUtils.NormalizePath(Path.Combine(Config.Default.DataDir, Config.Default.LogsDir, profileId.ToLower()));
+
+        public static Logger GetProfileLogger(string profileId, string name, LogLevel minLevel, LogLevel maxLevel)
         {
-            var loggerName = $"{profileName}_{name}".Replace(" ", "_");
+            if (string.IsNullOrWhiteSpace(profileId) || string.IsNullOrWhiteSpace(name))
+                return null;
+
+            var loggerName = $"{profileId.ToLower()}_{name}".Replace(" ", "_");
 
             if (LogManager.Configuration.FindTargetByName(loggerName) == null)
             {            
-                var logFilePath = GetProfileLogDir(profileName);
+                var logFilePath = GetProfileLogFolder(profileId);
                 if (!System.IO.Directory.Exists(logFilePath))
                     System.IO.Directory.CreateDirectory(logFilePath);
 
@@ -155,16 +201,36 @@ namespace ARK_Server_Manager
 
         private static void MigrateSettings()
         {
+            var installFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
             //
             // Migrate settings when we update.
             //
+            if (CommonConfig.Default.UpgradeConfig)
+            {
+                var settingsFile = IOUtils.NormalizePath(Path.Combine(installFolder, "commonconfig.json"));
+
+                CommonConfig.Default.Upgrade();
+                CommonConfig.Default.Reload();
+                SettingsUtils.MigrateSettings(CommonConfig.Default, settingsFile);
+                CommonConfig.Default.UpgradeConfig = false;
+                CommonConfig.Default.Save();
+            }
             if (Config.Default.UpgradeConfig)
             {
+                var settingsFile = IOUtils.NormalizePath(Path.Combine(installFolder, "userconfig.json"));
+
                 Config.Default.Upgrade();
                 Config.Default.Reload();
+                SettingsUtils.MigrateSettings(Config.Default, settingsFile);
                 Config.Default.UpgradeConfig = false;
-
                 Config.Default.Save();
+
+                if (string.IsNullOrWhiteSpace(CommonConfig.Default.SteamAPIKey))
+                {
+                    CommonConfig.Default.SteamAPIKey = Config.Default.SteamAPIKey;
+                    CommonConfig.Default.Save();
+                }
             }
         }
 
@@ -180,56 +246,79 @@ namespace ARK_Server_Manager
                 if (!string.IsNullOrWhiteSpace(Config.Default.CultureName))
                     _globalizer.GlobalizationManager.SwitchLanguage(Config.Default.CultureName, true);
             }
-            catch (CultureNotFoundException ex)
+            catch (Exception ex)
             {
                 // just output the exception message, it should default back to the fallback language.
                 Debug.WriteLine(ex.Message);
             }
 
-            if (!string.IsNullOrWhiteSpace(Config.Default.StyleName))
-                _globalizer.StyleManager.SwitchStyle($"{Config.Default.StyleName}.xaml");
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(Config.Default.StyleName))
+                    _globalizer.StyleManager.SwitchStyle(Config.Default.StyleName, true);
+            }
+            catch (Exception ex)
+            {
+                // just output the exception message, it should default back to the fallback style.
+                Debug.WriteLine(ex.Message);
+            }
+
+            TaskSchedulerUtils.TaskFolder = Config.Default.ScheduledTaskFolder;
 
             Args = string.Join(" ", e.Args);
 
-            // check if we are starting ASM for server restart
-            if (e.Args.Any(a => a.Equals(ARG_BETA)))
+            // check if we are starting server manager in BETA/TEST mode
+            if (e.Args.Any(a => a.Equals(Constants.ARG_BETA, StringComparison.OrdinalIgnoreCase) || a.Equals(Constants.ARG_TEST, StringComparison.OrdinalIgnoreCase)))
             {
                 BetaVersion = true;
             }
 
+            // check if we need to set the title
+            if (e.Args.Any(a => a.Equals(Constants.ARG_TITLE, StringComparison.OrdinalIgnoreCase)))
+            {
+                for (int i = 0; i < e.Args.Length - 1; i++)
+                {
+                    if (e.Args[i].Equals(Constants.ARG_TITLE, StringComparison.OrdinalIgnoreCase) && i < e.Args.Length - 1 && !e.Args[i + 1].StartsWith("-"))
+                    {
+                        Title = e.Args[i + 1].Trim();
+                    }
+                }
+            }
+
             var installPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            PluginHelper.Instance.BetaEnabled = BetaVersion;
+            PluginHelper.Instance.BetaEnabled = this.BetaVersion;
             PluginHelper.Instance.LoadPlugins(installPath, true);
+            PluginHelper.Instance.SetFetchProfileCallback(FetchProfiles);
 
             // check if we are starting ASM for the old server restart - no longer supported
-            if (e.Args.Any(a => a.StartsWith(ARG_AUTORESTART)))
+            if (e.Args.Any(a => a.StartsWith(Constants.ARG_AUTORESTART, StringComparison.OrdinalIgnoreCase)))
             {
                 // just exit
                 Environment.Exit(0);
             }
 
             // check if we are starting ASM for server shutdown
-            if (e.Args.Any(a => a.StartsWith(ARG_AUTOSHUTDOWN1)))
+            if (e.Args.Any(a => a.StartsWith(Constants.ARG_AUTOSHUTDOWN1, StringComparison.OrdinalIgnoreCase)))
             {
-                var arg = e.Args.FirstOrDefault(a => a.StartsWith(ARG_AUTOSHUTDOWN1));
-                var exitCode = ServerApp.PerformAutoShutdown(arg, ServerApp.ServerProcessType.AutoShutdown1);
+                var arg = e.Args.FirstOrDefault(a => a.StartsWith(Constants.ARG_AUTOSHUTDOWN1, StringComparison.OrdinalIgnoreCase));
+                var exitCode = ServerApp.PerformAutoShutdown(arg, ServerProcessType.AutoShutdown1);
 
                 // once we are finished, just exit
                 Environment.Exit(exitCode);
             }
 
             // check if we are starting ASM for server shutdown
-            if (e.Args.Any(a => a.StartsWith(ARG_AUTOSHUTDOWN2)))
+            if (e.Args.Any(a => a.StartsWith(Constants.ARG_AUTOSHUTDOWN2, StringComparison.OrdinalIgnoreCase)))
             {
-                var arg = e.Args.FirstOrDefault(a => a.StartsWith(ARG_AUTOSHUTDOWN2));
-                var exitCode = ServerApp.PerformAutoShutdown(arg, ServerApp.ServerProcessType.AutoShutdown2);
+                var arg = e.Args.FirstOrDefault(a => a.StartsWith(Constants.ARG_AUTOSHUTDOWN2, StringComparison.OrdinalIgnoreCase));
+                var exitCode = ServerApp.PerformAutoShutdown(arg, ServerProcessType.AutoShutdown2);
 
                 // once we are finished, just exit
                 Environment.Exit(exitCode);
             }
 
             // check if we are starting ASM for server updating
-            if (e.Args.Any(a => a.Equals(ARG_AUTOUPDATE)))
+            if (e.Args.Any(a => a.Equals(Constants.ARG_AUTOUPDATE, StringComparison.OrdinalIgnoreCase)))
             {
                 var exitCode = ServerApp.PerformAutoUpdate();
 
@@ -238,7 +327,7 @@ namespace ARK_Server_Manager
             }
 
             // check if we are starting ASM for server backups
-            if (e.Args.Any(a => a.Equals(ARG_AUTOBACKUP)))
+            if (e.Args.Any(a => a.Equals(Constants.ARG_AUTOBACKUP, StringComparison.OrdinalIgnoreCase)))
             {
                 var exitCode = ServerApp.PerformAutoBackup();
 
@@ -246,31 +335,19 @@ namespace ARK_Server_Manager
                 Environment.Exit(exitCode);
             }
 
-            // check if we are starting ASM for server updating
-            if (e.Args.Any(a => a.Equals(ARG_RCON)))
-            {
-                var rcon = new OpenRCONWindow();
-                rcon.ShowInTaskbar = true;
-                rcon.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                rcon.ShowDialog();
-
-                Config.Default.Save();
-
-                // once we are finished, just exit
-                Environment.Exit(0);
-            }
-
             if (Config.Default.RunAsAdministratorPrompt && !SecurityUtils.IsAdministrator())
             {
                 var result = MessageBox.Show(_globalizer.GetResourceString("Application_RunAsAdministratorLabel"), _globalizer.GetResourceString("Application_RunAsAdministratorTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
-                    var processInfo = new ProcessStartInfo(Assembly.GetExecutingAssembly().CodeBase);
+                    var processInfo = new ProcessStartInfo(Assembly.GetExecutingAssembly().CodeBase)
+                    {
 
-                    // The following properties run the new process as administrator
-                    processInfo.UseShellExecute = true;
-                    processInfo.Verb = "runas";
-                    processInfo.Arguments = string.Join(" ", e.Args);
+                        // The following properties run the new process as administrator
+                        UseShellExecute = true,
+                        Verb = "runas",
+                        Arguments = string.Join(" ", e.Args)
+                    };
 
                     // Start the new process
                     try
@@ -315,27 +392,45 @@ namespace ARK_Server_Manager
             {
                 MessageBox.Show(_globalizer.GetResourceString("Application_DataDirectoryLabel"), _globalizer.GetResourceString("Application_DataDirectoryTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
 
+                var installationFolder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
                 while (String.IsNullOrWhiteSpace(Config.Default.DataDir))
                 {
-                    var dialog = new CommonOpenFileDialog();
-                    dialog.EnsureFileExists = true;
-                    dialog.IsFolderPicker = true;
-                    dialog.Multiselect = false;
-                    dialog.Title = _globalizer.GetResourceString("Application_DataDirectory_DialogTitle");
-                    dialog.InitialDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    var dialog = new CommonOpenFileDialog
+                    {
+                        EnsureFileExists = true,
+                        IsFolderPicker = true,
+                        Multiselect = false,
+                        Title = _globalizer.GetResourceString("Application_DataDirectory_DialogTitle"),
+                        InitialDirectory = installationFolder
+                    };
+
                     if (dialog.ShowDialog() != CommonFileDialogResult.Ok)
                     {
                         Environment.Exit(0);
                     }
 
-                    var confirm = MessageBox.Show(String.Format(_globalizer.GetResourceString("Application_DataDirectory_ConfirmLabel"), Path.Combine(dialog.FileName, Config.Default.ProfilesDir), Path.Combine(dialog.FileName, Config.Default.SteamCmdDir)), _globalizer.GetResourceString("Application_DataDirectory_ConfirmTitle"), MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                    MessageBoxResult confirm = MessageBoxResult.Cancel;
+
+                    // check if the folder is under the installation folder
+                    var newDataFolder = dialog.FileName;
+                    if (newDataFolder.StartsWith(installationFolder))
+                    {
+                        confirm = MessageBoxResult.No;
+                        MessageBox.Show(_globalizer.GetResourceString("Application_DataDirectory_WithinInstallFolderErrorLabel"), _globalizer.GetResourceString("Application_DataDirectory_WithinInstallFolderErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    else
+                    {
+                        confirm = MessageBox.Show(String.Format(_globalizer.GetResourceString("Application_DataDirectory_ConfirmLabel"), Path.Combine(newDataFolder, Config.Default.ProfilesDir), Path.Combine(newDataFolder, Config.Default.SteamCmdDir)), _globalizer.GetResourceString("Application_DataDirectory_ConfirmTitle"), MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+                    }
+
                     if (confirm == MessageBoxResult.Cancel)
                     {
                         Environment.Exit(0);
                     }
                     else if (confirm == MessageBoxResult.Yes)
                     {
-                        Config.Default.DataDir = dialog.FileName;
+                        Config.Default.DataDir = newDataFolder;
                         ReconfigureLogging();
                         break;
                     }
@@ -345,44 +440,46 @@ namespace ARK_Server_Manager
             Config.Default.ConfigDirectory = Path.Combine(Config.Default.DataDir, Config.Default.ProfilesDir);            
             System.IO.Directory.CreateDirectory(Config.Default.ConfigDirectory);
             Config.Default.Save();
-
-            // initialize all the game data
-            GameData.Initialize();
+            CommonConfig.Default.Save();
 
             DataFileDetails.PlayerFileExtension = Config.Default.PlayerFileExtension;
             DataFileDetails.TribeFileExtension = Config.Default.TribeFileExtension;
 
             Task.Factory.StartNew(async () => await App.DiscoverMachinePublicIP(forceOverride: true));
+
+            if (e.Args.Any(a => a.StartsWith(Constants.ARG_SERVERMONITOR, StringComparison.OrdinalIgnoreCase)))
+            {
+                ServerRuntime.EnableUpdateModStatus = false;
+                ServerProfile.EnableServerFilesWatcher = false;
+
+                StartupUri = new Uri("Windows/ServerMonitorWindow.xaml", UriKind.RelativeOrAbsolute);
+            }
+            else
+            {
+                // initialize all the game data
+                GameData.Initialize();
+
+                StartupUri = new Uri("Windows/AutoUpdateWindow.xaml", UriKind.RelativeOrAbsolute);
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            if (ApplicationStarted)
-            {
-                foreach(var server in ServerManager.Instance.Servers)
-                {
-                    try
-                    {
-                        server.Profile.Save(false, false, null);
-                    }
-                    catch(Exception ex)
-                    {
-                        MessageBox.Show(String.Format(_globalizer.GetResourceString("Application_Profile_SaveFailedLabel"), server.Profile.ProfileName, ex.Message, ex.StackTrace), _globalizer.GetResourceString("Application_Profile_SaveFailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                Config.Default.Save();
-            }
-
-            ApplicationStarted = false;
+            ShutDownApplication();
 
             base.OnExit(e);
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public static void ReconfigureLogging()
         {               
             string logDir = Path.Combine(Config.Default.DataDir, Config.Default.LogsDir);
-
-            System.IO.Directory.CreateDirectory(logDir);
+            if (!System.IO.Directory.Exists(logDir))
+                System.IO.Directory.CreateDirectory(logDir);
 
             LogManager.Configuration.Variables["logDir"] = logDir;
 
@@ -396,5 +493,29 @@ namespace ARK_Server_Manager
 
             LogManager.ReconfigExistingLoggers();
         }   
+
+        private void ShutDownApplication()
+        {
+            if (ApplicationStarted)
+            {
+                foreach (var server in ServerManager.Instance.Servers)
+                {
+                    try
+                    {
+                        server.Profile.Save(false, false, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(String.Format(_globalizer.GetResourceString("Application_Profile_SaveFailedLabel"), server.Profile.ProfileName, ex.Message, ex.StackTrace), _globalizer.GetResourceString("Application_Profile_SaveFailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                Config.Default.Save();
+                CommonConfig.Default.Save();
+            }
+
+            PluginHelper.Instance?.Dispose();
+
+            ApplicationStarted = false;
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     public class PlayerListParameters : DependencyObject
     {
@@ -11,6 +11,8 @@ namespace ARK_Server_Manager.Lib
             get { return (string)GetValue(ProfileNameProperty); }
             set { SetValue(ProfileNameProperty, value); }
         }
+
+        public string ProfileId { get; set; }
 
         public string InstallDirectory { get; set; }
 

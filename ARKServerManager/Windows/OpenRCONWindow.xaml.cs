@@ -1,12 +1,12 @@
-﻿using ARK_Server_Manager.Lib.ViewModel;
+﻿using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Utils;
 using System;
 using System.Net;
 using System.Windows;
 using System.Windows.Input;
-using ARK_Server_Manager.Lib;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for OpenRCONWindow.xaml
@@ -42,7 +42,7 @@ namespace ARK_Server_Manager
         public OpenRCONWindow()
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             LoadDefaults();
             this.DataContext = this;
@@ -56,6 +56,7 @@ namespace ARK_Server_Manager
                 var window = RCONWindow.GetRCON(new Lib.RCONParameters()
                 {
                     ProfileName = $"{ServerIP} {RCONPort}",
+                    ProfileId = $"{ServerIP}-{RCONPort}".Replace(".", "-"),
                     RCONHost = ServerIP,
                     RCONPort = RCONPort,
                     AdminPassword = Password,

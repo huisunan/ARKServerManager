@@ -1,14 +1,12 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     /// <summary>
     /// This class is responsible for managing all of the servers the tool knows about.
@@ -26,11 +24,11 @@ namespace ARK_Server_Manager.Lib
             private set;
         }
 
-        public static readonly DependencyProperty ServersProperty = DependencyProperty.Register(nameof(Servers), typeof(ObservableCollection<Server>), typeof(ServerManager), new PropertyMetadata(new ObservableCollection<Server>()));
+        public static readonly DependencyProperty ServersProperty = DependencyProperty.Register(nameof(Servers), typeof(SortableObservableCollection<Server>), typeof(ServerManager), new PropertyMetadata(new SortableObservableCollection<Server>()));
 
-        public ObservableCollection<Server> Servers
+        public SortableObservableCollection<Server> Servers
         {
-            get { return (ObservableCollection<Server>)GetValue(ServersProperty); }
+            get { return (SortableObservableCollection<Server>)GetValue(ServersProperty); }
             set { SetValue(ServersProperty, value); }
         }
       
@@ -53,6 +51,9 @@ namespace ARK_Server_Manager.Lib
         public int AddFromPath(string path)
         {
             var server = Server.FromPath(path);
+            if (server == null)
+                return this.Servers.Count - 1;
+
             this.Servers.Add(server);
             return this.Servers.Count - 1;
         }  
@@ -60,33 +61,51 @@ namespace ARK_Server_Manager.Lib
         public int AddNew()
         {
             var server = Server.FromDefaults();
+            if (server == null)
+                return this.Servers.Count - 1;
+
             this.Servers.Add(server);
             return this.Servers.Count - 1;
         }
 
         public void Remove(Server server, bool deleteProfile)
         {
+            if (server == null)
+                return;
+
+            // save the profile before deleting, just in case something needed has changed
+            if (server.Profile != null)
+                server.Profile.Save(false, false, null);
+
             if (deleteProfile)
             {
-                try
+                var profileFile = server.Profile?.GetProfileFile();
+                if (!string.IsNullOrWhiteSpace(profileFile) && File.Exists(profileFile))
                 {
-                    var profileFileOld = server.Profile.GetProfileFileOld();
-                    if (File.Exists(profileFileOld))
-                        File.Delete(profileFileOld);
-
-                    var profileFile = server.Profile.GetProfileFile();
-                    if (File.Exists(profileFile))
+                    // set the file permissions
+                    SecurityUtils.SetFileOwnershipForAllUsers(profileFile);
+                    try
+                    {
                         File.Delete(profileFile);
-
-                    var profileFolder = server.Profile.GetProfileIniDir();
-                    if (Directory.Exists(profileFolder))
-                        Directory.Delete(profileFolder, recursive: true);
+                    }
+                    catch (Exception) { }
                 }
-                catch (Exception)
+
+                var profileIniDir = server.Profile?.GetProfileConfigDir_Old();
+                if (!string.IsNullOrWhiteSpace(profileIniDir) && Directory.Exists(profileIniDir))
                 {
-                    // Best effort to delete.
+                    // set the folder permissions
+                    SecurityUtils.SetDirectoryOwnershipForAllUsers(profileIniDir);
+                    try
+                    {
+                        Directory.Delete(profileIniDir, true);
+                    }
+                    catch (Exception) { }
                 }
             }
+
+            server.Runtime?.DeleteFirewallRules();
+            server.Dispose();
 
             this.Servers.Remove(server);
         }
@@ -106,6 +125,11 @@ namespace ARK_Server_Manager.Lib
 
                 serverIds.Add(server.Profile.ProfileID, true);
             }
+        }
+
+        public void SortServers()
+        {
+            Servers.Sort(s => s.Profile?.SortKey);
         }
     }
 }

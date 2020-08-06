@@ -1,10 +1,12 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     public class ResourceClassMultiplierList : AggregateIniValueList<ResourceClassMultiplier>
@@ -31,7 +33,7 @@ namespace ARK_Server_Manager.Lib
                 this.FirstOrDefault(r => r.IsEquivalent(item)).Multiplier = item.Multiplier;
             }
 
-            IsEnabled = (Count != 0);
+            IsEnabled = (items.Length > 0);
 
             Sort(AggregateIniValue.SortKeySelector);
         }
@@ -48,16 +50,8 @@ namespace ARK_Server_Manager.Lib
     [DataContract]
     public class ResourceClassMultiplier : ClassMultiplier
     {
-        public static readonly DependencyProperty ArkApplicationProperty = DependencyProperty.Register(nameof(ArkApplication), typeof(ArkApplication), typeof(ResourceClassMultiplier), new PropertyMetadata(ArkApplication.SurvivalEvolved));
         public static readonly DependencyProperty ModProperty = DependencyProperty.Register(nameof(Mod), typeof(string), typeof(ResourceClassMultiplier), new PropertyMetadata(String.Empty));
         public static readonly DependencyProperty KnownResourceProperty = DependencyProperty.Register(nameof(KnownResource), typeof(bool), typeof(ResourceClassMultiplier), new PropertyMetadata(false));
-
-        [DataMember]
-        public ArkApplication ArkApplication
-        {
-            get { return (ArkApplication)GetValue(ArkApplicationProperty); }
-            set { SetValue(ArkApplicationProperty, value); }
-        }
 
         [DataMember]
         public string Mod
@@ -74,6 +68,8 @@ namespace ARK_Server_Manager.Lib
 
         public override string DisplayName => GameData.FriendlyResourceNameForClass(ClassName);
 
+        public string DisplayMod => GameData.FriendlyNameForClass($"Mod_{Mod}", true) ?? Mod;
+
         public new static ResourceClassMultiplier FromINIValue(string iniValue)
         {
             var newSpawn = new ResourceClassMultiplier();
@@ -83,7 +79,7 @@ namespace ARK_Server_Manager.Lib
 
         public override string GetSortKey()
         {
-            return null;
+            return $"{DisplayName}|Mod";
         }
 
         public override void InitializeFromINIValue(string value)
@@ -91,7 +87,7 @@ namespace ARK_Server_Manager.Lib
             base.InitializeFromINIValue(value);
 
             if (!KnownResource)
-                ArkApplication = ArkApplication.Unknown;
+                Mod = GameData.MOD_UNKNOWN;
         }
 
         public override bool ShouldSave()

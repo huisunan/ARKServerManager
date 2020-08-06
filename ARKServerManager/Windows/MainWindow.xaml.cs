@@ -1,17 +1,23 @@
-﻿using ARK_Server_Manager.Lib;
-using EO.Wpf;
+﻿using EO.Wpf;
+using NLog;
+using ServerManagerTool.Common;
+using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib;
+using ServerManagerTool.Plugin.Common;
+using ServerManagerTool.Windows;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using WPFSharp.Globalizer;
-using System.Threading;
-using NLog;
-using System.Reflection;
-using ARK_Server_Manager.Utils;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -26,9 +32,9 @@ namespace ARK_Server_Manager
             private set;
         }
 
-        private GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
-        private ActionQueue versionChecker;
-        private ActionQueue scheduledTaskChecker;
+        private readonly GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
+        private readonly ActionQueue versionChecker;
+        private readonly ActionQueue scheduledTaskChecker;
 
         public static readonly DependencyProperty BetaVersionProperty = DependencyProperty.Register(nameof(BetaVersion), typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
         public static readonly DependencyProperty IsIpValidProperty = DependencyProperty.Register(nameof(IsIpValid), typeof(bool), typeof(MainWindow));
@@ -127,7 +133,7 @@ namespace ARK_Server_Manager
             this.CurrentConfig = Config.Default;
 
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             MainWindow.Instance = this;
             this.ServerManager = ServerManager.Instance;
@@ -137,8 +143,24 @@ namespace ARK_Server_Manager
             this.scheduledTaskChecker = new ActionQueue();
 
             IsAdministrator = SecurityUtils.IsAdministrator();
-            if (IsAdministrator)
-                this.Title = _globalizer.GetResourceString("MainWindow_TitleWithAdmin");
+            if (!string.IsNullOrWhiteSpace(App.Instance.Title))
+            {
+                this.Title = $"{App.Instance.Title}";
+            }
+            else
+            {
+                if (IsAdministrator)
+                {
+                    this.Title = _globalizer.GetResourceString("MainWindow_TitleWithAdmin");
+                }
+                else
+                {
+                    this.Title = _globalizer.GetResourceString("MainWindow_Title");
+                }
+            }
+
+            this.Height = Config.Default.MainWindow_Height;
+            this.Width = Config.Default.MainWindow_Width;
 
             // hook into the language change event
             GlobalizedApplication.Instance.GlobalizationManager.ResourceDictionaryChangedEvent += ResourceDictionaryChangedEvent;
@@ -164,6 +186,7 @@ namespace ARK_Server_Manager
                         }
                     }
 
+                    ServerManager.Instance.SortServers();
                     ServerManager.Instance.CheckProfiles();
 
                     Tabs.SelectedIndex = 0;
@@ -173,22 +196,54 @@ namespace ARK_Server_Manager
             this.scheduledTaskChecker.PostAction(CheckForScheduledTasks).DoNotWait();
         }
 
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            if (sender is Window window)
+                window.Closed -= Window_Closed;
+
+            this.Activate();
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (this.WindowState != WindowState.Minimized)
+            {
+                Config.Default.MainWindow_Height = e.NewSize.Height;
+                Config.Default.MainWindow_Width = e.NewSize.Width;
+            }
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (Config.Default.MainWindow_MinimizeToTray && this.WindowState == WindowState.Minimized)
+            {
+                this.Hide();
+            }
+        }
+
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             base.OnClosing(e);
             RCONWindow.CloseAllWindows();
             PlayerListWindow.CloseAllWindows();
+            ServerMonitorWindow.CloseAllWindows();
             this.versionChecker.DisposeAsync().DoNotWait();
 
             var installFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var backupFolder = IOUtils.NormalizePath(string.IsNullOrWhiteSpace(Config.Default.BackupPath)
-                ? Path.Combine(Config.Default.DataDir, Config.Default.BackupDir)
+            var backupFolder = IOUtils.NormalizePath(string.IsNullOrWhiteSpace(Config.Default.BackupPath) 
+                ? Path.Combine(Config.Default.DataDir, Config.Default.BackupDir) 
                 : Path.Combine(Config.Default.BackupPath));
             SettingsUtils.BackupUserConfigSettings(Config.Default, "userconfig.json", installFolder, backupFolder);
+            SettingsUtils.BackupUserConfigSettings(CommonConfig.Default, "commonconfig.json", installFolder, backupFolder);
         }
 
         private void ResourceDictionaryChangedEvent(object source, ResourceDictionaryChangedEventArgs e)
         {
+            if (IsAdministrator)
+                this.Title = _globalizer.GetResourceString("MainWindow_TitleWithAdmin");
+            else
+                this.Title = _globalizer.GetResourceString("MainWindow_Title");
+
             this.scheduledTaskChecker.PostAction(CheckForScheduledTasks).DoNotWait();
         }
 
@@ -223,10 +278,13 @@ namespace ARK_Server_Manager
 
         private void Donate_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(Config.Default.DonationUrl))
+                return;
+
             var result = MessageBox.Show(_globalizer.GetResourceString("MainWindow_Donate_Label"), _globalizer.GetResourceString("MainWindow_Donate_Title"), MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                var process = Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=cliff%2es%2ehudson%40gmail%2ecom&lc=US&item_name=Ark%20Server%20Manager&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted");
+                Process.Start(Config.Default.DonationUrl);
             }
         }
 
@@ -240,7 +298,7 @@ namespace ARK_Server_Manager
 
         private void OpenLogFolder_Click(object sender, RoutedEventArgs e)
         {
-            var logFolder = SteamCmdUpdater.GetLogFolder();
+            var logFolder = App.GetLogFolder();
             if (!Directory.Exists(logFolder))
                 logFolder = Config.Default.DataDir;
             Process.Start("explorer.exe", logFolder);
@@ -274,12 +332,32 @@ namespace ARK_Server_Manager
             window.ShowDialog();
         }
 
+        private void GameData_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new GameDataWindow();
+            window.Closed += Window_Closed;
+            window.Owner = this;
+            window.ShowDialog();
+        }
+
         private void Plugins_Click(object sender, RoutedEventArgs e)
         {
             var window = new PluginsWindow();
             window.Closed += Window_Closed;
             window.Owner = this;
             window.ShowDialog();
+        }
+
+        private void ServerMonitor_Click(object sender, RoutedEventArgs e)
+        {
+            var window = ServerMonitorWindow.GetWindow(ServerManager);
+            window.Closed += Window_Closed;
+            window.Show();
+            if (window.WindowState == WindowState.Minimized)
+            {
+                window.WindowState = WindowState.Normal;
+            }
+            window.Focus();
         }
 
         private async void SteamCMD_Click(object sender, RoutedEventArgs e)
@@ -300,7 +378,7 @@ namespace ARK_Server_Manager
                     window.Show();
 
                     await Task.Delay(1000);
-                    await updater.ReinstallSteamCmdAsync(new Progress<SteamCmdUpdater.Update>(u =>
+                    await updater.ReinstallSteamCmdAsync(Config.Default.DataDir, new Progress<SteamCmdUpdater.Update>(u =>
                     {
                         var resourceString = string.IsNullOrWhiteSpace(u.StatusKey) ? null : _globalizer.GetResourceString(u.StatusKey);
                         var message = resourceString != null ? $"{SteamCmdUpdater.OUTPUT_PREFIX} {resourceString}" : u.StatusKey;
@@ -346,6 +424,25 @@ namespace ARK_Server_Manager
 
                     var assemblyLocation = Assembly.GetEntryAssembly().Location;
                     var updaterFile = Path.Combine(Path.GetDirectoryName(assemblyLocation), Config.Default.UpdaterFile);
+                    var newUpdaterFile = Path.Combine(Path.GetDirectoryName(assemblyLocation), $"New{Config.Default.UpdaterFile}");
+
+                    // check if there is a new version of the updater file
+                    if (File.Exists(newUpdaterFile))
+                    {
+                        // file exists, overwrite the file, so that we use the new updater instead
+                        try
+                        {
+                            File.Copy(newUpdaterFile, updaterFile, true);
+                            await Task.Delay(1000);
+                            File.Delete(newUpdaterFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            // if error, then do nothing
+                            Logger.Debug($"An error occurred trying to update the server manager updater. {ex.Message}");
+                        }
+                    }
+
                     if (!File.Exists(updaterFile))
                         throw new FileNotFoundException("The updater application could not be found or does not exist.");
 
@@ -377,11 +474,6 @@ namespace ARK_Server_Manager
                     OverlayGrid.Visibility = Visibility.Collapsed;
                 }
             }
-        }
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            this.Activate();
         }
 
         public void Servers_AddNew(object sender, NewItemRequestedEventArgs e)
@@ -470,20 +562,72 @@ namespace ARK_Server_Manager
             }
         }
 
+        public ICommand ShowWindowCommand
+        {
+            get
+            {
+                return new RelayCommand<object>(
+                    execute: (parameter) =>
+                    {
+                        this.Show();
+                        this.WindowState = WindowState.Normal;
+                        this.Activate();
+                    },
+                    canExecute: (parameter) => 
+                    {
+                        return true;
+                    }
+                );
+            }
+        }
+
+        public ICommand StatusButtonCommand
+        {
+            get
+            {
+                return new RelayCommand<Server>(
+                    execute: (server) =>
+                    {
+                        Debug.WriteLine($"{server.Profile.ProfileName}: {server.Runtime.Status}");
+                        if (!Config.Default.ServerStatus_EnableActions)
+                            return;
+
+                        switch (server.Runtime.Status)
+                        {
+                            case ServerStatus.Stopped:
+                                if (Config.Default.ServerStatus_ShowActionConfirmation && MessageBox.Show(_globalizer.GetResourceString("MainWindow_ServerStatus_StartServerActionLabel"), _globalizer.GetResourceString("MainWindow_ServerStatus_StartServerActionTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                                    return;
+                                StartServerAsync(server).DoNotWait();
+                                break;
+
+                            case ServerStatus.Running:
+                                if (Config.Default.ServerStatus_ShowActionConfirmation && MessageBox.Show(_globalizer.GetResourceString("MainWindow_ServerStatus_ShutdownServerActionLabel"), _globalizer.GetResourceString("MainWindow_ServerStatus_ShutdownServerActionTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                                    return;
+                                ShutdownServerAsync(server).DoNotWait();
+                                break;
+                        }
+                    },
+                    canExecute: (server) => server != null && server.Profile != null && server.Runtime != null
+                );
+            }
+        }
+
         private async Task CheckForUpdates()
         {
-            var newVersion = await NetworkUtils.GetLatestASMVersion();
+            string url = App.Instance.BetaVersion ? Config.Default.LatestASMBetaVersionUrl : Config.Default.LatestASMVersionUrl;
+            var newVersion = await NetworkUtils.GetLatestServerManagerVersion(url);
+
             TaskUtils.RunOnUIThreadAsync(() =>
             {
                 try
                 {
                     var appVersion = new Version();
-                    Version.TryParse(App.Version, out appVersion);
+                    Version.TryParse(App.Instance.Version, out appVersion);
 
                     this.LatestASMVersion = newVersion;
                     this.NewASMAvailable = appVersion < newVersion;
 
-                    Logger.Debug("CheckForUpdates performed");
+                    Logger.Info($"{nameof(CheckForUpdates)} performed");
                 }
                 catch (Exception)
                 {
@@ -512,10 +656,10 @@ namespace ARK_Server_Manager
                     this.AutoBackupStateString = GetTaskStateString(AutoBackupState);
                     this.AutoUpdateStateString = GetTaskStateString(AutoUpdateState);
 
-                    this.AutoBackupNextRunTime = backupnextRunTime == DateTime.MinValue ? string.Empty : $"{_globalizer.GetResourceString("MainWindow_TaskRunTimeLabel")} {backupnextRunTime.ToString("G")}";
-                    this.AutoUpdateNextRunTime = updatenextRunTime == DateTime.MinValue ? string.Empty : $"{_globalizer.GetResourceString("MainWindow_TaskRunTimeLabel")} {updatenextRunTime.ToString("G")}";
+                    this.AutoBackupNextRunTime = backupnextRunTime == DateTime.MinValue ? string.Empty : $"{_globalizer.GetResourceString("MainWindow_TaskRunTimeLabel")} {backupnextRunTime:G}";
+                    this.AutoUpdateNextRunTime = updatenextRunTime == DateTime.MinValue ? string.Empty : $"{_globalizer.GetResourceString("MainWindow_TaskRunTimeLabel")} {updatenextRunTime:G}";
 
-                    Logger.Debug("CheckForScheduledTasks performed");
+                    Logger.Info($"{nameof(CheckForScheduledTasks)} performed");
                 }
                 catch (Exception)
                 {
@@ -543,6 +687,87 @@ namespace ARK_Server_Manager
                     return _globalizer.GetResourceString("MainWindow_TaskStateUnknownLabel");
                 default:
                     return _globalizer.GetResourceString("MainWindow_TaskStateUnknownLabel");
+            }
+        }
+
+        private async Task StartServerAsync(Server server)
+        {
+            if (server == null || server.Profile == null || server.Runtime == null || server.Runtime.Status != ServerStatus.Stopped)
+                return;
+
+            Mutex mutex = null;
+            bool createdNew = false;
+
+            try
+            {
+                // try to establish a mutex for the profile.
+                mutex = new Mutex(true, ServerApp.GetMutexName(server.Profile.InstallDirectory), out createdNew);
+
+                // check if the mutex was established
+                if (createdNew)
+                {
+                    server.Profile.Save(false, false, null);
+
+                    if (!server.Profile.Validate(false, out string validateMessage))
+                    {
+                        var outputMessage = _globalizer.GetResourceString("ProfileValidation_WarningLabel").Replace("{validateMessage}", validateMessage);
+                        if (MessageBox.Show(outputMessage, _globalizer.GetResourceString("ProfileValidation_Title"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                            return;
+                    }
+
+                    await server.StartAsync();
+
+                    PluginHelper.Instance.ProcessAlert(AlertType.Startup, server.Profile.ProfileName, Config.Default.Alert_ServerStartedMessage);
+                    await Task.Delay(2000);
+                }
+                else
+                {
+                    // display an error message and exit
+                    MessageBox.Show(_globalizer.GetResourceString("ServerSettings_StartServer_MutexFailedLabel"), _globalizer.GetResourceString("ServerSettings_StartServer_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_StartServer_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                if (mutex != null)
+                {
+                    if (createdNew)
+                    {
+                        mutex.ReleaseMutex();
+                        mutex.Dispose();
+                    }
+                }
+            }
+        }
+
+        private async Task ShutdownServerAsync(Server server)
+        {
+            if (server == null || server.Profile == null || server.Runtime == null || server.Runtime.Status != ServerStatus.Running)
+                return;
+
+            try
+            {
+                var shutdownWindow = ShutdownWindow.OpenShutdownWindow(server);
+                if (shutdownWindow == null)
+                {
+                    MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ShutdownServer_AlreadyOpenLabel"), _globalizer.GetResourceString("ServerSettings_ShutdownServer_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                server.Runtime.UpdateServerStatus(ServerStatus.Stopping, AvailabilityStatus.Unavailable, false);
+
+                shutdownWindow.CloseShutdownWindowWhenFinished = true;
+                shutdownWindow.Owner = this;
+                shutdownWindow.Closed += Window_Closed;
+                shutdownWindow.Show();
+                await shutdownWindow.StartShutdownAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_ShutdownServer_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

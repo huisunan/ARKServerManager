@@ -1,16 +1,17 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib;
+using ServerManagerTool.Plugin.Common;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using ARK_Server_Manager.Lib;
 using WPFSharp.Globalizer;
-using static ARK_Server_Manager.Lib.ServerApp;
-using ArkServerManager.Plugin.Common;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for ShutdownWindow.xaml
@@ -22,7 +23,9 @@ namespace ARK_Server_Manager
         private readonly GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
         private CancellationTokenSource _shutdownCancellationSource = null;
 
-        public static readonly DependencyProperty BackupWorldFileProperty = DependencyProperty.Register(nameof(BackupWorldFile), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(true));
+        public static readonly DependencyProperty CheckForOnlinePlayersProperty = DependencyProperty.Register(nameof(CheckForOnlinePlayers), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(Config.Default.ServerShutdown_CheckForOnlinePlayers));
+        public static readonly DependencyProperty SendShutdownMessagesProperty = DependencyProperty.Register(nameof(SendShutdownMessages), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(Config.Default.ServerShutdown_SendShutdownMessages));
+        public static readonly DependencyProperty BackupWorldFileProperty = DependencyProperty.Register(nameof(BackupWorldFile), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(Config.Default.BackupWorldFile));
         public static readonly DependencyProperty RestartServerProperty = DependencyProperty.Register(nameof(RestartServer), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(false));
         public static readonly DependencyProperty ShowMessageOutputProperty = DependencyProperty.Register(nameof(ShowMessageOutput), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(false));
         public static readonly DependencyProperty ShutdownIntervalProperty = DependencyProperty.Register(nameof(ShutdownInterval), typeof(int), typeof(ShutdownWindow), new PropertyMetadata(Config.Default.ServerShutdown_GracePeriod));
@@ -31,19 +34,34 @@ namespace ARK_Server_Manager
         public static readonly DependencyProperty ServerProperty = DependencyProperty.Register(nameof(Server), typeof(Server), typeof(ShutdownWindow), new PropertyMetadata(null));
         public static readonly DependencyProperty ShutdownReasonProperty = DependencyProperty.Register(nameof(ShutdownReason), typeof(string), typeof(ShutdownWindow), new PropertyMetadata(null));
         public static readonly DependencyProperty UpdateServerProperty = DependencyProperty.Register(nameof(UpdateServer), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(false));
+        public static readonly DependencyProperty CloseShutdownWindowWhenFinishedProperty = DependencyProperty.Register(nameof(CloseShutdownWindowWhenFinished), typeof(bool), typeof(ShutdownWindow), new PropertyMetadata(false));
 
         protected ShutdownWindow(Server server)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             Server = server;
-            BackupWorldFile = !server?.Profile?.SOTF_Enabled ?? false;
+            if (server?.Profile?.SOTF_Enabled ?? false)
+                BackupWorldFile = false;
+            else
+                BackupWorldFile = Config.Default.BackupWorldFile;
             this.Title = string.Format(_globalizer.GetResourceString("ShutdownWindow_ProfileTitle"), server?.Profile?.ProfileName);
+            this.CloseShutdownWindowWhenFinished = Config.Default.CloseShutdownWindowWhenFinished;
 
             this.DataContext = this;
         }
 
+        public bool CheckForOnlinePlayers
+        {
+            get { return (bool)GetValue(CheckForOnlinePlayersProperty); }
+            set { SetValue(CheckForOnlinePlayersProperty, value); }
+        }
+        public bool SendShutdownMessages
+        {
+            get { return (bool)GetValue(SendShutdownMessagesProperty); }
+            set { SetValue(SendShutdownMessagesProperty, value); }
+        }
         public bool BackupWorldFile
         {
             get { return (bool)GetValue(BackupWorldFileProperty); }
@@ -94,6 +112,11 @@ namespace ARK_Server_Manager
             get { return (bool)GetValue(UpdateServerProperty); }
             set { SetValue(UpdateServerProperty, value); }
         }
+        public bool CloseShutdownWindowWhenFinished
+        {
+            get { return (bool)GetValue(CloseShutdownWindowWhenFinishedProperty); }
+            set { SetValue(CloseShutdownWindowWhenFinishedProperty, value); }
+        }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
@@ -126,57 +149,7 @@ namespace ARK_Server_Manager
 
         private async void Shutdown_Click(object sender, RoutedEventArgs e)
         {
-            if (ShutdownStarted)
-                return;
-
-            try
-            {
-                MessageOutput.Clear();
-
-                ShutdownType = 1;
-                Application.Current.Dispatcher.Invoke(() => this.Cursor = System.Windows.Input.Cursors.Wait);
-                Application.Current.Dispatcher.Invoke(() => this.CancelShutdownButton.Cursor = System.Windows.Input.Cursors.Arrow);
-
-                var app = new ServerApp(true)
-                {
-                    BackupWorldFile = this.BackupWorldFile,
-                    ShutdownInterval = this.ShutdownInterval,
-                    ShutdownReason = this.ShutdownReason,
-                    OutputLogs = false,
-                    SendAlerts = true,
-                    ServerProcess = RestartServer ? ServerProcessType.Restart : ServerProcessType.Shutdown,
-                    ProgressCallback = (p, m, n) => { TaskUtils.RunOnUIThreadAsync(() => { this.AddMessage(m, n); }).DoNotWait(); },
-                };
-
-                var profile = ServerProfileSnapshot.Create(Server.Profile);
-                var restartServer = RestartServer;
-                var updateServer = UpdateServer;
-
-                _shutdownCancellationSource = new CancellationTokenSource();
-
-                var exitCode = await Task.Run(() => app.PerformProfileShutdown(profile, restartServer, updateServer, _shutdownCancellationSource.Token));
-                if (exitCode != ServerApp.EXITCODE_NORMALEXIT && exitCode != ServerApp.EXITCODE_CANCELLED)
-                    throw new ApplicationException($"An error occured during the shutdown process - ExitCode: {exitCode}");
-
-                ShutdownType = 0;
-                // if restarting or updating the server after the shutdown, delay the form closing
-                if (restartServer || updateServer)
-                    await Task.Delay(5000);
-
-                if (Config.Default.CloseShutdownWindowWhenFinished)
-                    this.Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_ShutdownServer_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
-                ShutdownType = 0;
-            }
-            finally
-            {
-                _shutdownCancellationSource = null;
-                Application.Current.Dispatcher.Invoke(() => this.Cursor = null);
-                Application.Current.Dispatcher.Invoke(() => this.CancelShutdownButton.Cursor = null);
-            }
+            await StartShutdownAsync();
         }
 
         private async void Stop_Click(object sender, RoutedEventArgs e)
@@ -230,6 +203,69 @@ namespace ARK_Server_Manager
 
             Instances.Add(server);
             return new ShutdownWindow(server);
+        }
+
+        public async Task StartShutdownAsync()
+        {
+            if (ShutdownStarted)
+                return;
+
+            try
+            {
+                MessageOutput.Clear();
+
+                ShutdownType = 1;
+                Application.Current.Dispatcher.Invoke(() => this.Cursor = System.Windows.Input.Cursors.Wait);
+                Application.Current.Dispatcher.Invoke(() => this.CancelShutdownButton.Cursor = System.Windows.Input.Cursors.Arrow);
+
+                var app = new ServerApp(true)
+                {
+                    CheckForOnlinePlayers = this.CheckForOnlinePlayers,
+                    SendMessages = this.SendShutdownMessages,
+                    BackupWorldFile = this.BackupWorldFile,
+                    ShutdownInterval = this.ShutdownInterval,
+                    ShutdownReason = this.ShutdownReason,
+                    OutputLogs = false,
+                    SendAlerts = true,
+                    ServerProcess = RestartServer ? ServerProcessType.Restart : ServerProcessType.Shutdown,
+                    ProgressCallback = (p, m, n) => { TaskUtils.RunOnUIThreadAsync(() => { this.AddMessage(m, n); }).DoNotWait(); },
+                };
+
+                var profile = ServerProfileSnapshot.Create(Server.Profile);
+                var restartServer = RestartServer;
+                var updateServer = UpdateServer;
+
+                _shutdownCancellationSource = new CancellationTokenSource();
+
+                var exitCode = await Task.Run(() => app.PerformProfileShutdown(profile, restartServer, updateServer, false, _shutdownCancellationSource.Token));
+                if (exitCode != ServerApp.EXITCODE_NORMALEXIT && exitCode != ServerApp.EXITCODE_CANCELLED)
+                    throw new ApplicationException($"An error occured during the shutdown process - ExitCode: {exitCode}");
+
+                if (restartServer)
+                {
+                    profile.Update(Server.Profile);
+                    Server.Profile.SaveProfile();
+                }
+
+                ShutdownType = 0;
+                // if restarting or updating the server after the shutdown, delay the form closing
+                if (restartServer || updateServer)
+                    await Task.Delay(5000);
+
+                if (CloseShutdownWindowWhenFinished)
+                    this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_ShutdownServer_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                ShutdownType = 0;
+            }
+            finally
+            {
+                _shutdownCancellationSource = null;
+                Application.Current.Dispatcher.Invoke(() => this.Cursor = null);
+                Application.Current.Dispatcher.Invoke(() => this.CancelShutdownButton.Cursor = null);
+            }
         }
     }
 }

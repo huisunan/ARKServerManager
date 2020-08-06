@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace ArkServerManager.Plugin.Discord
+namespace ServerManagerTool.Plugin.Discord
 {
     internal static class NetworkUtils
     {
@@ -83,7 +83,7 @@ namespace ArkServerManager.Plugin.Discord
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ERROR: {nameof(PerformCallToAPIAsync)} - {ipAddress}\r\n{ex.Message}");
+                Debug.WriteLine($"ERROR: {nameof(PerformCallToAPIAsync)} - {pluginCode}; {ipAddress}\r\n{ex.Message}");
             }
         }
     }

@@ -30,7 +30,7 @@ namespace QueryMaster
         internal List<byte[]> GetMultiPacketResponse(byte[] msg)
         {
             List<byte[]> recvBytes = new List<byte[]>();
-            bool isRemaining = true;
+            //bool isRemaining = true;
             byte[] recvData;
             SendData(msg);
             //SendData(EmptyPkt);//Empty packet

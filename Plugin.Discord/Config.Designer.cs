@@ -8,11 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ArkServerManager.Plugin.Discord {
+namespace ServerManagerTool.Plugin.Discord {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.7.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.8.0.0")]
     internal sealed partial class Config : global::System.Configuration.ApplicationSettingsBase {
         
         private static Config defaultInstance = ((Config)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Config())));
@@ -25,7 +25,7 @@ namespace ArkServerManager.Plugin.Discord {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://servermanager.azurewebsites.net/api/plugin/call/{0}/{1}/")]
         public string PluginCallUrlFormat {
             get {
                 return ((string)(this["PluginCallUrlFormat"]));
@@ -38,51 +38,6 @@ namespace ArkServerManager.Plugin.Discord {
         public string PublicIPCheckUrl {
             get {
                 return ((string)(this["PublicIPCheckUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LatestDownloadUrl {
-            get {
-                return ((string)(this["LatestDownloadUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LatestVersionUrl {
-            get {
-                return ((string)(this["LatestVersionUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LatestBetaDownloadUrl {
-            get {
-                return ((string)(this["LatestBetaDownloadUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LatestBetaVersionUrl {
-            get {
-                return ((string)(this["LatestBetaVersionUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ArkServerManager.Plugin.Discord.zip")]
-        public string PluginZipFilename {
-            get {
-                return ((string)(this["PluginZipFilename"]));
             }
         }
         
@@ -106,7 +61,7 @@ namespace ArkServerManager.Plugin.Discord {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1B745000-6389-4770-9509-C6A05E209323")]
         public string PluginCode {
             get {
                 return ((string)(this["PluginCode"]));
@@ -119,6 +74,84 @@ namespace ArkServerManager.Plugin.Discord {
         public string PluginName {
             get {
                 return ((string)(this["PluginName"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/Plugins/Discor" +
+            "d/latest.zip")]
+        public string LatestDownloadUrl {
+            get {
+                return ((string)(this["LatestDownloadUrl"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/Plugins/Discor" +
+            "d/latest.txt")]
+        public string LatestVersionUrl {
+            get {
+                return ((string)(this["LatestVersionUrl"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/Plugins/Discor" +
+            "d/beta/latest.zip")]
+        public string LatestBetaDownloadUrl {
+            get {
+                return ((string)(this["LatestBetaDownloadUrl"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/Plugins/Discor" +
+            "d/beta/latest.txt")]
+        public string LatestBetaVersionUrl {
+            get {
+                return ((string)(this["LatestBetaVersionUrl"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ServerManager.Plugin.Discord.zip")]
+        public string PluginZipFilename {
+            get {
+                return ((string)(this["PluginZipFilename"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("_discordplugin.cfg")]
+        public string ConfigFile {
+            get {
+                return ((string)(this["ConfigFile"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/Plugins/Discor" +
+            "d/VersionFeed.xml")]
+        public string VersionFeedUrl {
+            get {
+                return ((string)(this["VersionFeedUrl"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/Plugins/Discor" +
+            "d/beta/VersionFeed.xml")]
+        public string VersionBetaFeedUrl {
+            get {
+                return ((string)(this["VersionBetaFeedUrl"]));
             }
         }
     }

@@ -1,8 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using ARK_Server_Manager.Lib;
+﻿using ServerManagerTool.Common.Utils;
+using System.Windows;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for CustomConfigDataWindow.xaml
@@ -12,7 +11,7 @@ namespace ARK_Server_Manager
         public CustomConfigDataWindow()
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.DataContext = this;
         }

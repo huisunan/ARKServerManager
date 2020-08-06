@@ -1,9 +1,8 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using ARK_Server_Manager.Lib;
+﻿using ServerManagerTool.Common.Utils;
+using System.Windows;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for CommandLineWindow.xaml
@@ -15,7 +14,7 @@ namespace ARK_Server_Manager
         public CommandLineWindow(string commandLine)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.DataContext = commandLine;
         }

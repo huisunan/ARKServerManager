@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib.ViewModel
+namespace ServerManagerTool.Lib.ViewModel
 {
     public class SupplyCrate : DependencyObject
     {
@@ -28,6 +28,8 @@ namespace ARK_Server_Manager.Lib.ViewModel
         }
 
         public string DisplayName => GameData.FriendlySupplyCrateNameForClass(ClassName);
+
+        public string DisplayMod => GameData.FriendlyNameForClass($"Mod_{Mod}", true) ?? Mod;
 
         public SupplyCrate Duplicate()
         {

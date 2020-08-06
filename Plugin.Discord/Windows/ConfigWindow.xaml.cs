@@ -1,4 +1,4 @@
-﻿using ArkServerManager.Plugin.Common;
+﻿using ServerManagerTool.Plugin.Common;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace ArkServerManager.Plugin.Discord.Windows
+namespace ServerManagerTool.Plugin.Discord.Windows
 {
     /// <summary>
     /// Interaction logic for ConfigWindow.xaml
@@ -151,16 +151,53 @@ namespace ArkServerManager.Plugin.Discord.Windows
             }
         }
 
+        private void PatchNotes_Click(object sender, RoutedEventArgs e)
+        {
+            var url = string.Empty;
+            if (Plugin.BetaEnabled)
+                url = Config.Default.VersionBetaFeedUrl;
+            else
+                url = Config.Default.VersionFeedUrl;
+
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                var window = new VersionFeedWindow(Plugin, url);
+                window.Owner = this;
+                window.ShowDialog();
+                this.BringIntoView();
+            }
+        }
+
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                BackupExistingConfig();
                 SaveConfig();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"ERROR: {nameof(Save_Click)}\r\n{ex.Message}");
                 MessageBox.Show(ResourceUtils.GetResourceString(this.Resources, "ConfigWindow_SaveErrorLabel"), ResourceUtils.GetResourceString(this.Resources, "ConfigWindow_SaveErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BackupExistingConfig()
+        {
+            var configFile = Path.Combine(PluginHelper.PluginFolder, Config.Default.ConfigFile);
+            if (!File.Exists(configFile))
+                return;
+
+            var backupFile = Path.ChangeExtension(configFile, "bak");
+
+            try
+            {
+                File.Copy(configFile, backupFile, true);
+            }
+            catch
+            {
+                // do nothing, just exit if cannot backup existing config file
+                throw;
             }
         }
 
@@ -226,9 +263,115 @@ namespace ArkServerManager.Plugin.Discord.Windows
 
         private void SaveConfig()
         {
-            var configFile = Path.Combine(PluginHelper.PluginFolder, DiscordPluginConfig.CONFIG_FILENAME);
+            var configFile = Path.Combine(PluginHelper.PluginFolder, Config.Default.ConfigFile);
             JsonUtils.SerializeToFile(PluginConfig, configFile);
             PluginConfig?.CommitChanges();
         }
+
+        #region Drag and Drop
+
+        private static readonly DependencyProperty DraggedItemProperty = DependencyProperty.Register(nameof(DraggedItem), typeof(ConfigProfile), typeof(ConfigWindow), new PropertyMetadata(null));
+
+        private ConfigProfile DraggedItem
+        {
+            get { return GetValue(DraggedItemProperty) as ConfigProfile; }
+            set { SetValue(DraggedItemProperty, value); }
+        }
+
+        private bool IsDragging { get; set; }
+
+        private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ResetDragDrop();
+
+            // check fi the column is a template column (no drag-n-drop for those column types)
+            var cell = WindowUtils.TryFindFromPoint<DataGridCell>((UIElement)sender, e.GetPosition(ConfigsGrid));
+            if (cell != null) return;
+
+            // check if we have a valid row
+            var row = WindowUtils.TryFindFromPoint<DataGridRow>((UIElement)sender, e.GetPosition(ConfigsGrid));
+            if (row == null) return;
+
+            // set flag that indicates we're capturing mouse movements
+            IsDragging = true;
+            DraggedItem = (ConfigProfile)row.Item;
+        }
+
+        private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (!IsDragging)
+            {
+                if (popup.IsOpen)
+                    popup.IsOpen = false;
+                return;
+            }
+
+            //get the target item
+            var targetItem = (ConfigProfile)ConfigsGrid.SelectedItem;
+
+            if (targetItem == null || !ReferenceEquals(DraggedItem, targetItem))
+            {
+                //get target index
+                var targetIndex = PluginConfig.ConfigProfiles.IndexOf(targetItem);
+
+                //move source at the target's location
+                Move(DraggedItem, targetIndex);
+
+                //select the dropped item
+                ConfigsGrid.SelectedItem = DraggedItem;
+            }
+
+            //reset
+            ResetDragDrop();
+        }
+
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (!IsDragging || e.LeftButton != MouseButtonState.Pressed)
+            {
+                if (popup.IsOpen)
+                    popup.IsOpen = false;
+                return;
+            }
+
+            // display the popup if it hasn't been opened yet
+            if (!popup.IsOpen)
+            {
+                // switch to read-only mode
+                ConfigsGrid.IsReadOnly = true;
+
+                // make sure the popup is visible
+                popup.IsOpen = true;
+            }
+
+            var popupSize = new Size(popup.ActualWidth, popup.ActualHeight);
+            popup.PlacementRectangle = new Rect(e.GetPosition(this), popupSize);
+
+            // make sure the row under the grid is being selected
+            var position = e.GetPosition(ConfigsGrid);
+            var row = WindowUtils.TryFindFromPoint<DataGridRow>(ConfigsGrid, position);
+            if (row != null) ConfigsGrid.SelectedItem = row.Item;
+        }
+
+        private void Move(ConfigProfile draggedItem, int newIndex)
+        {
+            if (draggedItem == null)
+                return;
+
+            var index = PluginConfig.ConfigProfiles.IndexOf(draggedItem);
+            if (index < 0)
+                return;
+
+            PluginConfig.ConfigProfiles.Move(index, newIndex);
+        }
+
+        private void ResetDragDrop()
+        {
+            IsDragging = false;
+            popup.IsOpen = false;
+            ConfigsGrid.IsReadOnly = false;
+        }
+
+        #endregion
     }
 }

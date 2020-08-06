@@ -17,7 +17,7 @@ namespace ArkData
 
         public TribeData()
         {
-            this.Players = (ICollection<PlayerData>)new HashSet<PlayerData>();
+            this.Players = new HashSet<PlayerData>();
         }
     }
 }

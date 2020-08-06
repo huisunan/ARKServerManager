@@ -14,7 +14,7 @@ namespace WPFSharp.Globalizer.Controls
             };
             SetBinding(ItemsSourceProperty, itemSourceBinding);
 
-            SelectionChanged += LanguageSelectionComboBox_SelectionChanged;
+            SelectionChanged += StyleSelectionComboBox_SelectionChanged;
 
             var selectedItemBinding = new Binding("SelectedStyle")
             {
@@ -24,11 +24,11 @@ namespace WPFSharp.Globalizer.Controls
             SetBinding(SelectedItemProperty, selectedItemBinding);
         }
 
-        void LanguageSelectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        void StyleSelectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var lang = e.AddedItems[0].ToString();
-            if (!string.IsNullOrWhiteSpace(lang))
-                GlobalizedApplication.Instance.StyleManager.SwitchStyle($"{lang}.xaml");
+            var style = e.AddedItems[0].ToString();
+            if (!string.IsNullOrWhiteSpace(style))
+                GlobalizedApplication.Instance.StyleManager.SwitchStyle(style);
         }
     }
 }

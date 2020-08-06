@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "O4AajRKzL7GfGV3L+eqUu7lTdXxKuz77ek2vUfj06CIMOxnQJgus1u1DEPAewQio+OQ4qbGXmchAU57vqoYcSA==",
+  "success": true,
+  "projectFilePath": "D:\\GitHub\\ARK-Dedicated-Server-Tool\\ServerManager.Common\\ServerManager.Common.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Brett\\.nuget\\packages\\dotnetzip\\1.13.8\\dotnetzip.1.13.8.nupkg.sha512",
+    "C:\\Users\\Brett\\.nuget\\packages\\microsoft.tpl.dataflow\\4.5.24\\microsoft.tpl.dataflow.4.5.24.nupkg.sha512",
+    "C:\\Users\\Brett\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512",
+    "C:\\Users\\Brett\\.nuget\\packages\\nlog\\4.7.2\\nlog.4.7.2.nupkg.sha512",
+    "C:\\Users\\Brett\\.nuget\\packages\\taskscheduler\\2.8.19\\taskscheduler.2.8.19.nupkg.sha512",
+    "C:\\Users\\Brett\\.nuget\\packages\\windowsfirewallhelper\\1.6.3.40\\windowsfirewallhelper.1.6.3.40.nupkg.sha512"
+  ],
+  "logs": []
+}

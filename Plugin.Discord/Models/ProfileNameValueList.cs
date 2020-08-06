@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace ArkServerManager.Plugin.Discord
+namespace ServerManagerTool.Plugin.Discord
 {
     internal class ProfileNameValueList : List<ProfileNameValue>, IBindable, INotifyCollectionChanged
     {

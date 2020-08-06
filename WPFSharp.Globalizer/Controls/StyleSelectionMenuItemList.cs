@@ -11,7 +11,7 @@ namespace WPFSharp.Globalizer.Controls
     {
         public StyleSelectionMenuItemList()
         {
-            ItemsSource = ItemsSource = AvailableStyles.Instance;
+            ItemsSource = AvailableStyles.Instance;
 
             var checkableMenuItemStyle = new Style { TargetType = typeof(MenuItem) };
 
@@ -41,9 +41,9 @@ namespace WPFSharp.Globalizer.Controls
 
         public void SelectStyle(object inStyle)
         {
-            var lang = inStyle as string;
-            if (!string.IsNullOrWhiteSpace(lang))
-                GlobalizedApplication.Instance.StyleManager.SwitchStyle(inStyle.ToString() + ".xaml");
+            var style = inStyle as string;
+            if (!string.IsNullOrWhiteSpace(style))
+                GlobalizedApplication.Instance.StyleManager.SwitchStyle(style);
         }
     }
 }

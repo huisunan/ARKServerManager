@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Json;
 
-namespace ArkServerManager.Plugin.Common
+namespace ServerManagerTool.Plugin.Common
 {
     public static class JsonUtils
     {

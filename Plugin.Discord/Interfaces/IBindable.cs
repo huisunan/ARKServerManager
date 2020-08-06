@@ -1,4 +1,4 @@
-﻿namespace ArkServerManager.Plugin.Discord
+﻿namespace ServerManagerTool.Plugin.Discord
 {
     internal interface IBindable
     {

@@ -1,0 +1,274 @@
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\ru-RU\ru-RU.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\es-ES\es-ES.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\zh-CN\zh-CN.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\fr-FR\fr-FR.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\pt-BR\pt-BR.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\en-AU\en-AU.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Styles\Default.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\de-DE\de-DE.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Globalization\en-US\en-US.xaml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\CrystalIsles.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\Aberration.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\PGM.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\PrimitivePlus.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\Ragnarok.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\ScorchedEarth.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\SurvivalEvolved.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\TheCenter.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\Extinction.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\Genesis.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\GameData\Valguero.gamedata
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\NLog.config
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ARK Server Manager.exe.config
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ARK Server Manager.exe.manifest
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ARK Server Manager.application
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ARK Server Manager.exe
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ARK Server Manager.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ArkData.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ARKServerManager.Common.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\DotNetZip.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\EO.Wpf.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Microsoft.Win32.TaskScheduler.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.Shell.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Newtonsoft.Json.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\NeXt.Vdf.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\NLog.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\QueryMaster.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManager.Common.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManager.Plugin.Common.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManagerUpdater.exe
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\System.Threading.Tasks.Dataflow.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\System.Windows.Interactivity.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\TinyCsvParser.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\WPFSharp.Globalizer.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\WindowsFirewallHelper.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ArkData.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ARKServerManager.Common.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\NeXt.Vdf.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManager.Plugin.Common.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\QueryMaster.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManager.Common.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManager.Common.dll.config
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManagerUpdater.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ServerManagerUpdater.exe.config
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\WPFSharp.Globalizer.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\DotNetZip.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\DotNetZip.xml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Microsoft.Win32.TaskScheduler.xml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.xml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.Shell.xml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Newtonsoft.Json.xml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\NLog.xml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\de\Microsoft.Win32.TaskScheduler.resources.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\es\Microsoft.Win32.TaskScheduler.resources.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\fr\Microsoft.Win32.TaskScheduler.resources.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\it\Microsoft.Win32.TaskScheduler.resources.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\pl\Microsoft.Win32.TaskScheduler.resources.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\ru\Microsoft.Win32.TaskScheduler.resources.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\zh-CN\Microsoft.Win32.TaskScheduler.resources.dll
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARKServerManager.csprojAssemblyReference.cache
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Interop.IWshRuntimeLibrary.dll
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARKServerManager.csproj.ResolveComReference.cache
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\AddUserWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\GameDataWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ProcessorAffinityWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ProfileSyncWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\CustomConfigDataWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ProgressWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\AutoUpdateWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\TribeProfileWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\CommandLineWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\GlobalSettingsControl.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\AddUserWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\PlayerListWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\GameDataWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ProcessorAffinityWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ProfileSyncWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\CustomConfigDataWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\PluginsWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ServerMonitorWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\VersionFeedWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\WorldSaveRestoreWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\WorkshopFilesWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ShutdownWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ModDetailsWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ProgressWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\AutoUpdateWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\OpenRCONWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\PlayerProfileWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\TribeProfileWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\CommandLineWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\GlobalSettingsControl.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\MainWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\RCONWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ServerSettingsControl.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\SettingsWindow.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\App.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager_Content.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\GeneratedInternalTypeHelper.g.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager_MarkupCompile.cache
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager_MarkupCompile.lref
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\PlayerListWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\PluginsWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ServerMonitorWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\VersionFeedWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\WorldSaveRestoreWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\WorkshopFilesWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ShutdownWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ModDetailsWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\OpenRCONWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\PlayerProfileWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\MainWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\RCONWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\ServerSettingsControl.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\Windows\SettingsWindow.baml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager.g.resources
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARKServerManager.csproj.CoreCompileInputs.cache
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager.TrustInfo.xml
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager.exe.manifest
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager.application
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARKServerManager.csproj.CopyComplete
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager.exe
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Debug\ARK Server Manager.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Hardcodet.Wpf.TaskbarNotification.dll
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Hardcodet.Wpf.TaskbarNotification.pdb
+D:\Development\ServerManagers\Main\ARKServerManager\bin\Debug\Hardcodet.Wpf.TaskbarNotification.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\ru-RU\ru-RU.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\es-ES\es-ES.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\zh-CN\zh-CN.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\fr-FR\fr-FR.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\pt-BR\pt-BR.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\en-AU\en-AU.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Styles\Default.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\de-DE\de-DE.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Globalization\en-US\en-US.xaml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\CrystalIsles.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\Aberration.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\PGM.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\PrimitivePlus.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\Ragnarok.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\ScorchedEarth.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\SurvivalEvolved.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\TheCenter.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\Extinction.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\Genesis.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\GameData\Valguero.gamedata
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\NLog.config
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ARK Server Manager.exe.config
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ARK Server Manager.exe.manifest
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ARK Server Manager.application
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ARK Server Manager.exe
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ARK Server Manager.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ArkData.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ARKServerManager.Common.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\DotNetZip.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\EO.Wpf.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Hardcodet.Wpf.TaskbarNotification.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Microsoft.Win32.TaskScheduler.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.Shell.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Newtonsoft.Json.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\NeXt.Vdf.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\NLog.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\QueryMaster.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManager.Common.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManager.Plugin.Common.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManagerUpdater.exe
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\System.Threading.Tasks.Dataflow.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\System.Windows.Interactivity.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\TinyCsvParser.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\WPFSharp.Globalizer.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\WindowsFirewallHelper.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ArkData.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\NeXt.Vdf.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManager.Plugin.Common.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\QueryMaster.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManager.Common.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManager.Common.dll.config
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManagerUpdater.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ServerManagerUpdater.exe.config
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\WPFSharp.Globalizer.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ARKServerManager.Common.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\DotNetZip.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\DotNetZip.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Hardcodet.Wpf.TaskbarNotification.pdb
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Hardcodet.Wpf.TaskbarNotification.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Microsoft.Win32.TaskScheduler.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Microsoft.WindowsAPICodePack.Shell.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\Newtonsoft.Json.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\NLog.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\System.Threading.Tasks.Dataflow.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\de\Microsoft.Win32.TaskScheduler.resources.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\es\Microsoft.Win32.TaskScheduler.resources.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\fr\Microsoft.Win32.TaskScheduler.resources.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\it\Microsoft.Win32.TaskScheduler.resources.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\pl\Microsoft.Win32.TaskScheduler.resources.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\ru\Microsoft.Win32.TaskScheduler.resources.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\bin\Debug\zh-CN\Microsoft.Win32.TaskScheduler.resources.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARKServerManager.csprojAssemblyReference.cache
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Interop.IWshRuntimeLibrary.dll
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARKServerManager.csproj.ResolveComReference.cache
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\AddUserWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\GameDataWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ProcessorAffinityWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ProfileSyncWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\CustomConfigDataWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\PluginsWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\VersionFeedWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\WorldSaveRestoreWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\WorkshopFilesWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ModDetailsWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ProgressWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\AutoUpdateWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\OpenRCONWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\PlayerProfileWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\TribeProfileWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\CommandLineWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\GlobalSettingsControl.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\AddUserWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\PlayerListWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\GameDataWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ProcessorAffinityWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ProfileSyncWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\CustomConfigDataWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\PluginsWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ServerMonitorWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\VersionFeedWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\WorldSaveRestoreWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\WorkshopFilesWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ShutdownWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ModDetailsWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ProgressWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\AutoUpdateWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\OpenRCONWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\PlayerProfileWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\TribeProfileWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\CommandLineWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\GlobalSettingsControl.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\MainWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\RCONWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ServerSettingsControl.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\SettingsWindow.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\App.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager_Content.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\GeneratedInternalTypeHelper.g.cs
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager_MarkupCompile.cache
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager_MarkupCompile.lref
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\PlayerListWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ServerMonitorWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ShutdownWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\MainWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\RCONWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\ServerSettingsControl.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\Windows\SettingsWindow.baml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager.g.resources
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARKServerManager.csproj.CoreCompileInputs.cache
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager.TrustInfo.xml
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager.exe.manifest
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager.application
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARKServerManager.csproj.CopyComplete
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager.exe
+D:\GitHub\ARK-Dedicated-Server-Tool\ARKServerManager\obj\Debug\ARK Server Manager.pdb

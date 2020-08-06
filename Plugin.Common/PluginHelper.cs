@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ServerManagerTool.Plugin.Common.Delegates;
+using ServerManagerTool.Plugin.Common.Lib;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -6,7 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 
-namespace ArkServerManager.Plugin.Common
+namespace ServerManagerTool.Plugin.Common
 {
     public sealed class PluginHelper : IDisposable
     {
@@ -17,6 +20,8 @@ namespace ArkServerManager.Plugin.Common
         private static readonly object _syncLock = new object();
 
         private readonly Object _syncLockProcessAlert = new Object();
+        private readonly Object _syncLockFetchProfiles = new Object();
+        private FetchProfilesDelegate _fetchProfilesCallback;
         private bool _disposed;
 
         private PluginHelper()
@@ -32,7 +37,7 @@ namespace ArkServerManager.Plugin.Common
                 if (_instance != null)
                     return _instance;
 
-                lock (_syncLock)
+                lock(_syncLock)
                 {
                     if (_instance == null)
                         _instance = new PluginHelper();
@@ -65,7 +70,7 @@ namespace ArkServerManager.Plugin.Common
         internal void AddPlugin(string folder, string pluginFile)
         {
             if (!CheckPluginFile(pluginFile))
-                throw new PluginException("The selected file does not contain Ark Server Manager plugins or is for a previous version of Ark Server Manager.");
+                throw new PluginException("The selected file does not contain server manager plugins or is for a previous version of server manager.");
 
             var pluginFolder = Path.Combine(folder, PLUGINFILE_FOLDER);
             if (!Directory.Exists(pluginFolder))
@@ -143,6 +148,14 @@ namespace ArkServerManager.Plugin.Common
                 File.Delete(pluginFile);
         }
 
+        public IList<Profile> FetchProfileList()
+        {
+            lock (_syncLockFetchProfiles)
+            {
+                return _fetchProfilesCallback?.Invoke() ?? new List<Profile>();
+            }
+        }
+
         internal void LoadPlugin(string pluginFile)
         {
             if (string.IsNullOrWhiteSpace(pluginFile))
@@ -183,6 +196,18 @@ namespace ArkServerManager.Plugin.Common
                             plugin.Initialize();
 
                             Plugins.Add(new PluginItem { Plugin = plugin, PluginFile = pluginFile, PluginType = nameof(IAlertPlugin) });
+                        }
+                    }
+                    else if (type.GetInterface(typeof(IPlugin).Name) != null)
+                    {
+                        var plugin = assembly.CreateInstance(type.FullName) as IPlugin;
+                        if (plugin != null && plugin.Enabled)
+                        {
+                            if (type.GetInterface(typeof(IBeta).Name) != null)
+                                ((IBeta)plugin).BetaEnabled = BetaEnabled;
+                            plugin.Initialize();
+
+                            Plugins.Add(new PluginItem { Plugin = plugin, PluginFile = pluginFile, PluginType = nameof(IPlugin) });
                         }
                     }
                 }
@@ -244,11 +269,16 @@ namespace ArkServerManager.Plugin.Common
 
                 foreach (var pluginItem in plugins)
                 {
-                    ((IAlertPlugin)pluginItem.Plugin).HandleAlert(alertType, profileName, message);
+                    ((IAlertPlugin)pluginItem.Plugin).HandleAlert(alertType, profileName, message.ToString());
                 }
             }
 
             return true;
+        }
+
+        internal void SetFetchProfileCallback(FetchProfilesDelegate callback)
+        {
+            _fetchProfilesCallback = callback;
         }
 
         public void Dispose()
@@ -265,6 +295,7 @@ namespace ArkServerManager.Plugin.Common
 
             if (disposing)
             {
+                _fetchProfilesCallback = null;
                 _instance = null;
             }
 

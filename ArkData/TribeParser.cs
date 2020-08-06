@@ -24,9 +24,11 @@ namespace ArkData
 
             byte[] data = File.ReadAllBytes(fileName);
 
+            var tribeId = Helpers.GetInt(data, "TribeId");
+
             return new TribeData()
             {
-                Id = Helpers.GetInt(data, "TribeID"),
+                Id = tribeId > -1 ? tribeId : Helpers.GetInt(data, "TribeID"),
                 Name = Helpers.GetString(data, "TribeName"),
                 OwnerId = (int?)GetOwnerId(data),
 

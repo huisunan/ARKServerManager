@@ -1,0 +1,20 @@
+﻿ARK Server Manager
+
+
+winexe
+C#
+.cs
+D:\Development\ServerManagers\Main\ARKServerManager\obj\Release\
+ServerManagerTool
+none
+false
+TRACE
+D:\Development\ServerManagers\Main\ARKServerManager\App.xaml
+241649487011
+21-1443164294
+100-215417005
+96-1101927942
+Windows\AddUserWindow.xaml;Windows\PlayerListWindow.xaml;Windows\GameDataWindow.xaml;Windows\ProcessorAffinityWindow.xaml;Windows\ProfileSyncWindow.xaml;Windows\CustomConfigDataWindow.xaml;Windows\PluginsWindow.xaml;Windows\ServerMonitorWindow.xaml;Windows\VersionFeedWindow.xaml;Windows\WorldSaveRestoreWindow.xaml;Windows\WorkshopFilesWindow.xaml;Windows\ShutdownWindow.xaml;Windows\ModDetailsWindow.xaml;Windows\ProgressWindow.xaml;Windows\AutoUpdateWindow.xaml;Windows\OpenRCONWindow.xaml;Windows\PlayerProfileWindow.xaml;Windows\TribeProfileWindow.xaml;Windows\CommandLineWindow.xaml;Windows\GlobalSettingsControl.xaml;Windows\MainWindow.xaml;Windows\RCONWindow.xaml;Windows\ServerSettingsControl.xaml;Windows\SettingsWindow.xaml;
+
+True
+

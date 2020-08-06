@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 
-namespace ArkServerManager.Plugin.Common
+namespace ServerManagerTool.Plugin.Common
 {
     public interface IPlugin
     {

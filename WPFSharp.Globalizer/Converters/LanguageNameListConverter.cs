@@ -1,6 +1,7 @@
 ﻿// See license at end of the file
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 
@@ -10,7 +11,7 @@ namespace WPFSharp.Globalizer.Converters
     {
         #region IValueConverter Members
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var converter = new LanguageNameConverter();
             var list = value as List<string>;
@@ -19,7 +20,7 @@ namespace WPFSharp.Globalizer.Converters
             return list.Select(lang => converter.Convert(lang, typeof(string), null, culture).ToString()).ToList();
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

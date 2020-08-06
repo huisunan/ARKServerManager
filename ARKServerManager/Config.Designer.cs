@@ -8,11 +8,11 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ARK_Server_Manager {
+namespace ServerManagerTool {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.7.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
     public sealed partial class Config : global::System.Configuration.ApplicationSettingsBase {
         
         private static Config defaultInstance = ((Config)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Config())));
@@ -173,18 +173,9 @@ namespace ARK_Server_Manager {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute(".profile")]
-        public string ProfileExtensionOld {
+        public string ProfileExtension {
             get {
-                return ((string)(this["ProfileExtensionOld"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("TheIsland")]
-        public string DefaultServerMap {
-            get {
-                return ((string)(this["DefaultServerMap"]));
+                return ((string)(this["ProfileExtension"]));
             }
         }
         
@@ -298,7 +289,8 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.s3.amazonaws.com/release/latest.txt")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/latest.txt" +
+            "")]
         public string LatestASMVersionUrl {
             get {
                 return ((string)(this["LatestASMVersionUrl"]));
@@ -311,15 +303,6 @@ namespace ARK_Server_Manager {
         public int UpdateCheckTime {
             get {
                 return ((int)(this["UpdateCheckTime"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string DefaultSteamAPIKey {
-            get {
-                return ((string)(this["DefaultSteamAPIKey"]));
             }
         }
         
@@ -1123,6 +1106,18 @@ namespace ARK_Server_Manager {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SectionCustomGameSettingsIsExpanded {
+            get {
+                return ((bool)(this["SectionCustomGameSettingsIsExpanded"]));
+            }
+            set {
+                this["SectionCustomGameSettingsIsExpanded"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool ServerUpdate_OnServerStart {
             get {
                 return ((bool)(this["ServerUpdate_OnServerStart"]));
@@ -1224,7 +1219,8 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.s3.amazonaws.com/beta/latest.txt")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/beta/lates" +
+            "t.txt")]
         public string LatestASMBetaVersionUrl {
             get {
                 return ((string)(this["LatestASMBetaVersionUrl"]));
@@ -1233,7 +1229,8 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.s3.amazonaws.com/beta/latest.zip")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/beta/lates" +
+            "t.zip")]
         public string LatestASMBetaDownloadUrl {
             get {
                 return ((string)(this["LatestASMBetaDownloadUrl"]));
@@ -1242,7 +1239,8 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.s3.amazonaws.com/release/latest.zip")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/latest.zip" +
+            "")]
         public string LatestASMDownloadUrl {
             get {
                 return ((string)(this["LatestASMDownloadUrl"]));
@@ -1251,7 +1249,7 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.freeforums.net/thread/3/downloads")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.freeforums.net/thread/5193/downloads")]
         public string LatestASMPatchNotesUrl {
             get {
                 return ((string)(this["LatestASMPatchNotesUrl"]));
@@ -1389,7 +1387,7 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("_Backup")]
+        [global::System.Configuration.DefaultSettingValueAttribute("_backup_")]
         public string BackupDir {
             get {
                 return ((string)(this["BackupDir"]));
@@ -1450,15 +1448,6 @@ namespace ARK_Server_Manager {
             }
             set {
                 this["SectionSupplyCrateOverridesIsExpanded"] = value;
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ServerCallUrlFormat {
-            get {
-                return ((string)(this["ServerCallUrlFormat"]));
             }
         }
         
@@ -1799,21 +1788,24 @@ namespace ARK_Server_Manager {
             }
         }
         
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Mod updates have been detected:")]
+        public string Alert_ModUpdateDetected {
+            get {
+                return ((string)(this["Alert_ModUpdateDetected"]));
+            }
+            set {
+                this["Alert_ModUpdateDetected"] = value;
+            }
+        }
+        
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.freeforums.net/board/22/plugins")]
         public string ASMPluginUrl {
             get {
                 return ((string)(this["ASMPluginUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".asmprofile")]
-        public string ProfileExtension {
-            get {
-                return ((string)(this["ProfileExtension"]));
             }
         }
         
@@ -1895,12 +1887,12 @@ namespace ARK_Server_Manager {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ServerShutdown_UseDoExit {
+        public bool ServerShutdown_UseShutdownCommand {
             get {
-                return ((bool)(this["ServerShutdown_UseDoExit"]));
+                return ((bool)(this["ServerShutdown_UseShutdownCommand"]));
             }
             set {
-                this["ServerShutdown_UseDoExit"] = value;
+                this["ServerShutdown_UseShutdownCommand"] = value;
             }
         }
         
@@ -1955,7 +1947,7 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ED89B8FA-0E0B-46CC-A90B-595E69AE9A7E")]
         public string ServerManagerCode {
             get {
                 return ((string)(this["ServerManagerCode"]));
@@ -2010,6 +2002,17 @@ namespace ARK_Server_Manager {
         public string FirewallRulePrefix {
             get {
                 return ((string)(this["FirewallRulePrefix"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=bletch1971%40hotmai" +
+            "l%2ecom&lc=US&item_name=Server%20Manager&currency_code=USD&bn=PP%2dDonationsBF%3" +
+            "abtn_donate_SM%2egif%3aNonHosted")]
+        public string DonationUrl {
+            get {
+                return ((string)(this["DonationUrl"]));
             }
         }
         
@@ -2078,7 +2081,8 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/VersionFee" +
+            "d.xml")]
         public string ServerManagerVersionFeedUrl {
             get {
                 return ((string)(this["ServerManagerVersionFeedUrl"]));
@@ -2087,34 +2091,11 @@ namespace ARK_Server_Manager {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/beta/Versi" +
+            "onFeed.xml")]
         public string ServerManagerVersionBetaFeedUrl {
             get {
                 return ((string)(this["ServerManagerVersionBetaFeedUrl"]));
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("300")]
-        public int RCON_MaximumPlayerAvatars {
-            get {
-                return ((int)(this["RCON_MaximumPlayerAvatars"]));
-            }
-            set {
-                this["RCON_MaximumPlayerAvatars"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool RCON_ShowPlayerAvatars {
-            get {
-                return ((bool)(this["RCON_ShowPlayerAvatars"]));
-            }
-            set {
-                this["RCON_ShowPlayerAvatars"] = value;
             }
         }
         
@@ -2202,6 +2183,327 @@ namespace ARK_Server_Manager {
             }
             set {
                 this["SectionSOTFEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Globalization\\en-US\\en-US.xaml")]
+        public string DefaultGlobalizationFile {
+            get {
+                return ((string)(this["DefaultGlobalizationFile"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("doexit")]
+        public string ServerShutdownCommand {
+            get {
+                return ((string)(this["ServerShutdownCommand"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("saveworld")]
+        public string ServerSaveCommand {
+            get {
+                return ((string)(this["ServerSaveCommand"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ServerStatus_EnableActions {
+            get {
+                return ((bool)(this["ServerStatus_EnableActions"]));
+            }
+            set {
+                this["ServerStatus_EnableActions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ServerStatus_ShowActionConfirmation {
+            get {
+                return ((bool)(this["ServerStatus_ShowActionConfirmation"]));
+            }
+            set {
+                this["ServerStatus_ShowActionConfirmation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Styles\\Default.xaml")]
+        public string DefaultStyleFile {
+            get {
+                return ((string)(this["DefaultStyleFile"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ArkServerManager")]
+        public string ScheduledTaskFolder {
+            get {
+                return ((string)(this["ScheduledTaskFolder"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int AutoUpdate_SequencialDelayPeriod {
+            get {
+                return ((int)(this["AutoUpdate_SequencialDelayPeriod"]));
+            }
+            set {
+                this["AutoUpdate_SequencialDelayPeriod"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SectionStackSizeOverridesEnabled {
+            get {
+                return ((bool)(this["SectionStackSizeOverridesEnabled"]));
+            }
+            set {
+                this["SectionStackSizeOverridesEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SectionStackSizeOverridesIsExpanded {
+            get {
+                return ((bool)(this["SectionStackSizeOverridesIsExpanded"]));
+            }
+            set {
+                this["SectionStackSizeOverridesIsExpanded"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool BackupWorldFile {
+            get {
+                return ((bool)(this["BackupWorldFile"]));
+            }
+            set {
+                this["BackupWorldFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoUpdate_VerifyServerAfterUpdate {
+            get {
+                return ((bool)(this["AutoUpdate_VerifyServerAfterUpdate"]));
+            }
+            set {
+                this["AutoUpdate_VerifyServerAfterUpdate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://arkservermanager.freeforums.net/board/25/game-data")]
+        public string GameDataUrl {
+            get {
+                return ((string)(this["GameDataUrl"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1100")]
+        public double MainWindow_Width {
+            get {
+                return ((double)(this["MainWindow_Width"]));
+            }
+            set {
+                this["MainWindow_Width"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("900")]
+        public double MainWindow_Height {
+            get {
+                return ((double)(this["MainWindow_Height"]));
+            }
+            set {
+                this["MainWindow_Height"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("900")]
+        public double ServerMonitorWindow_Width {
+            get {
+                return ((double)(this["ServerMonitorWindow_Width"]));
+            }
+            set {
+                this["ServerMonitorWindow_Width"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public double ServerMonitorWindow_Height {
+            get {
+                return ((double)(this["ServerMonitorWindow_Height"]));
+            }
+            set {
+                this["ServerMonitorWindow_Height"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UpdateDirectoryPermissions {
+            get {
+                return ((bool)(this["UpdateDirectoryPermissions"]));
+            }
+            set {
+                this["UpdateDirectoryPermissions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ServerShutdown_CheckForOnlinePlayers {
+            get {
+                return ((bool)(this["ServerShutdown_CheckForOnlinePlayers"]));
+            }
+            set {
+                this["ServerShutdown_CheckForOnlinePlayers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ServerShutdown_SendShutdownMessages {
+            get {
+                return ((bool)(this["ServerShutdown_SendShutdownMessages"]));
+            }
+            set {
+                this["ServerShutdown_SendShutdownMessages"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AutoRestart_EnabledGracePeriod {
+            get {
+                return ((bool)(this["AutoRestart_EnabledGracePeriod"]));
+            }
+            set {
+                this["AutoRestart_EnabledGracePeriod"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int AutoRestart_GracePeriod {
+            get {
+                return ((int)(this["AutoRestart_GracePeriod"]));
+            }
+            set {
+                this["AutoRestart_GracePeriod"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15000")]
+        public int ServerStatusWatcher_LocalStatusQueryDelay {
+            get {
+                return ((int)(this["ServerStatusWatcher_LocalStatusQueryDelay"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("120000")]
+        public int ServerStatusWatcher_RemoteStatusQueryDelay {
+            get {
+                return ((int)(this["ServerStatusWatcher_RemoteStatusQueryDelay"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MainWindow_MinimizeToTray {
+            get {
+                return ((bool)(this["MainWindow_MinimizeToTray"]));
+            }
+            set {
+                this["MainWindow_MinimizeToTray"] = value;
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Engine.ini")]
+        public string ServerEngineConfigFile {
+            get {
+                return ((string)(this["ServerEngineConfigFile"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SectionCustomEngineSettingsIsExpanded {
+            get {
+                return ((bool)(this["SectionCustomEngineSettingsIsExpanded"]));
+            }
+            set {
+                this["SectionCustomEngineSettingsIsExpanded"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SectionCustomEngineSettingsEnabled {
+            get {
+                return ((bool)(this["SectionCustomEngineSettingsEnabled"]));
+            }
+            set {
+                this["SectionCustomEngineSettingsEnabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public double ServerMonitorMessageOutput_Height {
+            get {
+                return ((double)(this["ServerMonitorMessageOutput_Height"]));
+            }
+            set {
+                this["ServerMonitorMessageOutput_Height"] = value;
             }
         }
     }

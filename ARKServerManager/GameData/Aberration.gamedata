@@ -1,7 +1,7 @@
 {
   "Application": "ark",
-  "Version": "1.0.0",
-  "Created": "2018-04-21T11:00:00.0000000Z",
+  "Version": "1.0.1",
+  "Created": "2020-04-21T00:00:00.0000000Z",
   "Creatures": [
     {
       "NameTag": "Achatina",
@@ -9,8 +9,7 @@
       "IsTameable": "True",
       "ClassName": "Achatina_Character_BP_Aberrant_C",
       "Description": "Aberrant Achatina",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Angler",
@@ -18,8 +17,7 @@
       "IsTameable": "True",
       "ClassName": "Angler_Character_BP_Aberrant_C",
       "Description": "Aberrant Anglerfish",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Ankylo",
@@ -27,8 +25,7 @@
       "IsTameable": "True",
       "ClassName": "Ankylo_Character_BP_Aberrant_C",
       "Description": "Aberrant Ankylosaurus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Arthro",
@@ -36,8 +33,7 @@
       "IsTameable": "True",
       "ClassName": "Arthro_Character_BP_Aberrant_C",
       "Description": "Aberrant Arthropluera",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Baryonyx",
@@ -45,8 +41,7 @@
       "IsTameable": "True",
       "ClassName": "Baryonyx_Character_BP_Aberrant_C",
       "Description": "Aberrant Baryonyx",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Bigfoot",
@@ -54,8 +49,7 @@
       "IsTameable": "True",
       "ClassName": "BigFoot_Character_BP_Aberrant_C",
       "Description": "Aberrant Gigantopithecus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Titanboa",
@@ -63,8 +57,7 @@
       "IsTameable": "True",
       "ClassName": "BoaFrill_Character_BP_Aberrant_C",
       "Description": "Aberrant Titanoboa",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Carno",
@@ -72,8 +65,7 @@
       "IsTameable": "True",
       "ClassName": "Carno_Character_BP_Aberrant_C",
       "Description": "Aberrant Carnotaurus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Cnidaria",
@@ -81,8 +73,7 @@
       "IsTameable": "False",
       "ClassName": "Cnidaria_Character_BP_Aberrant_C",
       "Description": "Aberrant Cnidaria",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Coel",
@@ -90,8 +81,7 @@
       "IsTameable": "False",
       "ClassName": "Coel_Character_BP_Aberrant_C",
       "Description": "Aberrant Coelacanth",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Dimetro",
@@ -99,8 +89,7 @@
       "IsTameable": "True",
       "ClassName": "Dimetro_Character_BP_Aberrant_C",
       "Description": "Aberrant Dimetrodon",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Dimorph",
@@ -108,8 +97,7 @@
       "IsTameable": "True",
       "ClassName": "Dimorph_Character_BP_Aberrant_C",
       "Description": "Aberrant Dimorphodon",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Diplocaulus",
@@ -117,8 +105,7 @@
       "IsTameable": "True",
       "ClassName": "Diplocaulus_Character_BP_Aberrant_C",
       "Description": "Aberrant Diplocaulus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Diplo",
@@ -126,8 +113,7 @@
       "IsTameable": "True",
       "ClassName": "Diplodocus_Character_BP_Aberrant_C",
       "Description": "Aberrant Diplodocus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Direbear",
@@ -135,8 +121,7 @@
       "IsTameable": "True",
       "ClassName": "Direbear_Character_BP_Aberrant_C",
       "Description": "Aberrant Direbear",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Dodo",
@@ -144,8 +129,7 @@
       "IsTameable": "True",
       "ClassName": "Dodo_Character_BP_Aberrant_C",
       "Description": "Aberrant Dodo",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Doed",
@@ -153,8 +137,7 @@
       "IsTameable": "True",
       "ClassName": "Doed_Character_BP_Aberrant_C",
       "Description": "Aberrant Doedicurus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Dragonfly",
@@ -162,8 +145,7 @@
       "IsTameable": "False",
       "ClassName": "Dragonfly_Character_BP_Aberrant_C",
       "Description": "Aberrant Meganeura",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Beetle",
@@ -171,8 +153,7 @@
       "IsTameable": "True",
       "ClassName": "DungBeetle_Character_BP_Aberrant_C",
       "Description": "Aberrant Dung Beetle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Eel",
@@ -180,8 +161,7 @@
       "IsTameable": "True",
       "ClassName": "Eel_Character_BP_Aberrant_C",
       "Description": "Aberrant Electrophorus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Equus",
@@ -189,8 +169,7 @@
       "IsTameable": "True",
       "ClassName": "Equus_Character_BP_Aberrant_C",
       "Description": "Aberrant Equus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Iguanodon",
@@ -198,8 +177,7 @@
       "IsTameable": "True",
       "ClassName": "Iguanodon_Character_BP_Aberrant_C",
       "Description": "Aberrant Iguanodon",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Lystro",
@@ -207,8 +185,7 @@
       "IsTameable": "True",
       "ClassName": "Lystro_Character_BP_Aberrant_C",
       "Description": "Aberrant Lystrosaurus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Manta",
@@ -216,8 +193,7 @@
       "IsTameable": "True",
       "ClassName": "Manta_Character_BP_Aberrant_C",
       "Description": "Aberrant Manta",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Megalania",
@@ -225,8 +201,7 @@
       "IsTameable": "True",
       "ClassName": "Megalania_Character_BP_Aberrant_C",
       "Description": "Aberrant Megalania",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Megalosaurus",
@@ -234,8 +209,7 @@
       "IsTameable": "True",
       "ClassName": "Megalosaurus_Character_BP_Aberrant_C",
       "Description": "Aberrant Megalosaurus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Moschops",
@@ -243,8 +217,7 @@
       "IsTameable": "True",
       "ClassName": "Moschops_Character_BP_Aberrant_C",
       "Description": "Aberrant Moschops",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Otter",
@@ -252,8 +225,7 @@
       "IsTameable": "True",
       "ClassName": "Otter_Character_BP_Aberrant_C",
       "Description": "Aberrant Otter",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Para",
@@ -261,8 +233,7 @@
       "IsTameable": "True",
       "ClassName": "Para_Character_BP_Aberrant_C",
       "Description": "Aberrant Parasaur",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Paracer",
@@ -270,8 +241,7 @@
       "IsTameable": "True",
       "ClassName": "Paracer_Character_BP_Aberrant_C",
       "Description": "Aberrant Paraceratherium",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Piranha",
@@ -279,8 +249,7 @@
       "IsTameable": "False",
       "ClassName": "Piranha_Character_BP_Aberrant_C",
       "Description": "Aberrant Piranha",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Purlovia",
@@ -288,8 +257,7 @@
       "IsTameable": "True",
       "ClassName": "Purlovia_Character_BP_Aberrant_C",
       "Description": "Aberrant Purlovia",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Raptor",
@@ -297,8 +265,7 @@
       "IsTameable": "True",
       "ClassName": "Raptor_Character_BP_Aberrant_C",
       "Description": "Aberrant Raptor",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Salmon",
@@ -306,8 +273,7 @@
       "IsTameable": "False",
       "ClassName": "Salmon_Character_Aberrant_C",
       "Description": "Aberrant Salmon",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Sarco",
@@ -315,8 +281,7 @@
       "IsTameable": "True",
       "ClassName": "Sarco_Character_BP_Aberrant_C",
       "Description": "Aberrant Sarco",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Scorpion",
@@ -324,8 +289,7 @@
       "IsTameable": "True",
       "ClassName": "Scorpion_Character_BP_Aberrant_C",
       "Description": "Aberrant Pulmonoscorpius",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Sheep",
@@ -333,8 +297,7 @@
       "IsTameable": "True",
       "ClassName": "Sheep_Character_BP_Aberrant_C",
       "Description": "Aberrant Ovis",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Spider",
@@ -342,8 +305,7 @@
       "IsTameable": "True",
       "ClassName": "SpiderS_Character_BP_Aberrant_C",
       "Description": "Aberrant Araneo",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Spino",
@@ -351,8 +313,7 @@
       "IsTameable": "True",
       "ClassName": "Spino_Character_BP_Aberrant_C",
       "Description": "Aberrant Spino",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Stego",
@@ -360,8 +321,7 @@
       "IsTameable": "True",
       "ClassName": "Stego_Character_BP_Aberrant_C",
       "Description": "Aberrant Stegosaurus",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Toad",
@@ -369,8 +329,7 @@
       "IsTameable": "True",
       "ClassName": "Toad_Character_BP_Aberrant_C",
       "Description": "Aberrant Beelzebufo",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Trike",
@@ -378,8 +337,7 @@
       "IsTameable": "True",
       "ClassName": "Trike_Character_BP_Aberrant_C",
       "Description": "Aberrant Triceratops",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Trilobite",
@@ -387,8 +345,7 @@
       "IsTameable": "False",
       "ClassName": "Trilobite_Character_Aberrant_C",
       "Description": "Aberrant Trilobite",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Turtle",
@@ -396,8 +353,7 @@
       "IsTameable": "True",
       "ClassName": "Turtle_Character_BP_Aberrant_C",
       "Description": "Aberrant Carbonemys",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Basilisk",
@@ -405,8 +361,7 @@
       "IsTameable": "True",
       "ClassName": "Basilisk_Character_BP_C",
       "Description": "Basilisk",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "CaveWolf",
@@ -414,8 +369,7 @@
       "IsTameable": "True",
       "ClassName": "CaveWolf_Character_BP_C",
       "Description": "Ravager",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Chupacabra",
@@ -423,8 +377,7 @@
       "IsTameable": "False",
       "ClassName": "ChupaCabra_Character_BP_C",
       "Description": "Nameless",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "CaveCrab",
@@ -432,8 +385,7 @@
       "IsTameable": "True",
       "ClassName": "Crab_Character_BP_C",
       "Description": "Karkinos",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Lamprey",
@@ -441,8 +393,7 @@
       "IsTameable": "False",
       "ClassName": "Lamprey_Character_C",
       "Description": "Lamprey",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Lantern Bird",
@@ -450,8 +401,7 @@
       "IsTameable": "True",
       "ClassName": "LanternBird_Character_BP_C",
       "Description": "Featherlight",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Lantern Goat",
@@ -459,8 +409,7 @@
       "IsTameable": "True",
       "ClassName": "LanternGoat_Character_BP_C",
       "Description": "Shinehorn",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Lantern Lizard",
@@ -468,8 +417,7 @@
       "IsTameable": "True",
       "ClassName": "LanternLizard_Character_BP_C",
       "Description": "Glowtail",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Pug",
@@ -477,8 +425,7 @@
       "IsTameable": "True",
       "ClassName": "LanternPug_Character_BP_C",
       "Description": "Bulbdog",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Lightbug",
@@ -486,8 +433,7 @@
       "IsTameable": "False",
       "ClassName": "Lightbug_Character_BaseBP_C",
       "Description": "Glowbug",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Elite Basilisk",
@@ -495,8 +441,7 @@
       "IsTameable": "False",
       "ClassName": "MegaBasilisk_Character_BP_C",
       "Description": "Alpha Basilisk",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Elite CaveCrab",
@@ -504,8 +449,7 @@
       "IsTameable": "False",
       "ClassName": "MegaCrab_Character_BP_C",
       "Description": "Alpha Karkinos",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Elite Xenomorph",
@@ -513,8 +457,7 @@
       "IsTameable": "False",
       "ClassName": "MegaXenomorph_Character_BP_Male_Surface_C",
       "Description": "Alpha Surface Reaper King",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "MoleRat",
@@ -522,8 +465,7 @@
       "IsTameable": "True",
       "ClassName": "MoleRat_Character_BP_C",
       "Description": "Roll Rat",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Bat",
@@ -531,8 +473,7 @@
       "IsTameable": "False",
       "ClassName": "Pteroteuthis_Char_BP_C",
       "Description": "Seeker",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "RockDrake",
@@ -540,8 +481,7 @@
       "IsTameable": "ByBreeding",
       "ClassName": "RockDrake_Character_BP_C",
       "Description": "Rock Drake",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": "Xenomorph",
@@ -549,8 +489,7 @@
       "IsTameable": "False",
       "ClassName": "Xenomorph_Character_BP_C",
       "Description": "Nameless Queen",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -558,8 +497,7 @@
       "IsTameable": "False",
       "ClassName": "ChupaCabra_Character_BP_Minion_C",
       "Description": "Nameless (Minion)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -567,8 +505,7 @@
       "IsTameable": "False",
       "ClassName": "ChupaCabra_Character_BP_Surface_C",
       "Description": "Nameless (Surface)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -576,8 +513,7 @@
       "IsTameable": "False",
       "ClassName": "Pteroteuthis_Char_BP_Surface_C",
       "Description": "Seeker (Surface)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -585,8 +521,7 @@
       "IsTameable": "False",
       "ClassName": "Xenomorph_Character_BP_Female_C",
       "Description": "Reaper Queen",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -594,8 +529,7 @@
       "IsTameable": "False",
       "ClassName": "Xenomorph_Character_BP_Male_C",
       "Description": "Reaper King",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -603,8 +537,7 @@
       "IsTameable": "False",
       "ClassName": "Xenomorph_Character_BP_Male_Chupa_C",
       "Description": "Subterranean Reaper King",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -612,8 +545,7 @@
       "IsTameable": "False",
       "ClassName": "Xenomorph_Character_BP_Male_Minion_C",
       "Description": "Elemental Reaper King",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -621,8 +553,7 @@
       "IsTameable": "False",
       "ClassName": "Xenomorph_Character_BP_Male_Surface_C",
       "Description": "Surface Reaper King",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -630,8 +561,7 @@
       "IsTameable": "ByBreeding",
       "ClassName": "Xenomorph_Character_BP_Male_Tamed_C",
       "Description": "Reaper King Tamed",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -639,8 +569,7 @@
       "IsTameable": "False",
       "ClassName": "Rockwell_Character_BP_C",
       "Description": "Rockwell",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -648,8 +577,7 @@
       "IsTameable": "False",
       "ClassName": "Rockwell_Character_BP_Easy_C",
       "Description": "Rockwell (Easy Variant)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -657,8 +585,7 @@
       "IsTameable": "False",
       "ClassName": "Rockwell_Character_BP_Medium_C",
       "Description": "Rockwell (Medium Variant)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -666,8 +593,7 @@
       "IsTameable": "False",
       "ClassName": "Rockwell_Character_BP_Hard_C",
       "Description": "Rockwell (Hard Variant)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -675,8 +601,7 @@
       "IsTameable": "False",
       "ClassName": "RockwellTentacle_Character_BP_C",
       "Description": "Rockwell Tentacle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -684,8 +609,7 @@
       "IsTameable": "False",
       "ClassName": "RockwellTentacle_Character_BP_Alpha_C",
       "Description": "Rockwell Tentacle (Hard Variant)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -693,8 +617,7 @@
       "IsTameable": "False",
       "ClassName": "RockwellTentacle_Character_BP_Beta_C",
       "Description": "Rockwell Tentacle (Medium Variant)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "NameTag": null,
@@ -702,8 +625,7 @@
       "IsTameable": "False",
       "ClassName": "RockwellTentacle_Character_BP_Gamma_C",
       "Description": "Rockwell Tentacle (Easy Variant)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     }
   ],
   "Engrams": [
@@ -713,8 +635,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_BasiliskSaddle_C",
       "Description": "Saddle - Basilisk",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 71,
@@ -722,8 +643,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_ChargeBattery_C",
       "Description": "Charge Battery",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 80,
@@ -731,8 +651,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_ChargeLantern_C",
       "Description": "Charge Lantern",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 34,
@@ -740,8 +659,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_ClimbingPick_C",
       "Description": "Climbing Pick",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 13,
@@ -749,8 +667,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_Fishbasket_C",
       "Description": "Fish Basket",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 40,
@@ -758,8 +675,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_GasCollector_C",
       "Description": "Gas Collector",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 62,
@@ -767,8 +683,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_Glider_C",
       "Description": "Glider Suit",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 10,
@@ -776,8 +691,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_GlowStick_C",
       "Description": "Glow Stick",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 68,
@@ -785,8 +699,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_HazardSuit_Boots_C",
       "Description": "Hazard Suit Boots",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 68,
@@ -794,8 +707,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_HazardSuit_Chest_C",
       "Description": "Hazard Suit Shirt",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 68,
@@ -803,8 +715,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_HazardSuit_Gloves_C",
       "Description": "Hazard Suit Gloves",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 68,
@@ -812,8 +723,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_HazardSuit_Helmet_C",
       "Description": "Hazard Suit Hat",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 68,
@@ -821,8 +731,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_HazardSuit_Pants_C",
       "Description": "Hazard Suit Pants",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 65,
@@ -830,8 +739,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_KarkinoSaddle_C",
       "Description": "Saddle - Karkino",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 51,
@@ -839,8 +747,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_MetalCliffPlatform_C",
       "Description": "Metal Cliff Platform",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 45,
@@ -848,8 +755,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_Pliers_C",
       "Description": "Pliers",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 15,
@@ -857,8 +763,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_PortableRopeLadder_C",
       "Description": "Portable Rope Ladder",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 47,
@@ -866,8 +771,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_RavagerSaddle_C",
       "Description": "Saddle - Ravager",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 58,
@@ -875,8 +779,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_RollratSaddle_C",
       "Description": "Saddle - Roll Rat",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 75,
@@ -884,8 +787,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_ShadowDrakeSaddle_C",
       "Description": "Saddle - Rock Drake",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 17,
@@ -893,8 +795,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_ShagRug_C",
       "Description": "Shag Rug",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 37,
@@ -902,8 +803,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_StoneCliffPlatform_C",
       "Description": "Stone Cliff Platform",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 20,
@@ -911,8 +811,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_WoodElevator_Switch_C",
       "Description": "Wood Elevator Top Switch",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 20,
@@ -920,8 +819,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_WoodElevator_Track_C",
       "Description": "Wood Elevator Track",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 30,
@@ -929,8 +827,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_WoodElevatorPlatform_Large_C",
       "Description": "Wood Elevator Platform (Large)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 23,
@@ -938,8 +835,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_WoodElevatorPlatform_Medium_C",
       "Description": "Wood Elevator Platform (Medium)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 20,
@@ -947,8 +843,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_WoodElevatorPlatform_Small_C",
       "Description": "Wood Elevator Platform (Small)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 31,
@@ -956,8 +851,7 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_ZiplineAmmo_C",
       "Description": "Zip-Line Anchor",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 54,
@@ -965,8 +859,15 @@
       "IsTekGram": false,
       "ClassName": "EngramEntry_ZiplineMotor_C",
       "Description": "Zip-Line Motor Attachment",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
+    },
+    {
+      "Level": 0,
+      "Points": 0,
+      "IsTekGram": true,
+      "ClassName": "EngramEntry_TekBed_C",
+      "Description": "Tek Sleeping Pod",
+      "Mod": "Aberration"
     },
     {
       "Level": 0,
@@ -974,8 +875,7 @@
       "IsTekGram": true,
       "ClassName": "EngramEntry_TekRockDrakeSaddle_C",
       "Description": "Tek Saddle - Rock Drake",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Level": 0,
@@ -983,8 +883,7 @@
       "IsTekGram": true,
       "ClassName": "EngramEntry_TekSniper_C",
       "Description": "Tek Railgun",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     }
   ],
   "Items": [
@@ -993,496 +892,441 @@
       "IsHarvestable": false,
       "ClassName": "PrimalItem_ChargeBattery_C",
       "Description": "Charge Battery",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Consumables",
       "IsHarvestable": false,
       "ClassName": "PrimalItem_GlowStick_C",
       "Description": "Glow Stick",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Ammunition",
       "IsHarvestable": false,
       "ClassName": "PrimalItem_PlantSpeciesZ_Grenade_C",
       "Description": "Plant Species Z Fruit",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Weapons",
       "IsHarvestable": false,
       "ClassName": "PrimalItem_TekSniper_C",
       "Description": "Tek Railgun",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Weapons",
       "IsHarvestable": false,
       "ClassName": "PrimalItem_WeaponClimbPick_C",
       "Description": "Climbing Pick",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Weapons",
       "IsHarvestable": false,
       "ClassName": "PrimalItem_WeaponRadioactiveLanternCharge_C",
       "Description": "Charge Lantern",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Ammunition",
       "IsHarvestable": false,
       "ClassName": "PrimalItemAmmo_Zipline_C",
       "Description": "Zip-Line Anchor",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Saddles",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_BasiliskSaddle_C",
       "Description": "Basilisk Saddle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Skins",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_CavewolfPromoSaddle_C",
       "Description": "Ravager Saddle Skin",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Saddles",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_CavewolfSaddle_C",
       "Description": "Ravager Saddle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Saddles",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_CrabSaddle_C",
       "Description": "Karkinos Saddle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Armor",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_Glider_C",
       "Description": "Glider Suit",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Armor",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_HazardSuitBoots_C",
       "Description": "Hazard Suit Boots",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Armor",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_HazardSuitGloves_C",
       "Description": "Hazard Suit Gloves",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Armor",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_HazardSuitHelmet_C",
       "Description": "Hazard Suit Hat",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Armor",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_HazardSuitPants_C",
       "Description": "Hazard Suit Pants",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Armor",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_HazardSuitShirt_C",
       "Description": "Hazard Suit Shirt",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Saddles",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_MoleRatSaddle_C",
       "Description": "Roll Rat Saddle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Saddles",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_RockDrakeSaddle_C",
       "Description": "Rock Drake Saddle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Saddles",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_RockDrakeSaddle_Tek_C",
       "Description": "Tek Rock Drake Saddle",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Armor",
       "IsHarvestable": false,
       "ClassName": "PrimalItemArmor_ZiplineMotor_C",
       "Description": "Zip-Line Motor Attachment",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Eggs",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Egg_Basilisk_C",
       "Description": "Basilisk Egg",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Eggs",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Egg_LanternBird_C",
       "Description": "Featherlight Egg",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Eggs",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Egg_LanternLizard_C",
       "Description": "Glowtail Egg",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Eggs",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Egg_RockDrake_C",
       "Description": "Rock Drake Egg",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Kibble",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Kibble_LanternBirdEgg_C",
       "Description": "Kibble (Featherlight Egg)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Kibble",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Kibble_LanternLizardEgg_C",
       "Description": "Kibble (Glowtail Egg)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Kibble",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Kibble_RockDrakeEgg_C",
       "Description": "Kibble (Rock Drake Egg)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Consumables",
       "IsHarvestable": true,
       "ClassName": "PrimalItemConsumable_Mushroom_Aquatic_C",
       "Description": "Aquatic Mushroom",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Consumables",
       "IsHarvestable": true,
       "ClassName": "PrimalItemConsumable_Mushroom_Ascerbic_C",
       "Description": "Ascerbic Mushroom",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Consumables",
       "IsHarvestable": true,
       "ClassName": "PrimalItemConsumable_Mushroom_Auric_C",
       "Description": "Auric Mushroom",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Consumables",
       "IsHarvestable": true,
       "ClassName": "PrimalItemConsumable_NamelessVenom_C",
       "Description": "Nameless Venom",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Seeds",
       "IsHarvestable": true,
       "ClassName": "PrimalItemConsumable_Seed_PlantSpeciesZ_C",
       "Description": "Plant Species Z Seed",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Consumables",
       "IsHarvestable": false,
       "ClassName": "PrimalItemConsumable_Soup_MushroomSoup_C",
       "Description": "Mushroom Brew",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_ApexDrop_Basilisk_C",
       "Description": "Basilisk Scale",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_ApexDrop_Basilisk_Alpha_C",
       "Description": "Alpha Basilisk Fang",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_ApexDrop_CrabClaw_C",
       "Description": "Alpha Karkinos Claw",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_ApexDrop_ReaperBarb_C",
       "Description": "Alpha Reaper King Barb",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_ApexDrop_RockDrake_C",
       "Description": "Rock Drake Feather",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_CommonMushroom_C",
       "Description": "Aggeravic Mushroom",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_ElementOre_C",
       "Description": "Element Ore",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_FungalWood_C",
       "Description": "Fungal Wood",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_Gas_C",
       "Description": "Congealed Gas Ball",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_Gem_BioLum_C",
       "Description": "Blue Gem",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_Gem_Element_C",
       "Description": "Red Gem",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_Gem_Fertile_C",
       "Description": "Green Gem",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Resource",
       "IsHarvestable": true,
       "ClassName": "PrimalItemResource_XenomorphPheromoneGland_C",
       "Description": "Reaper Pheromone Gland",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_BaseCliffPlatform_C",
       "Description": "Wooden Platform",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
+    },
+    {
+      "Category": "Structures",
+      "IsHarvestable": false,
+      "ClassName": "PrimalItemStructure_Bed_Tek_C",
+      "Description": "Tek Sleeping Pod",
+      "Mod": "ArkPrime"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_Flag_Rockwell_C",
       "Description": "Rockwell Flag",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_Furniture_Rug_C",
       "Description": "Shag Rug",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_GasCollector_C",
       "Description": "Gas Collector",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_Metal_CliffPlatform_C",
       "Description": "Cliff Platform (Metal)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_PortableLadder_C",
       "Description": "Portable Rope Ladder",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_Stone_CliffPlatform_C",
       "Description": "Cliff Platform (Stone)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_WoodElevatorPlatform_Large_C",
       "Description": "Wood Elevator Platform (Large)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_WoodElevatorPlatform_Medium_C",
       "Description": "Wood Elevator Platform (Medium)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_WoodElevatorPlatform_Small_C",
       "Description": "Wood Elevator Platform (Small)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_WoodElevatorTopSwitch_C",
       "Description": "Wood Elevator Top Switch",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Structures",
       "IsHarvestable": false,
       "ClassName": "PrimalItemStructure_WoodElevatorTrack_C",
       "Description": "Wood Elevator Track",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Trophy",
       "IsHarvestable": false,
       "ClassName": "PrimalItemTrophy_Rockwell_C",
       "Description": "Rockwell Trophy (Gamma)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Trophy",
       "IsHarvestable": false,
       "ClassName": "PrimalItemTrophy_Rockwell_Beta_C",
       "Description": "Rockwell Trophy (Beta)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     },
     {
       "Category": "Trophy",
       "IsHarvestable": false,
       "ClassName": "PrimalItemTrophy_Rockwell_Beta_Alpha_C",
       "Description": "Rockwell Trophy (Alpha)",
-      "Mod": "Aberration",
-      "ArkApplication": "Aberration"
+      "Mod": "Aberration"
     }
   ],
   "MapSpawners": [
@@ -1729,7 +1573,7 @@
       "IsSotF": false,
       "ClassName": "Aberration_P",
       "Description": "Aberration",
-      "Mod": "SurvivalEvolved"
+      "Mod": "Aberration"
     }
   ]
 }

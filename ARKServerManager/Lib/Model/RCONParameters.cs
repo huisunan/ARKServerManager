@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     public class RCONParameters : PlayerListParameters
     {
@@ -34,5 +34,7 @@ namespace ARK_Server_Manager.Lib
             get { return (int)GetValue(MaxPlayersProperty); }
             set { SetValue(MaxPlayersProperty, value); }
         }
+
+        public double PlayerListWidth { get; set; }
     }
 }

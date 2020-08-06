@@ -7,15 +7,19 @@
     <ProjectGuid>{70CE930F-E1CB-424F-9833-A5E1CA42A785}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ARK_Server_Manager</RootNamespace>
+    <RootNamespace>ServerManagerTool</RootNamespace>
     <AssemblyName>ARK Server Manager</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <ExpressionBlendVersion>12.0.50716.0</ExpressionBlendVersion>
     <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
     <PublishUrl>publish\</PublishUrl>
     <Install>false</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -28,11 +32,12 @@
     <MapFileExtensions>false</MapFileExtensions>
     <SupportUrl>http://arkservermanager.freeforums.net/thread/1194/faq-frequently-asked</SupportUrl>
     <ErrorReportUrl>http://arkservermanager.freeforums.net/board/3/tech-support-bug-reports</ErrorReportUrl>
-    <ProductName>Ark Server Manager</ProductName>
-    <PublisherName>Ark Server Manager</PublisherName>
+    <ProductName>ARK Survival Evolved™ Server Manager</ProductName>
+    <PublisherName>Bletch1971</PublisherName>
+    <SuiteName>Server Managers</SuiteName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.329.%2a</ApplicationVersion>
+    <ApplicationVersion>1.1.387.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>false</BootstrapperEnabled>
@@ -42,7 +47,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -50,9 +55,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\Release</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -86,28 +91,25 @@
     <ApplicationIcon>Art\favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>ARK_Server_Manager.App</StartupObject>
+    <StartupObject>ServerManagerTool.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestTimestampUrl>
     </ManifestTimestampUrl>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="DotNetZip, Version=1.13.8.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.13.8\lib\net40\DotNetZip.dll</HintPath>
     </Reference>
     <Reference Include="EO.Wpf, Version=4.0.12.0, Culture=neutral, PublicKeyToken=e92353a6bf73fffc, processorArchitecture=MSIL">
       <HintPath>..\packages\EO.Wpf.4.0.12\lib\EO.Wpf.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="JetBrains.Annotations, Version=10.2.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\TaskScheduler.2.5.23\lib\net452\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Win32.TaskScheduler, Version=2.5.23.0, Culture=neutral, PublicKeyToken=0d013ddd5178a2ae, processorArchitecture=MSIL">
-      <HintPath>..\packages\TaskScheduler.2.5.23\lib\net452\Microsoft.Win32.TaskScheduler.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Microsoft.Win32.TaskScheduler, Version=2.8.19.0, Culture=neutral, PublicKeyToken=c416bc1b32d97233, processorArchitecture=MSIL">
+      <HintPath>..\packages\TaskScheduler.2.8.19\lib\net452\Microsoft.Win32.TaskScheduler.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAPICodePack-Core.1.1.2\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
@@ -117,28 +119,30 @@
       <HintPath>..\packages\WindowsAPICodePack-Shell.1.1.1\lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.11\lib\net45\NLog.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\NLog.4.7.2\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Tpl.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
-      <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Xaml.Behaviors, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.19\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Expression.Blend.Sdk.1.0.2\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -148,9 +152,8 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="TinyCsvParser, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\TinyCsvParser.1.6.0\lib\net45\TinyCsvParser.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="TinyCsvParser, Version=2.5.2.0, Culture=neutral, PublicKeyToken=d7df35b038077099, processorArchitecture=MSIL">
+      <HintPath>..\packages\TinyCsvParser.2.5.2\lib\net45\TinyCsvParser.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
@@ -161,38 +164,48 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Common\Converters\DoubleRangeValueConverter.cs" />
-    <Compile Include="Common\Converters\InvertBooleanToVisibilityConverter.cs" />
-    <Compile Include="Common\Converters\SecondsToMinutesConverter.cs" />
-    <Compile Include="Common\Converters\SecondsToHoursConverter.cs" />
-    <Compile Include="Common\Converters\IntRangeValueConverter.cs" />
-    <Compile Include="Common\Extensions\IconExtension.cs" />
-    <Compile Include="Common\Lib\BrowserBehavior.cs" />
-    <Compile Include="Common\Lib\UserScopedSettingContractResolver.cs" />
-    <Compile Include="Common\Model\PublishedFileDetail.cs" />
-    <Compile Include="Common\Model\SteamCmdManifestDetails.cs" />
-    <Compile Include="Common\Model\VersionFeed.cs" />
-    <Compile Include="Common\Model\VersionFeedEntry.cs" />
-    <Compile Include="Common\Serialization\IniFile.cs" />
-    <Compile Include="Common\Serialization\IniKey.cs" />
-    <Compile Include="Common\Serialization\IniSection.cs" />
-    <Compile Include="Common\Utils\IOUtils.cs" />
-    <Compile Include="Common\Utils\SettingsUtils.cs" />
-    <Compile Include="Common\Utils\VersionFeedUtils.cs" />
-    <Compile Include="Lib\Enums\LevelProgression.cs" />
-    <Compile Include="Lib\Enums\ServerProfileCategory.cs" />
-    <Compile Include="Lib\Model\ArkApplicationComboBoxItem.cs" />
+    <Compile Include="Enums\LevelProgression.cs" />
+    <Compile Include="Enums\LogEventType.cs" />
+    <Compile Include="Enums\NPCSpawnContainerType.cs" />
+    <Compile Include="Enums\PlayerFilterType.cs" />
+    <Compile Include="Enums\PlayerSortType.cs" />
+    <Compile Include="Enums\ServerProcessStatus.cs" />
+    <Compile Include="Enums\ServerProcessType.cs" />
+    <Compile Include="Enums\ServerProfileCategory.cs" />
+    <Compile Include="Enums\ServerStatus.cs" />
+    <Compile Include="Enums\StatsMultiplier.cs" />
+    <Compile Include="Enums\AvailabilityStatus.cs" />
+    <Compile Include="Enums\WatcherServerStatus.cs" />
+    <Compile Include="Interface\ISpawnIniValue.cs" />
+    <Compile Include="Interface\ISpawnIniValuesCollection.cs" />
+    <Compile Include="Lib\Events\ProfileEventArgs.cs" />
+    <Compile Include="Lib\Model\EngramAutoUnlock.cs" />
+    <Compile Include="Lib\Model\StackSizeOverride.cs" />
+    <Compile Include="Lib\Serialization\IniFileEntryAttribute.cs" />
+    <Compile Include="Lib\Serialization\IniFiles.cs" />
+    <Compile Include="Lib\Serialization\IniSections.cs" />
+    <Compile Include="Lib\Serialization\SystemIniFile.cs" />
     <Compile Include="Lib\Model\PlayerListParameters.cs" />
     <Compile Include="Lib\ServerBranchSnapshot.cs" />
     <Compile Include="Lib\ServerPlayers.cs" />
     <Compile Include="Lib\ServerProfileSnapshot.cs" />
-    <Compile Include="Lib\Utils\GameDataUtils.cs" />
-    <Compile Include="Windows\AddSteamUserWindow.xaml.cs">
-      <DependentUpon>AddSteamUserWindow.xaml</DependentUpon>
+    <Compile Include="Lib\ViewConverters\EnumDescriptionTypeConverter.cs" />
+    <Compile Include="Lib\ViewConverters\MapNameValueConverter.cs" />
+    <Compile Include="Lib\ViewModel\Engram.cs" />
+    <Compile Include="Lib\ViewModel\EngramSettings.cs" />
+    <Compile Include="Utils\ModUtils.cs" />
+    <Compile Include="Windows\AddUserWindow.xaml.cs">
+      <DependentUpon>AddUserWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Lib\Model\StatsMultiplierArray.cs" />
     <Compile Include="Windows\PlayerListWindow.xaml.cs">
       <DependentUpon>PlayerListWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\GameDataWindow.xaml.cs">
+      <DependentUpon>GameDataWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ProcessorAffinityWindow.xaml.cs">
+      <DependentUpon>ProcessorAffinityWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\ProfileSyncWindow.xaml.cs">
       <DependentUpon>ProfileSyncWindow.xaml</DependentUpon>
@@ -200,37 +213,21 @@
     <Compile Include="Windows\CustomConfigDataWindow.xaml.cs">
       <DependentUpon>CustomConfigDataWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\Lib\BindingProxy.cs" />
-    <Compile Include="Common\Model\FloatIniValueList.cs" />
     <Compile Include="Lib\Model\PGMTerrain.cs" />
-    <Compile Include="Common\Model\CustomSection.cs" />
     <Compile Include="Lib\Model\NPCSpawner.cs" />
-    <Compile Include="Common\Model\SteamCmdWorkshopDetails.cs" />
-    <Compile Include="Common\Model\SteamUserDetail.cs" />
-    <Compile Include="Common\Model\SteamServerDetail.cs" />
-    <Compile Include="Common\Interfaces\IIniSectionCollection.cs" />
-    <Compile Include="Common\Utils\EmailUtil.cs" />
-    <Compile Include="Common\Utils\IniFileUtils.cs" />
-    <Compile Include="Common\Utils\MachineUtils.cs" />
-    <Compile Include="Common\Utils\ProcessUtils.cs" />
-    <Compile Include="Common\Utils\SteamUtils.cs" />
-    <Compile Include="Common\Utils\ZipUtils.cs" />
-    <Compile Include="Common\Converters\GreaterThanIntValueConverter.cs" />
-    <Compile Include="Common\Converters\HasStringValueConverter.cs" />
-    <Compile Include="Common\Model\ComboBoxItem.cs" />
     <Compile Include="Lib\ViewModel\SupplyCrate.cs" />
     <Compile Include="Lib\ViewModel\NPCSpawnSettings.cs" />
     <Compile Include="Lib\ViewModel\MapSpawner.cs" />
     <Compile Include="Lib\ViewConverters\TributeExpirationConverter.cs" />
-    <Compile Include="Common\Converters\InstalledVersionConverter.cs" />
     <Compile Include="Lib\ViewConverters\ExtinctionEventDateConverter.cs" />
     <Compile Include="Lib\ViewConverters\OfficialDifficultyValueConverter.cs" />
-    <Compile Include="Common\ValidationRules\ProfileNameValidationRule.cs" />
     <Compile Include="Lib\ViewConverters\ExtinctionEventTimeIntervalConverter.cs" />
-    <Compile Include="Common\ValidationRules\StringValidationRule.cs" />
     <Compile Include="Lib\ViewModel\SupplyCrateSettings.cs" />
     <Compile Include="Windows\PluginsWindow.xaml.cs">
       <DependentUpon>PluginsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ServerMonitorWindow.xaml.cs">
+      <DependentUpon>ServerMonitorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Windows\VersionFeedWindow.xaml.cs">
       <DependentUpon>VersionFeedWindow.xaml</DependentUpon>
@@ -244,31 +241,19 @@
     <Compile Include="Windows\ShutdownWindow.xaml.cs">
       <DependentUpon>ShutdownWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\Converters\UnixTimeToDateTimeConverter.cs" />
     <Compile Include="Windows\ModDetailsWindow.xaml.cs">
       <DependentUpon>ModDetailsWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\Utils\JsonUtils.cs" />
     <Compile Include="Lib\Model\PublishedFileDetail.cs" />
-    <Compile Include="Common\Model\WorkshopFileDetail.cs" />
-    <Compile Include="Common\Converters\InvertBooleanConverter.cs" />
     <Compile Include="Windows\ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\Lib\ListViewSorting.cs" />
     <Compile Include="Lib\Model\CraftingOverride.cs" />
     <Compile Include="Lib\Model\ResourceClassMultiplier.cs" />
-    <Compile Include="Common\Model\IntegerIniValueList.cs" />
     <Compile Include="Lib\Model\SupplyCrateOverride.cs" />
-    <Compile Include="Lib\Utils\ModUtils.cs" />
-    <Compile Include="Common\Utils\StringUtils.cs" />
     <Compile Include="Lib\ViewModel\PrimalItem.cs" />
     <Compile Include="Lib\ViewConverters\PrimalItemClassNameToDisplayNameConverter.cs" />
     <Compile Include="Lib\ViewConverters\SupplyCrateClassNameToDisplayNameConverter.cs" />
-    <Compile Include="Common\Utils\WindowUtils.cs" />
-    <Compile Include="WPFControls\AnnotatedSlider.xaml.cs">
-      <DependentUpon>AnnotatedSlider.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Windows\CommandLineWindow.xaml.cs">
       <DependentUpon>CommandLineWindow.xaml</DependentUpon>
     </Compile>
@@ -276,57 +261,24 @@
     <Compile Include="Windows\GlobalSettingsControl.xaml.cs">
       <DependentUpon>GlobalSettingsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Common\Lib\ActionQueue.cs" />
-    <Compile Include="Common\Utils\DebugUtils.cs" />
-    <Compile Include="Common\Extensions\CollectionViewExtensions.cs" />
-    <Compile Include="Common\Interfaces\IAsyncDisposable.cs" />
-    <Compile Include="Common\Model\AggregateIniValueList.cs" />
-    <Compile Include="Common\Model\FloatIniValueArray.cs" />
-    <Compile Include="Common\Model\IniValueArray.cs" />
-    <Compile Include="Common\Model\IniValueList.cs" />
     <Compile Include="Lib\Model\NPCReplacement.cs" />
     <Compile Include="Lib\Model\ClassMultiplier.cs" />
     <Compile Include="Lib\Model\DinoSpawn.cs" />
-    <Compile Include="Lib\Model\Engram.cs" />
-    <Compile Include="Common\Utils\FirewallUtils.cs" />
+    <Compile Include="Lib\Model\EngramEntry.cs" />
     <Compile Include="Lib\GameData.cs" />
     <Compile Include="Lib\Model\RCONParameters.cs" />
     <Compile Include="Lib\Model\StatsMultipliers.cs" />
-    <Compile Include="Common\Model\StringIniValueList.cs" />
-    <Compile Include="Common\Lib\PropertyChangeNotifier.cs" />
-    <Compile Include="Common\Utils\ScriptUtils.cs" />
-    <Compile Include="Common\Model\AggregateIniValue.cs" />
-    <Compile Include="Common\Interfaces\IIniValuesCollection.cs" />
-    <Compile Include="Common\Serialization\SystemIniFile.cs" />
     <Compile Include="Lib\Model\Level.cs" />
-    <Compile Include="Common\Utils\NetworkUtils.cs" />
-    <Compile Include="Common\Utils\SecurityUtils.cs" />
     <Compile Include="Lib\Server.cs" />
     <Compile Include="Lib\ServerProfile.cs" />
     <Compile Include="Lib\ServerRCON.cs" />
-    <Compile Include="Common\Utils\TaskSchedulerUtils.cs" />
-    <Compile Include="Common\Lib\ServerUpdater.cs" />
     <Compile Include="Lib\ServerApp.cs" />
-    <Compile Include="Common\Model\SortableObservableCollection.cs" />
-    <Compile Include="Common\Utils\TaskUtils.cs" />
     <Compile Include="Lib\ServerRuntime.cs" />
-    <Compile Include="Common\Converters\AllTrueMultiValueConverter.cs" />
     <Compile Include="Lib\ViewConverters\DifficultyOffsetValueConverter.cs" />
     <Compile Include="Lib\ViewModel\DinoSettings.cs" />
     <Compile Include="Lib\ViewModel\DinoSettingsList.cs" />
     <Compile Include="Lib\ViewConverters\EngramClassNameToDisplayNameConverter.cs" />
     <Compile Include="Lib\ViewConverters\DinoNameValueConverter.cs" />
-    <Compile Include="Common\Converters\EnumFlagsConverter.cs" />
-    <Compile Include="Common\Converters\EnumConverter.cs" />
-    <Compile Include="Common\ValidationRules\IdListValidationRule.cs" />
-    <Compile Include="Common\Converters\IsNullOrWhiteSpaceValueConverter.cs" />
-    <Compile Include="Common\Converters\IsNullValueConverter.cs" />
-    <Compile Include="Common\Lib\RelayCommand.cs" />
-    <Compile Include="Common\Converters\MinutesToTimeValueConverter.cs" />
-    <Compile Include="Common\ValidationRules\TimeValidationRule.cs" />
-    <Compile Include="Common\ValidationRules\IpValidationRule.cs" />
-    <Compile Include="Common\Converters\SecondsToTimeValueConverter.cs" />
-    <Compile Include="Common\Converters\NullValueConverter.cs" />
     <Compile Include="Lib\ViewConverters\LevelIndexToDisplayOffsetConverter.cs" />
     <Compile Include="Lib\ViewModel\PlayerInfo.cs" />
     <Compile Include="Lib\ViewConverters\ResourceNameValueConverter.cs" />
@@ -349,8 +301,6 @@
     <Compile Include="Windows\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
-    <Resource Include="VersionFeed.xml" />
-    <Resource Include="VersionFeedBeta.xml" />
     <Resource Include="Art\Add.ico" />
     <Resource Include="Art\Cancel.ico" />
     <Resource Include="Art\Validate.ico" />
@@ -384,6 +334,15 @@
     <Resource Include="Art\Website.ico" />
     <Resource Include="Art\ChangeNotes.ico" />
     <Resource Include="Art\Zip.ico" />
+    <Resource Include="Art\StatusOff.ico" />
+    <Resource Include="Art\StatusOn.ico" />
+    <Resource Include="Art\StatusStarting.ico" />
+    <Resource Include="Art\StatusUnknown.ico" />
+    <Resource Include="Art\Document.ico" />
+    <Resource Include="Art\Servers.ico" />
+    <Resource Include="Art\Shortcut.ico" />
+    <Resource Include="Art\Filter.ico" />
+    <Resource Include="Art\DropArrow.ico" />
     <Content Include="Globalization\ru-RU\ru-RU.xaml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -396,21 +355,33 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Globalization\en-GB\en-GB.xaml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Globalization\fr-FR\fr-FR.xaml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Page Include="Windows\AddSteamUserWindow.xaml">
+    <Content Include="Globalization\pt-BR\pt-BR.xaml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Globalization\en-AU\en-AU.xaml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Page Include="Windows\AddUserWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\PlayerListWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Windows\GameDataWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\ProcessorAffinityWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Windows\ProfileSyncWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -423,6 +394,10 @@
     <Page Include="Windows\PluginsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Windows\ServerMonitorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Windows\VersionFeedWindow.xaml">
       <SubType>Designer</SubType>
@@ -448,14 +423,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Content Include="GameData\CrystalIsles.gamedata">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Styles\Default.xaml">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Page Include="WPFControls\AnnotatedSlider.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Windows\AutoUpdateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -507,7 +481,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Config.settings</DependentUpon>
     </Compile>
-    <Compile Include="Common\Lib\SteamCmdUpdater.cs" />
     <Compile Include="Lib\ServerManager.cs" />
     <Compile Include="Windows\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -555,6 +528,18 @@
     <Content Include="GameData\TheCenter.gamedata">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="GameData\Extinction.gamedata">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GameData\Genesis.gamedata">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="GameData\Valguero.gamedata">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
     <AppDesigner Include="Properties\" />
@@ -581,6 +566,10 @@
       <Project>{d2ee1483-021f-4900-bbe8-88338d1386f4}</Project>
       <Name>ArkData</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ARKServerManager.Common\ARKServerManager.Common.csproj">
+      <Project>{dd0a2401-99b8-4de1-b8ed-9b075172f8af}</Project>
+      <Name>ARKServerManager.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NeXtVdf\NeXt.Vdf.csproj">
       <Project>{e4eda8b8-006c-4d41-822f-f64b6db0021f}</Project>
       <Name>NeXt.Vdf</Name>
@@ -593,6 +582,10 @@
       <Project>{4ca9c894-518f-42d7-bbe2-cfdfe7a03f8a}</Project>
       <Name>QueryMaster</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ServerManager.Common\ServerManager.Common.csproj">
+      <Project>{7c99d9f7-0c65-4116-927a-94eb018c88fd}</Project>
+      <Name>ServerManager.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ServerManager.Updater\ServerManager.Updater.csproj">
       <Project>{3e0c9ee6-780f-4fef-ba03-e38062a5fdb6}</Project>
       <Name>ServerManager.Updater</Name>
@@ -603,17 +596,17 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Common\Attributes\" />
-    <Folder Include="Common\Enums\" />
-    <Folder Include="Lib\Serialization\" />
+    <COMReference Include="IWshRuntimeLibrary">
+      <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <Private>False</Private>
+    </COMReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

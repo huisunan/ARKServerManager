@@ -1,4 +1,4 @@
-﻿using QueryMaster;
+﻿using ServerManagerTool.Common.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,85 +10,24 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     using NLog;
+    using ServerManagerTool;
+    using ServerManagerTool.Common.Utils;
+    using ServerManagerTool.Enums;
     using StatusCallback = Action<IAsyncDisposable, ServerStatusWatcher.ServerStatusUpdate>;
 
     public class ServerStatusWatcher
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        private const int LOCAL_STATUS_QUERY_DELAY = 5000; // milliseconds
-        private const int REMOTE_STATUS_QUERY_DELAY = 60000; // milliseconds
-
-        private enum ServerProcessStatus
-        {
-            /// <summary>
-            /// The server binary could not be found
-            /// </summary>
-            NotInstalled,
-
-            /// <summary>
-            /// The server binary was found, but the process was not.
-            /// </summary>
-            Stopped,
-
-            /// <summary>
-            /// The server binary was found, the process was found, but no permissions to access the process.
-            /// </summary>
-            Unknown,
-
-            /// <summary>
-            /// The server process was found
-            /// </summary>
-            Running,
-        }
-
-        public enum ServerStatus
-        {
-            /// <summary>
-            /// The server binary couldnot be found.
-            /// </summary>
-            NotInstalled,
-
-            /// <summary>
-            /// The server binary was found, but the process was not
-            /// </summary>
-            Stopped,
-
-            /// <summary>
-            /// The server binary was found, the process was found, but no permissions to access the process.
-            /// </summary>
-            Unknown,
-
-            /// <summary>
-            /// The server process was found, but the server is not responding on its port
-            /// </summary>
-            Initializing,
-
-            /// <summary>
-            /// The server is responding locally on its port, a local check was made
-            /// </summary>
-            RunningLocalCheck,
-
-            /// <summary>
-            /// The server is responding locally on its port, a public check was made
-            /// </summary>
-            RunningExternalCheck,
-
-            /// <summary>
-            /// The server is responding externally on its port
-            /// </summary>
-            Published,
-        }
-
         public struct ServerStatusUpdate
         {
             public Process Process;
-            public ServerStatus Status;
-            public ServerInfo ServerInfo;
-            public ReadOnlyCollection<Player> Players;
+            public WatcherServerStatus Status;
+            public QueryMaster.ServerInfo ServerInfo;
+            public int OnlinePlayerCount;
         }
 
         private class ServerStatusUpdateRegistration  : IAsyncDisposable
@@ -110,8 +49,7 @@ namespace ARK_Server_Manager.Lib
 
         private readonly List<ServerStatusUpdateRegistration> _serverRegistrations = new List<ServerStatusUpdateRegistration>();
         private readonly ActionBlock<Func<Task>> _eventQueue;
-        private readonly Dictionary<string, DateTime> _lastExternalCallQuery = new Dictionary<string, DateTime>();
-        private readonly Dictionary<string, DateTime> _lastExternalStatusQuery = new Dictionary<string, DateTime>();
+        private readonly Dictionary<string, DateTime> _nextExternalStatusQuery = new Dictionary<string, DateTime>();
 
         private ServerStatusWatcher()
         {
@@ -149,7 +87,7 @@ namespace ARK_Server_Manager.Lib
                     {
                         if(_serverRegistrations.Contains(registration))
                         {
-                            Logger.Debug("Removing registration for L:{0} S:{1}", registration.LocalEndpoint, registration.SteamEndpoint);
+                            Logger.Debug($"{nameof(RegisterForUpdates)} Removing registration for L:{registration.LocalEndpoint} S:{registration.SteamEndpoint}");
                             _serverRegistrations.Remove(registration);
                         }
                         tcs.TrySetResult(true);
@@ -163,12 +101,11 @@ namespace ARK_Server_Manager.Lib
                 {
                     if (!_serverRegistrations.Contains(registration))
                     {
-                        Logger.Debug("Adding registration for L:{0} S:{1}", registration.LocalEndpoint, registration.SteamEndpoint);
+                        Logger.Debug($"{nameof(RegisterForUpdates)} Adding registration for L:{registration.LocalEndpoint} S:{registration.SteamEndpoint}");
                         _serverRegistrations.Add(registration);
 
                         var registrationKey = registration.SteamEndpoint.ToString();
-                        _lastExternalCallQuery[registrationKey] = DateTime.MinValue;
-                        _lastExternalStatusQuery[registrationKey] = DateTime.MinValue;
+                        _nextExternalStatusQuery[registrationKey] = DateTime.MinValue;
                     }
                     return Task.FromResult(true);
                 }
@@ -237,7 +174,7 @@ namespace ARK_Server_Manager.Lib
             }
             catch(Exception ex)
             {
-                Logger.Debug("Exception while checking process status: {0}\n{1}", ex.Message, ex.StackTrace);
+                Logger.Error($"{nameof(GetServerProcessStatus)}. {ex.Message}\r\n{ex.StackTrace}");
             }
 
             return ServerProcessStatus.Stopped;
@@ -252,7 +189,7 @@ namespace ARK_Server_Manager.Lib
                     ServerStatusUpdate statusUpdate = new ServerStatusUpdate();
                     try
                     {
-                        Logger.Debug("Start: {0}", registration.LocalEndpoint);
+                        Logger.Info($"{nameof(DoLocalUpdate)} Start: {registration.LocalEndpoint}");
                         statusUpdate = await GenerateServerStatusUpdateAsync(registration);
                         
                         PostServerStatusUpdate(registration, registration.UpdateCallback, statusUpdate);
@@ -260,18 +197,18 @@ namespace ARK_Server_Manager.Lib
                     catch (Exception ex)
                     {
                         // We don't want to stop other registration queries or break the ActionBlock
-                        Logger.Debug("Exception in local update: {0} \n {1}", ex.Message, ex.StackTrace);
+                        Logger.Error($"{nameof(DoLocalUpdate)} - Exception in local update. {ex.Message}\r\n{ex.StackTrace}");
                         Debugger.Break();
                     }
                     finally
                     {
-                        Logger.Debug("End: {0}: {1}", registration.LocalEndpoint, statusUpdate.Status);
+                        Logger.Info($"{nameof(DoLocalUpdate)} End: {registration.LocalEndpoint}: {statusUpdate.Status}");
                     }
                 }
             }
             finally
             {
-                Task.Delay(LOCAL_STATUS_QUERY_DELAY).ContinueWith(_ => _eventQueue.Post(DoLocalUpdate)).DoNotWait();
+                Task.Delay(Config.Default.ServerStatusWatcher_LocalStatusQueryDelay).ContinueWith(_ => _eventQueue.Post(DoLocalUpdate)).DoNotWait();
             }
         }
 
@@ -301,18 +238,17 @@ namespace ARK_Server_Manager.Lib
             //
             // First check the process status
             //
-            Process process;
-            var processStatus = GetServerProcessStatus(registration, out process);
+            var processStatus = GetServerProcessStatus(registration, out Process process);
             switch(processStatus)
             {
                 case ServerProcessStatus.NotInstalled:
-                    return new ServerStatusUpdate { Status = ServerStatus.NotInstalled };
+                    return new ServerStatusUpdate { Status = WatcherServerStatus.NotInstalled };
 
                 case ServerProcessStatus.Stopped:
-                    return new ServerStatusUpdate { Status = ServerStatus.Stopped };
+                    return new ServerStatusUpdate { Status = WatcherServerStatus.Stopped };
 
                 case ServerProcessStatus.Unknown:
-                    return new ServerStatusUpdate { Status = ServerStatus.Unknown };
+                    return new ServerStatusUpdate { Status = WatcherServerStatus.Unknown };
 
                 case ServerProcessStatus.Running:
                     break;
@@ -322,64 +258,55 @@ namespace ARK_Server_Manager.Lib
                     break;
             }
 
-            var currentStatus = ServerStatus.Initializing;
+            var currentStatus = WatcherServerStatus.Initializing;
 
             //
             // If the process was running do we then perform network checks.
             //
-            Logger.Debug("Checking server local status at {0}", registration.LocalEndpoint);
+            Logger.Info($"{nameof(GenerateServerStatusUpdateAsync)} Checking server local network status at {registration.LocalEndpoint}");
 
             // get the server information direct from the server using local connection.
-            ReadOnlyCollection<Player> players;
-            var localInfo = GetLocalNetworkStatus(registration.LocalEndpoint, out players);
+            GetLocalNetworkStatus(registration.LocalEndpoint, out QueryMaster.ServerInfo localInfo, out int onlinePlayerCount);
 
             if (localInfo != null)
             {
-                currentStatus = ServerStatus.RunningLocalCheck;
+                currentStatus = WatcherServerStatus.RunningLocalCheck;
 
                 //
                 // Now that it's running, we can check the publication status.
                 //
-                Logger.Debug("Checking server public status at {0}", registration.SteamEndpoint);
+                Logger.Info($"{nameof(GenerateServerStatusUpdateAsync)} Checking server public status direct at {registration.SteamEndpoint}");
 
                 // get the server information direct from the server using public connection.
-                var serverStatus = NetworkUtils.CheckServerStatusDirect(registration.SteamEndpoint);
+                var serverStatus = CheckServerStatusDirect(registration.SteamEndpoint);
                 // check if the server returned the information.
                 if (!serverStatus)
                 {
                     // server did not return any information
-                    var lastExternalStatusQuery = _lastExternalStatusQuery.ContainsKey(registrationKey) ? _lastExternalStatusQuery[registrationKey] : DateTime.MinValue;
-                    if (DateTime.Now >= lastExternalStatusQuery.AddMilliseconds(REMOTE_STATUS_QUERY_DELAY))
+                    var nextExternalStatusQuery = _nextExternalStatusQuery.ContainsKey(registrationKey) ? _nextExternalStatusQuery[registrationKey] : DateTime.MinValue;
+                    if (DateTime.Now >= nextExternalStatusQuery)
                     {
-                        currentStatus = ServerStatus.RunningExternalCheck;
+                        currentStatus = WatcherServerStatus.RunningExternalCheck;
 
-                        // get the server information direct from the server using external connection.
-                        var uri = new Uri(string.Format(Config.Default.ServerStatusUrlFormat, Config.Default.ServerManagerCode, registration.SteamEndpoint.Address, registration.SteamEndpoint.Port));
-                        serverStatus = await NetworkUtils.CheckServerStatusViaAPI(uri, registration.SteamEndpoint);
+                        if (!string.IsNullOrWhiteSpace(Config.Default.ServerStatusUrlFormat))
+                        {
+                            Logger.Info($"{nameof(GenerateServerStatusUpdateAsync)} Checking server public status via api at {registration.SteamEndpoint}");
 
-                        _lastExternalStatusQuery[registrationKey] = DateTime.Now;
+                            // get the server information direct from the server using external connection.
+                            var uri = new Uri(string.Format(Config.Default.ServerStatusUrlFormat, Config.Default.ServerManagerCode, App.Instance.Version, registration.SteamEndpoint.Address, registration.SteamEndpoint.Port));
+                            serverStatus = await NetworkUtils.CheckServerStatusViaAPI(uri, registration.SteamEndpoint);
+                        }
+
+                        _nextExternalStatusQuery[registrationKey] = DateTime.Now.AddMilliseconds(Config.Default.ServerStatusWatcher_RemoteStatusQueryDelay);
                     }
                 }
-
-                //var lastExternalCallQuery = _lastExternalCallQuery.ContainsKey(registrationKey) ? _lastExternalCallQuery[registrationKey] : DateTime.MinValue;
-                //if (lastExternalCallQuery == DateTime.MinValue)
-                //{
-                //    // perform a server call to the web api.
-                //    var uri = new Uri(string.Format(Config.Default.ServerCallUrlFormat, Config.Default.ServerManagerCode, registration.SteamEndpoint.Address, registration.SteamEndpoint.Port, Config.Default.ServerManagerUniqueKey, registration.ProfileId));
-                //    await NetworkUtils.PerformServerCallToAPI(uri, registration.SteamEndpoint);
-
-                //    _lastExternalCallQuery[registrationKey] = DateTime.Now;
-                //}
 
                 // check if the server returned the information.
                 if (serverStatus)
                 {                    
-                    currentStatus = ServerStatus.Published;
+                    currentStatus = WatcherServerStatus.Published;
                 }
-                else
-                {
-                    Logger.Debug("No public status returned for {0}", registration.SteamEndpoint);
-                }
+
             }
 
             var statusUpdate = new ServerStatusUpdate
@@ -387,36 +314,68 @@ namespace ARK_Server_Manager.Lib
                 Process = process,
                 Status = currentStatus,
                 ServerInfo = localInfo,
-                Players = players
+                OnlinePlayerCount = onlinePlayerCount
             };
 
             return await Task.FromResult(statusUpdate);
         }
 
-        private static ServerInfo GetLocalNetworkStatus(IPEndPoint specificEndpoint, out ReadOnlyCollection<Player> players)
+        private static bool GetLocalNetworkStatus(IPEndPoint endpoint, out QueryMaster.ServerInfo serverInfo, out int onlinePlayerCount)
         {
-            players = null;
+            serverInfo = null;
+            onlinePlayerCount = 0;
 
-            ServerInfo serverInfo = null;
             try
             {
-                using (var server = ServerQuery.GetServerInstance(EngineType.Source, specificEndpoint))
+                using (var server = QueryMaster.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, endpoint))
                 {
-                    serverInfo = server.GetInfo();
-                    players = server.GetPlayers();
-                }
+                    try
+                    {
+                        serverInfo = server?.GetInfo();
+                    }
+                    catch (Exception) 
+                    {
+                        serverInfo = null;
+                    }
 
-                // return the list of valid players only.
-                if (players != null)
-                    players = new ReadOnlyCollection<Player>(players.Where(record => !string.IsNullOrWhiteSpace(record.Name)).ToList());
+                    try
+                    {
+                        var players = server?.GetPlayers()?.Where(p => !string.IsNullOrWhiteSpace(p.Name?.Trim()));
+                        onlinePlayerCount = players?.Count() ?? 0;
+                    }
+                    catch (Exception) 
+                    {
+                        onlinePlayerCount = 0;
+                    }
+                }
             }
             catch (SocketException ex)
             {
-                Logger.Debug("GetInfo failed: {0}: {1}", specificEndpoint, ex.Message);
+                Logger.Debug($"{nameof(GetLocalNetworkStatus)} failed: {endpoint.Address}:{endpoint.Port}. {ex.Message}");
                 // Common when the server is unreachable.  Ignore it.
             }
 
-            return serverInfo;
+            return true;
+        }
+
+        private static bool CheckServerStatusDirect(IPEndPoint endpoint)
+        {
+            try
+            {
+                QueryMaster.ServerInfo serverInfo;
+
+                using (var server = QueryMaster.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, endpoint))
+                {
+                    serverInfo = server.GetInfo();
+                }
+
+                return serverInfo != null;
+            }
+            catch (Exception ex)
+            {
+                Logger.Debug($"{nameof(CheckServerStatusDirect)} - Failed checking status direct for: {endpoint.Address}:{endpoint.Port}. {ex.Message}");
+                return false;
+            }
         }
     }
 }

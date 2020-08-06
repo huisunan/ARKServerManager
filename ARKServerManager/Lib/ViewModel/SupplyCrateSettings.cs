@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ARK_Server_Manager.Lib.ViewModel
+namespace ServerManagerTool.Lib.ViewModel
 {
     public class SupplyCrateItemEntrySettings : DependencyObject
     {

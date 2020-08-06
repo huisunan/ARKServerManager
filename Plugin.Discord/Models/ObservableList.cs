@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace ArkServerManager.Plugin.Discord
+namespace ServerManagerTool.Plugin.Discord
 {
     [DataContract]
     internal class ObservableList<T> : Bindable, IList<T>, INotifyCollectionChanged
@@ -94,6 +94,17 @@ namespace ArkServerManager.Plugin.Discord
         {
             _listObject.Insert(index, item);
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+        }
+
+        public void Move(int oldIndex, int newIndex)
+        {
+            var item = _listObject.ElementAt(oldIndex);
+            if (item != null)
+            {
+                _listObject.Remove(item);
+                _listObject.Insert(newIndex, item);
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Move, item, newIndex, oldIndex));
+            }
         }
 
         public bool Remove(T item)

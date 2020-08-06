@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace ArkServerManager.Plugin.Discord
+namespace ServerManagerTool.Plugin.Discord
 {
     [DataContract]
     internal sealed class ConfigProfile : Bindable
@@ -15,6 +15,10 @@ namespace ArkServerManager.Plugin.Discord
             DiscordBotName = string.Empty;
             DiscordUseTTS = false;
             PrefixMessageWithProfileName = false;
+            MessageBold = false;
+            MessageUnderlined = false;
+            MessageItalic = false;
+            MessageCodeBlock = false;
             IsEnabled = true;
         }
 
@@ -74,6 +78,34 @@ namespace ArkServerManager.Plugin.Discord
             set { Set(value); }
         }
 
+        [DataMember]
+        public bool MessageBold
+        {
+            get { return Get<bool>(); }
+            set { Set(value); }
+        }
+
+        [DataMember]
+        public bool MessageUnderlined
+        {
+            get { return Get<bool>(); }
+            set { Set(value); }
+        }
+
+        [DataMember]
+        public bool MessageItalic
+        {
+            get { return Get<bool>(); }
+            set { Set(value); }
+        }
+
+        [DataMember]
+        public bool MessageCodeBlock
+        {
+            get { return Get<bool>(); }
+            set { Set(value); }
+        }
+
         public ConfigProfile Clone()
         {
             var clone = new ConfigProfile();
@@ -94,6 +126,10 @@ namespace ArkServerManager.Plugin.Discord
             clone.DiscordBotName = this.DiscordBotName;
             clone.DiscordUseTTS = this.DiscordUseTTS;
             clone.PrefixMessageWithProfileName = this.PrefixMessageWithProfileName;
+            clone.MessageBold = this.MessageBold;
+            clone.MessageUnderlined = this.MessageUnderlined;
+            clone.MessageItalic = this.MessageItalic;
+            clone.MessageCodeBlock = this.MessageCodeBlock;
             clone.IsEnabled = this.IsEnabled;
             clone.HasChanges = this.HasChanges;
             return clone;
@@ -134,6 +170,10 @@ namespace ArkServerManager.Plugin.Discord
                 this.DiscordBotName = source.DiscordBotName;
                 this.DiscordUseTTS = source.DiscordUseTTS;
                 this.PrefixMessageWithProfileName = source.PrefixMessageWithProfileName;
+                this.MessageBold = source.MessageBold;
+                this.MessageUnderlined = source.MessageUnderlined;
+                this.MessageItalic = source.MessageItalic;
+                this.MessageCodeBlock = source.MessageCodeBlock;
                 this.IsEnabled = source.IsEnabled;
 
                 if (source.HasChanges)

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ServerManagerTool.Utils;
+using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     public class ServerProfileSnapshot
     {
@@ -17,15 +18,18 @@ namespace ARK_Server_Manager.Lib
         public string ServerArgs;
         public string ServerIP;
         public int ServerPort;
+        public bool UseAdditionalServerPort;
         public int QueryPort;
-        public bool UseRawSockets;
         public bool RCONEnabled;
         public int RCONPort;
         public string ServerMap;
         public string ServerMapModId;
         public string TotalConversionModId;
         public List<string> ServerModIds;
+        public string MOTD;
         public int MotDDuration;
+        public bool MOTDIntervalEnabled;
+        public int MOTDInterval;
         public bool ForceRespawnDinos;
 
         public string BranchName;
@@ -48,6 +52,7 @@ namespace ARK_Server_Manager.Lib
 
         public bool ServerUpdated;
         public string LastInstalledVersion;
+        public DateTime LastStarted;
 
         public static ServerProfileSnapshot Create(ServerProfile profile)
         {
@@ -64,15 +69,18 @@ namespace ARK_Server_Manager.Lib
                 ServerArgs = profile.GetServerArgs(),
                 ServerIP = string.IsNullOrWhiteSpace(profile.ServerIP) ? IPAddress.Loopback.ToString() : profile.ServerIP.Trim(),
                 ServerPort = profile.ServerPort,
+                UseAdditionalServerPort = true, // profile.Crossplay || profile.EpicOnly,
                 QueryPort = profile.QueryPort,
-                UseRawSockets = profile.UseRawSockets,
                 RCONEnabled = profile.RCONEnabled,
                 RCONPort = profile.RCONPort,
                 ServerMap = ServerProfile.GetProfileMapName(profile),
                 ServerMapModId = ServerProfile.GetProfileMapModId(profile),
                 TotalConversionModId = profile.TotalConversionModId ?? string.Empty,
                 ServerModIds = ModUtils.GetModIdList(profile.ServerModIds),
+                MOTD = profile.MOTD,
                 MotDDuration = Math.Max(profile.MOTDDuration, 10),
+                MOTDIntervalEnabled = profile.MOTDInterval.HasValue && !string.IsNullOrWhiteSpace(profile.MOTD),
+                MOTDInterval = Math.Max(1, Math.Min(int.MaxValue, profile.MOTDInterval.Value)),
                 ForceRespawnDinos = profile.ForceRespawnDinos,
 
                 BranchName = profile.BranchName,
@@ -95,12 +103,14 @@ namespace ARK_Server_Manager.Lib
 
                 ServerUpdated = false,
                 LastInstalledVersion = profile.LastInstalledVersion ?? new Version(0, 0).ToString(),
+                LastStarted = profile.LastStarted,
             };
         }
 
         public void Update(ServerProfile profile)
         {
             profile.LastInstalledVersion = LastInstalledVersion;
+            profile.LastStarted = LastStarted;
         }
     }
 }

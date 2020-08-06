@@ -1,17 +1,17 @@
-﻿using System;
+﻿using ArkData;
+using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Lib.ViewModel.RCON;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using ARK_Server_Manager.Lib;
-using ARK_Server_Manager.Lib.ViewModel;
-using ARK_Server_Manager.Lib.ViewModel.RCON;
-using ArkData;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for TribeProfileWindow.xaml
@@ -23,7 +23,7 @@ namespace ARK_Server_Manager
         public TribeProfileWindow(PlayerInfo player, ICollection<PlayerInfo> players, String serverFolder)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.Player = player;
             this.Players = players;
@@ -57,7 +57,7 @@ namespace ARK_Server_Manager
 
         public String TribeLink => String.IsNullOrWhiteSpace(ServerFolder) || TribeData == null ? null : $"/select, {Path.Combine(ServerFolder, $"{TribeData.Id}{Config.Default.TribeFileExtension}")}";
 
-        public String TribeOwner => TribeData != null && TribeData.Owner != null ? string.Format("{0} ({1})", TribeData.Owner.SteamName, TribeData.Owner.CharacterName) : null;
+        public String TribeOwner => TribeData != null && TribeData.Owner != null ? $"{TribeData.Owner.CharacterName} ({TribeData.Owner.PlayerName})" : null;
 
         public ICollection<PlayerInfo> TribePlayers
         {
@@ -68,7 +68,7 @@ namespace ARK_Server_Manager
                 ICollection<PlayerInfo> players = new List<PlayerInfo>();
                 foreach (var tribePlayer in TribeData.Players)
                 {
-                    var player = Players.FirstOrDefault(p => p.SteamId.ToString() == tribePlayer.SteamId);
+                    var player = Players.FirstOrDefault(p => p.PlayerId.ToString() == tribePlayer.PlayerId);
                     if (player != null)
                         players.Add(player);
                 }

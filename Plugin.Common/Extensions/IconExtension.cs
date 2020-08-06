@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows.Markup;
 using System.Windows.Media.Imaging;
 
-namespace ArkServerManager.Plugin.Common
+namespace ServerManagerTool.Plugin.Common
 {
     /// <summary>
     /// Simple extension for icon, to let you choose icon with specific size.

@@ -1,12 +1,15 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Utils;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager.Lib.Model
+namespace ServerManagerTool.Lib.Model
 {
     public class ModDetailList : ObservableCollection<ModDetail>
     {
@@ -138,18 +141,17 @@ namespace ARK_Server_Manager.Lib.Model
             var delimiter = "";
             foreach (var mod in this)
             {
-                switch (mod.ModTypeString)
+                switch (mod.ModType)
                 {
-                    case ModUtils.MODTYPENAME_MAP:
+                    case ModUtils.MODTYPE_MAP:
                         mapString = $"/Game/Mods/{mod.ModId}/{mod.MapName}";
                         break;
-                    case ModUtils.MODTYPENAME_TOTCONV:
+                    case ModUtils.MODTYPE_TOTCONV:
                         totalConversionString = mod.ModId;
                         break;
-                    case ModUtils.MODTYPENAME_MAPEXT:
-                    case ModUtils.MODTYPENAME_MOD:
-                    case ModUtils.MODTYPENAME_UNKNOWN:
-                    case ModUtils.MODTYPENAME_NOTDOWNLOADED:
+                    case ModUtils.MODTYPE_MAPEXT:
+                    case ModUtils.MODTYPE_MOD:
+                    default:
                         modIdString += $"{delimiter}{mod.ModId}";
                         delimiter = ",";
                         break;
@@ -159,7 +161,7 @@ namespace ARK_Server_Manager.Lib.Model
             return true;
         }
 
-        public static ModDetailList GetModDetails(PublishedFileDetailsResponse response, string modsRootFolder, List<string> modIdList)
+        public static ModDetailList GetModDetails(List<string> modIdList, string modsRootFolder, WorkshopFileList workshopFiles, PublishedFileDetailsResponse response)
         {
             var result = new ModDetailList();
 
@@ -167,31 +169,32 @@ namespace ARK_Server_Manager.Lib.Model
             {
                 foreach (var modId in modIdList)
                 {
+                    var temp = workshopFiles?.FirstOrDefault(w => w.WorkshopId.Equals(modId));
+
                     result.Add(new ModDetail()
                     {
-                        AppId = "",
+                        AppId = temp?.AppId ?? string.Empty,
                         ModId = modId,
-                        TimeUpdated = 0,
-                        Title = "Mod details not available",
+                        TimeUpdated = -1,
+                        Title = temp?.Title ?? "Mod name not available",
                         IsValid = false,
                     });
                 }
             }
 
-            if (response != null && response.publishedfiledetails != null)
+            if (response?.publishedfiledetails != null)
             {
-                foreach (var detail in response.publishedfiledetails)
+                foreach (var item in result)
                 {
-                    var temp = result.FirstOrDefault(d => d.ModId == detail.publishedfileid);
-                    if (temp == null)
-                        result.Add(ModDetail.GetModDetail(detail));
-                    else
+                    var temp = response.publishedfiledetails.FirstOrDefault(w => w.publishedfileid.Equals(item.ModId));
+
+                    if (temp != null)
                     {
-                        temp.AppId = detail.creator_app_id;
-                        temp.ModId = detail.publishedfileid;
-                        temp.TimeUpdated = detail.time_updated;
-                        temp.Title = detail.title;
-                        temp.IsValid = true;
+                        item.AppId = temp?.creator_app_id ?? string.Empty;
+                        item.ModId = temp?.publishedfileid ?? item.ModId;
+                        item.TimeUpdated = temp?.time_updated ?? item.TimeUpdated;
+                        item.Title = temp?.title ?? item.Title;
+                        item.IsValid = temp?.creator_app_id != null;
                     }
                 }
             }
@@ -209,6 +212,8 @@ namespace ARK_Server_Manager.Lib.Model
 
     public class ModDetail : DependencyObject
     {
+        private readonly GlobalizedApplication _globalizer = GlobalizedApplication.Instance;
+
         public static readonly DependencyProperty AppIdProperty = DependencyProperty.Register(nameof(AppId), typeof(string), typeof(ModDetail), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty IndexProperty = DependencyProperty.Register(nameof(Index), typeof(int), typeof(ModDetail), new PropertyMetadata(0));
         public static readonly DependencyProperty IsFirstProperty = DependencyProperty.Register(nameof(IsFirst), typeof(bool), typeof(ModDetail), new PropertyMetadata(false));
@@ -217,7 +222,7 @@ namespace ARK_Server_Manager.Lib.Model
         public static readonly DependencyProperty LastTimeUpdatedProperty = DependencyProperty.Register(nameof(LastTimeUpdated), typeof(int), typeof(ModDetail), new PropertyMetadata(0));
         public static readonly DependencyProperty ModIdProperty = DependencyProperty.Register(nameof(ModId), typeof(string), typeof(ModDetail), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty ModTypeProperty = DependencyProperty.Register(nameof(ModType), typeof(string), typeof(ModDetail), new PropertyMetadata(ModUtils.MODTYPE_UNKNOWN));
-        public static readonly DependencyProperty ModTypeStringProperty = DependencyProperty.Register(nameof(ModTypeString), typeof(string), typeof(ModDetail), new PropertyMetadata(ModUtils.MODTYPENAME_UNKNOWN));
+        public static readonly DependencyProperty ModTypeStringProperty = DependencyProperty.Register(nameof(ModTypeString), typeof(string), typeof(ModDetail), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty ModUrlProperty = DependencyProperty.Register(nameof(ModUrl), typeof(string), typeof(ModDetail), new PropertyMetadata(string.Empty));
         public static readonly DependencyProperty TimeUpdatedProperty = DependencyProperty.Register(nameof(TimeUpdated), typeof(int), typeof(ModDetail), new PropertyMetadata(0));
         public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(nameof(Title), typeof(string), typeof(ModDetail), new PropertyMetadata(string.Empty));
@@ -308,7 +313,7 @@ namespace ARK_Server_Manager.Lib.Model
 
         public bool IsOfficialMod => ModUtils.IsOfficialMod(ModId);
 
-        public bool IsValidModType => !ModTypeString.Equals(ModUtils.MODTYPENAME_UNKNOWN) && !ModTypeString.Equals(ModUtils.MODTYPENAME_NOTDOWNLOADED);
+        public bool IsValidModType => !string.IsNullOrWhiteSpace(ModType) && (ModType.Equals(ModUtils.MODTYPE_MAP) || ModType.Equals(ModUtils.MODTYPE_MAPEXT) || ModType.Equals(ModUtils.MODTYPE_MOD) || ModType.Equals(ModUtils.MODTYPE_TOTCONV));
 
         public string LastWriteTimeString => LastWriteTime == DateTime.MinValue ? string.Empty : LastWriteTime.ToString();
 
@@ -328,7 +333,7 @@ namespace ARK_Server_Manager.Lib.Model
             private set;
         }
 
-        public bool UpToDate => LastTimeUpdated > 0 && LastTimeUpdated == TimeUpdated;
+        public bool UpToDate => !IsValid && TimeUpdated == -1 || LastTimeUpdated > 0 && LastTimeUpdated == TimeUpdated;
 
         public long FolderSize { get; set; }
 
@@ -374,27 +379,27 @@ namespace ARK_Server_Manager.Lib.Model
         public void SetModTypeString()
         {
             if (string.IsNullOrWhiteSpace(ModType))
-                ModTypeString = ModUtils.MODTYPENAME_UNKNOWN;
+                ModTypeString = _globalizer.GetResourceString("ModType_Unknown");
 
             switch (ModType)
             {
-                case ModUtils.MODTYPE_MOD:
-                    ModTypeString = ModUtils.MODTYPENAME_MOD;
-                    break;
                 case ModUtils.MODTYPE_MAP:
-                    ModTypeString = ModUtils.MODTYPENAME_MAP;
-                    break;
-                case ModUtils.MODTYPE_TOTCONV:
-                    ModTypeString = ModUtils.MODTYPENAME_TOTCONV;
+                    ModTypeString = _globalizer.GetResourceString("ModType_Map");
                     break;
                 case ModUtils.MODTYPE_MAPEXT:
-                    ModTypeString = ModUtils.MODTYPENAME_MAPEXT;
+                    ModTypeString = _globalizer.GetResourceString("ModType_MapExtension");
+                    break;
+                case ModUtils.MODTYPE_MOD:
+                    ModTypeString = _globalizer.GetResourceString("ModType_Mod");
+                    break;
+                case ModUtils.MODTYPE_TOTCONV:
+                    ModTypeString = _globalizer.GetResourceString("ModType_TotalConversion");
                     break;
                 default:
                     if (string.IsNullOrWhiteSpace(AppId))
-                        ModTypeString = ModUtils.MODTYPENAME_UNKNOWN;
+                        ModTypeString = _globalizer.GetResourceString("ModType_Unknown");
                     else
-                        ModTypeString = ModUtils.MODTYPENAME_NOTDOWNLOADED;
+                        ModTypeString = _globalizer.GetResourceString("ModType_NotDownloaded");
                     break;
             }
         }
@@ -460,34 +465,38 @@ namespace ARK_Server_Manager.Lib.Model
 
         public void PopulateExtended(string modsRootFolder)
         {
-            var modFolder = Path.Combine(modsRootFolder, ModId);
-            var modFile = $"{modFolder}.mod";
-
-            if (string.IsNullOrWhiteSpace(modFolder) || !Directory.Exists(modFolder))
-                return;
-            if (string.IsNullOrWhiteSpace(modFile) || !File.Exists(modFile))
-                return;
-
-            LastWriteTime = File.GetLastWriteTime(modFile);
-
-            var modTimeFile = Path.Combine(modFolder, Config.Default.LastUpdatedTimeFile);
-            if (!string.IsNullOrWhiteSpace(modTimeFile) && File.Exists(modTimeFile))
+            try
             {
-                LastTimeUpdated = ModUtils.GetModLatestTime(modTimeFile);
+                var modFolder = Path.Combine(modsRootFolder, ModId);
+                var modFile = $"{modFolder}.mod";
+
+                if (string.IsNullOrWhiteSpace(modFolder) || !Directory.Exists(modFolder))
+                    return;
+                if (string.IsNullOrWhiteSpace(modFile) || !File.Exists(modFile))
+                    return;
+
+                LastWriteTime = File.GetLastWriteTime(modFile);
+
+                var modTimeFile = Path.Combine(modFolder, Config.Default.LastUpdatedTimeFile);
+                if (!string.IsNullOrWhiteSpace(modTimeFile) && File.Exists(modTimeFile))
+                {
+                    LastTimeUpdated = ModUtils.GetModLatestTime(modTimeFile);
+                }
+
+                ModUtils.ReadModFile(modFile, out string modId, out Dictionary<string, string> metaInformation, out List<string> mapNames);
+
+                ModType = metaInformation != null && metaInformation.ContainsKey("ModType") ? metaInformation["ModType"] : ModUtils.MODTYPE_UNKNOWN;
+                MapName = mapNames != null && mapNames.Count > 0 ? mapNames[0] : string.Empty;
+
+                FolderSize = 0;
+                foreach (var file in new DirectoryInfo(modFolder).GetFiles("*.*", SearchOption.AllDirectories))
+                {
+                    FolderSize += file.Length;
+                }
             }
-
-            string modId;
-            Dictionary<string, string> metaInformation;
-            List<string> mapNames;
-            ModUtils.ReadModFile(modFile, out modId, out metaInformation, out mapNames);
-
-            ModType = metaInformation != null && metaInformation.ContainsKey("ModType") ? metaInformation["ModType"] : ModUtils.MODTYPE_UNKNOWN;
-            MapName = mapNames != null && mapNames.Count > 0 ? mapNames[0] : string.Empty;
-
-            FolderSize = 0;
-            foreach (var file in new DirectoryInfo(modFolder).GetFiles("*.*", SearchOption.AllDirectories))
+            catch (Exception)
             {
-                FolderSize += file.Length;
+                // do nothing
             }
         }
     }

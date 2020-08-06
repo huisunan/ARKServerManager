@@ -1,17 +1,25 @@
-﻿using ARK_Server_Manager.Lib.ViewModel.RCON;
-using ArkData;
+﻿using ArkData;
 using NLog;
+using ServerManagerTool.Common.Interfaces;
+using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib.ViewModel;
+using ServerManagerTool.Lib.ViewModel.RCON;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     public class ServerRCON : DependencyObject, IAsyncDisposable
     {
@@ -23,17 +31,12 @@ namespace ARK_Server_Manager.Lib
         private const string NoResponseMatch = "Server received, But no response!!";
         public const string NoResponseOutput = "NO_RESPONSE";
 
+        [TypeConverter(typeof(EnumDescriptionTypeConverter))]
         public enum ConsoleStatus
         {
             Disconnected,
             Connected,
         };
-        private enum LogEventType
-        {
-            All,
-            Chat,
-            Event
-        }
 
         public class ConsoleCommand
         {
@@ -70,35 +73,31 @@ namespace ARK_Server_Manager.Lib
         private readonly ActionQueue commandProcessor = new ActionQueue(TaskScheduler.Default);
         private readonly ActionQueue outputProcessor = new ActionQueue(TaskScheduler.FromCurrentSynchronizationContext());
         private readonly List<CommandListener> commandListeners = new List<CommandListener>();
-        private RCONParameters rconParams;
+        private readonly RCONParameters rconParams;
         private QueryMaster.Rcon console;
         private int maxCommandRetries = 3;
 
-        private readonly ConcurrentDictionary<long, PlayerInfo> players = new ConcurrentDictionary<long, PlayerInfo>();
+        private readonly ConcurrentDictionary<string, PlayerInfo> players = new ConcurrentDictionary<string, PlayerInfo>();
         private readonly object updatePlayerCollectionLock = new object();
         private CancellationTokenSource cancellationTokenSource = null;
 
-        private Logger chatLogger;
-        private Logger allLogger;
-        private Logger eventLogger;
-        private Logger debugLogger;
-        private Logger errorLogger;
-        private bool disposed = false;
+        private readonly Logger _chatLogger;
+        private readonly Logger _allLogger;
+        private readonly Logger _eventLogger;
+        private readonly Logger _debugLogger;
+        private readonly Logger _errorLogger;
+        private bool _disposed = false;
 
         public ServerRCON(RCONParameters parameters)
         {
             this.rconParams = parameters;
             this.Players = new SortableObservableCollection<PlayerInfo>();
 
-            this.allLogger = App.GetProfileLogger(this.rconParams.ProfileName, "RCON_All", LogLevel.Info, LogLevel.Info);
-            this.chatLogger = App.GetProfileLogger(this.rconParams.ProfileName, "RCON_Chat", LogLevel.Info, LogLevel.Info);
-            this.eventLogger = App.GetProfileLogger(this.rconParams.ProfileName, "RCON_Event", LogLevel.Info, LogLevel.Info);
-            this.debugLogger = App.GetProfileLogger(this.rconParams.ProfileName, "RCON_Debug", LogLevel.Trace, LogLevel.Debug);
-            this.errorLogger = App.GetProfileLogger(this.rconParams.ProfileName, "RCON_Error", LogLevel.Error, LogLevel.Fatal);
-
-            commandProcessor.PostAction(AutoPlayerList);
-            commandProcessor.PostAction(AutoGetChat);
-            UpdatePlayersAsync().DoNotWait();
+            _allLogger = App.GetProfileLogger(this.rconParams.ProfileId, "RCON_All", LogLevel.Info, LogLevel.Info);
+            _chatLogger = App.GetProfileLogger(this.rconParams.ProfileId, "RCON_Chat", LogLevel.Info, LogLevel.Info);
+            _eventLogger = App.GetProfileLogger(this.rconParams.ProfileId, "RCON_Event", LogLevel.Info, LogLevel.Info);
+            _debugLogger = App.GetProfileLogger(this.rconParams.ProfileId, "RCON_Debug", LogLevel.Trace, LogLevel.Debug);
+            _errorLogger = App.GetProfileLogger(this.rconParams.ProfileId, "RCON_Error", LogLevel.Error, LogLevel.Fatal);
         }
 
         public async Task DisposeAsync()
@@ -110,11 +109,12 @@ namespace ARK_Server_Manager.Lib
             await this.commandProcessor.DisposeAsync();
             await this.outputProcessor.DisposeAsync();
 
-            foreach (var listener in this.commandListeners)
+            for (int index = this.commandListeners.Count - 1; index >= 0; index--)
             {
-                listener.Dispose();
+                this.commandListeners[index].Dispose();
             }
-            disposed = true;
+
+            _disposed = true;
         }
 
         #region Properties
@@ -150,20 +150,27 @@ namespace ARK_Server_Manager.Lib
         #endregion
 
         #region Methods
+        public void Initialize()
+        {
+            commandProcessor.PostAction(AutoPlayerList);
+            commandProcessor.PostAction(AutoGetChat);
+            UpdatePlayersAsync().DoNotWait();
+        }
+
         private void LogEvent(LogEventType eventType, string message)
         {
             switch (eventType)
             {
                 case LogEventType.All:
-                    this.allLogger.Info(message);
+                    _allLogger?.Info(message);
                     return;
 
                 case LogEventType.Chat:
-                    this.chatLogger.Info(message);
+                    _chatLogger?.Info(message);
                     return;
 
                 case LogEventType.Event:
-                    this.eventLogger.Info(message);
+                    _eventLogger?.Info(message);
                     return;
             }
         }
@@ -184,7 +191,7 @@ namespace ARK_Server_Manager.Lib
             var endpoint = new IPEndPoint(this.rconParams.RCONHostIP, this.rconParams.RCONPort);
             var server = QueryMaster.ServerQuery.GetServerInstance(QueryMaster.EngineType.Source, endpoint);
             this.console = server.GetControl(this.rconParams.AdminPassword);
-            return true;
+            return this.console != null;
         }
 
         public IDisposable RegisterCommandListener(Action<ConsoleCommand> callback)
@@ -235,34 +242,40 @@ namespace ARK_Server_Manager.Lib
                     command.args = args[1];
                 }
 
-                string result = String.Empty;
+                var result = SendCommand(command.rawCommand);
 
-                result = SendCommand(command.rawCommand);
-
-                var lines = result.Split(lineSplitChars, StringSplitOptions.RemoveEmptyEntries).Select(l => l.Trim()).ToArray();
-
-                if (!command.suppressOutput)
+                if (result == null)
                 {
-                    foreach (var line in lines)
-                    {
-                        LogEvent(LogEventType.All, line);
-                    }
+                    _debugLogger.Debug($"SendCommand '{command.rawCommand}' do not return any results.");
                 }
-
-                if (lines.Length == 1 && lines[0].StartsWith(NoResponseMatch))
+                else
                 {
-                    lines[0] = NoResponseOutput;
+                    var lines = result.Split(lineSplitChars, StringSplitOptions.RemoveEmptyEntries).Select(l => l.Trim()).ToArray();
+
+                    if (!command.suppressOutput)
+                    {
+                        foreach (var line in lines)
+                        {
+                            LogEvent(LogEventType.All, line);
+                        }
+                    }
+
+                    if (lines.Length == 1 && lines[0].StartsWith(NoResponseMatch))
+                    {
+                        lines[0] = NoResponseOutput;
+                    }
+
+                    command.lines = lines;
                 }
 
                 command.status = ConsoleStatus.Connected;
-                command.lines = lines;
 
                 this.outputProcessor.PostAction(() => ProcessOutput(command));
                 return true;
             }
             catch (Exception ex)
             {
-                errorLogger.Error($"Failed to send command '{command.rawCommand}'. {ex.Message}");
+                _errorLogger.Error($"Failed to send command '{command.rawCommand}'. {ex.Message}");
                 command.status = ConsoleStatus.Disconnected;
                 this.outputProcessor.PostAction(() => ProcessOutput(command));
                 return false;
@@ -349,38 +362,45 @@ namespace ARK_Server_Manager.Lib
                         // Invalid data. Ignore it.
                         continue;
 
-                    var steamId = Int64.Parse(elements[1]);
-                    if (onlinePlayers.FirstOrDefault(p => p.SteamId == steamId) != null)
+                    var id = elements[1]?.Trim();
+                    if (id.Any(c => !char.IsDigit(c)))
+                        // Invalid data. Ignore it.
+                        continue;
+
+                    if (onlinePlayers.FirstOrDefault(p => p.PlayerId.Equals(id, StringComparison.OrdinalIgnoreCase)) != null)
                         // Duplicate data. Ignore it.
                         continue;
 
-                    var newPlayer = new PlayerInfo(this.debugLogger)
+                    var newPlayer = new PlayerInfo()
                     {
-                        SteamName = elements[0].Substring(elements[0].IndexOf('.') + 1).Trim(),
-                        SteamId = steamId,
+                        PlayerId = id,
+                        PlayerName = elements[0].Substring(elements[0].IndexOf('.') + 1).Trim(),
                         IsOnline = true,
                     };
                     onlinePlayers.Add(newPlayer);
 
                     var playerJoined = false;
-                    this.players.AddOrUpdate(newPlayer.SteamId, (k) => { playerJoined = true; return newPlayer; }, (k, v) => { playerJoined = !v.IsOnline; v.IsOnline = true; return v; });
+                    this.players.AddOrUpdate(newPlayer.PlayerId, (k) => { playerJoined = true; return newPlayer; }, (k, v) => { playerJoined = !v.IsOnline; v.IsOnline = true; return v; });
 
                     if (playerJoined)
                     {
-                        var message = $"Player '{newPlayer.SteamName}' joined the game.";
+                        var messageFormat = GlobalizedApplication.Instance.GetResourceString("Player_Join") ?? "Player '{0}' joined the game.";
+                        var message = string.Format(messageFormat, newPlayer.PlayerName);
                         output.Add(message);
                         LogEvent(LogEventType.Event, message);
                         LogEvent(LogEventType.All, message);
                     }
                 }
 
-                var droppedPlayers = this.players.Values.Where(p => onlinePlayers.FirstOrDefault(np => np.SteamId == p.SteamId) == null).ToArray();
+                var droppedPlayers = this.players.Values.Where(p => onlinePlayers.FirstOrDefault(np => np.PlayerId.Equals(p.PlayerId, StringComparison.OrdinalIgnoreCase)) == null).ToArray();
                 foreach (var droppedPlayer in droppedPlayers)
                 {
                     if (droppedPlayer.IsOnline)
                     {
                         droppedPlayer.IsOnline = false;
-                        var message = $"Player '{droppedPlayer.SteamName}' left the game.";
+
+                        var messageFormat = GlobalizedApplication.Instance.GetResourceString("Player_Leave") ?? "Player '{0}' left the game.";
+                        var message = string.Format(messageFormat, droppedPlayer.PlayerName);
                         output.Add(message);
                         LogEvent(LogEventType.Event, message);
                         LogEvent(LogEventType.All, message);
@@ -404,7 +424,7 @@ namespace ARK_Server_Manager.Lib
                 }
                 catch (Exception ex)
                 {
-                    errorLogger.Error("Exception in command listener: {0}\n{1}", ex.Message, ex.StackTrace);
+                    _errorLogger.Error("Exception in command listener: {0}\n{1}", ex.Message, ex.StackTrace);
                 }
             }
         }
@@ -422,8 +442,7 @@ namespace ARK_Server_Manager.Lib
                 {
                     try
                     {
-                        var result = this.console.SendCommand(command);
-                        return result;
+                        return this.console.SendCommand(command);
                     }
                     catch (Exception ex)
                     {
@@ -447,14 +466,14 @@ namespace ARK_Server_Manager.Lib
             }
 
             this.maxCommandRetries = 10;
-            errorLogger.Error($"Failed to connect to RCON at {this.rconParams.RCONHostIP}:{this.rconParams.RCONPort} with {this.rconParams.AdminPassword}. {lastException.Message}");
+            _errorLogger.Error($"Failed to connect to RCON at {this.rconParams.RCONHostIP}:{this.rconParams.RCONPort} with {this.rconParams.AdminPassword}. {lastException.Message}");
             throw new Exception($"Command failed to send after {maxCommandRetries} attempts.  Last exception: {lastException.Message}", lastException);
         }
         #endregion
 
         private async Task UpdatePlayersAsync()
         {
-            if (this.disposed)
+            if (this._disposed)
                 return;
 
             cancellationTokenSource = new CancellationTokenSource();
@@ -494,21 +513,22 @@ namespace ARK_Server_Manager.Lib
                 }
                 catch (Exception ex)
                 {
-                    errorLogger.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: CreateAsync. {ex.Message}\r\n{ex.StackTrace}");
+                    _errorLogger.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: CreateAsync. {ex.Message}\r\n{ex.StackTrace}");
                     return;
                 }
 
                 token.ThrowIfCancellationRequested();
                 await Task.Run(() =>
                 {
-                    // update the player data with the latest steam update value from the players collection
+                    // update the player data with the latest update value from the players collection
                     foreach (var playerData in dataContainer.Players)
                     {
-                        if (!long.TryParse(playerData.SteamId, out long steamId))
+                        var id = playerData.PlayerId;
+                        if (string.IsNullOrWhiteSpace(id))
                             continue;
 
-                        this.players.TryGetValue(steamId, out PlayerInfo player);
-                        player?.UpdateSteamData(playerData);
+                        this.players.TryGetValue(id, out PlayerInfo player);
+                        player?.UpdatePlatformData(playerData);
                     }
                 }, token);
 
@@ -519,7 +539,7 @@ namespace ARK_Server_Manager.Lib
                 }
                 catch (Exception ex)
                 {
-                    errorLogger.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: LoadSteamAsync. {ex.Message}\r\n{ex.StackTrace}");
+                    _errorLogger.Error($"{nameof(UpdatePlayerDetailsAsync)} - Error: LoadSteamAsync. {ex.Message}\r\n{ex.StackTrace}");
                 }
 
                 token.ThrowIfCancellationRequested();
@@ -530,48 +550,46 @@ namespace ARK_Server_Manager.Lib
                     token.ThrowIfCancellationRequested();
                     await Task.Run(async () =>
                     {
-                        if (long.TryParse(playerData.SteamId, out long steamId))
+                        var id = playerData.PlayerId;
+                        if (!string.IsNullOrWhiteSpace(id))
                         {
-                            var validPlayer = new PlayerInfo(this.debugLogger)
+                            var validPlayer = new PlayerInfo()
                             {
-                                SteamId = steamId,
-                                SteamName = playerData.SteamName,
+                                PlayerId = playerData.PlayerId,
+                                PlayerName = playerData.PlayerName,
                                 IsValid = true,
                             };
 
-                            this.players.AddOrUpdate(steamId, validPlayer, (k, v) => { v.SteamName = playerData.SteamName; v.IsValid = true; return v; });
+                            this.players.AddOrUpdate(id, validPlayer, (k, v) => { v.PlayerName = playerData.PlayerName; v.IsValid = true; return v; });
                         }
                         else
                         {
-                            var filename = Path.GetFileNameWithoutExtension(playerData.Filename);
-                            if (long.TryParse(filename, out steamId))
+                            id = Path.GetFileNameWithoutExtension(playerData.Filename);
+                            if (string.IsNullOrWhiteSpace(id))
                             {
-                                var invalidPlayer = new PlayerInfo(this.debugLogger)
+                                var invalidPlayer = new PlayerInfo()
                                 {
-                                    SteamId = steamId,
-                                    SteamName = "< corrupted profile >",
+                                    PlayerId = id,
+                                    PlayerName = "< corrupted profile >",
                                     IsValid = false,
                                 };
 
-                                this.players.AddOrUpdate(steamId, invalidPlayer, (k, v) => { v.SteamName = "< corrupted profile >"; v.IsValid = false; return v; });
+                                this.players.AddOrUpdate(id, invalidPlayer, (k, v) => { v.PlayerName = "< corrupted profile >"; v.IsValid = false; return v; });
                             }
                             else
                             {
-                                debugLogger.Debug($"{nameof(UpdatePlayerDetailsAsync)} - Error: corrupted profile.\r\n{playerData.Filename}.");
+                                _debugLogger.Debug($"{nameof(UpdatePlayerDetailsAsync)} - Error: corrupted profile.\r\n{playerData.Filename}.");
                             }
                         }
 
-                        if (this.players.TryGetValue(steamId, out PlayerInfo player) && player != null)
+                        if (this.players.TryGetValue(id, out PlayerInfo player) && player != null)
                         {
-                            player.UpdateData(playerData, lastSteamUpdateUtc);
+                            player.UpdateData(playerData);
 
                             await TaskUtils.RunOnUIThreadAsync(() =>
                             {
-                                player.IsAdmin = rconParams?.Server?.Profile?.ServerFilesAdmins?.Any(u => u.SteamId.Equals(player.SteamId.ToString(), StringComparison.OrdinalIgnoreCase)) ?? false;
-                                player.IsWhitelisted = rconParams?.Server?.Profile?.ServerFilesWhitelisted?.Any(u => u.SteamId.Equals(player.SteamId.ToString(), StringComparison.OrdinalIgnoreCase)) ?? false;
-
-                                if (totalPlayers <= Config.Default.RCON_MaximumPlayerAvatars && Config.Default.RCON_ShowPlayerAvatars)
-                                    player.UpdateAvatarImageAsync(savedPath).DoNotWait();
+                                player.IsAdmin = rconParams?.Server?.Profile?.ServerFilesAdmins?.Any(u => u.PlayerId.Equals(player.PlayerId, StringComparison.OrdinalIgnoreCase)) ?? false;
+                                player.IsWhitelisted = rconParams?.Server?.Profile?.ServerFilesWhitelisted?.Any(u => u.PlayerId.Equals(player.PlayerId, StringComparison.OrdinalIgnoreCase)) ?? false;
                             });
                         }
                     }, token);
@@ -580,10 +598,10 @@ namespace ARK_Server_Manager.Lib
                 token.ThrowIfCancellationRequested();
 
                 // remove any players that do not have a player file.
-                var droppedPlayers = this.players.Values.Where(p => dataContainer.Players.FirstOrDefault(pd => pd.SteamId == p.SteamId.ToString()) == null).ToArray();
+                var droppedPlayers = this.players.Values.Where(p => dataContainer.Players.FirstOrDefault(pd => pd.PlayerId.Equals(p.PlayerId, StringComparison.OrdinalIgnoreCase)) == null).ToArray();
                 foreach (var droppedPlayer in droppedPlayers)
                 {
-                    players.TryRemove(droppedPlayer.SteamId, out PlayerInfo player);
+                    players.TryRemove(droppedPlayer.PlayerId, out PlayerInfo player);
                 }
             }
         }

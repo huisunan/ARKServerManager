@@ -1,6 +1,6 @@
-﻿using ARK_Server_Manager.Lib;
-using ArkServerManager.Plugin.Common;
-using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Plugin.Common;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for PluginsWindow.xaml
@@ -25,7 +25,7 @@ namespace ARK_Server_Manager
             this.PluginHelperInstance = PluginHelper.Instance;
 
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.DataContext = this;
         }
@@ -42,7 +42,7 @@ namespace ARK_Server_Manager
             dialog.Title = GlobalizedApplication.Instance.GetResourceString("PluginsWindow_AddDialogTitle");
             dialog.DefaultExtension = GlobalizedApplication.Instance.GetResourceString("PluginsWindow_PluginDefaultExtension");
             dialog.Filters.Add(new CommonFileDialogFilter(GlobalizedApplication.Instance.GetResourceString("PluginsWindow_AddFilterLabel"), GlobalizedApplication.Instance.GetResourceString("PluginsWindow_AddFilterExtension")));
-            if (dialog == null || dialog.ShowDialog() != CommonFileDialogResult.Ok)
+            if (dialog == null || dialog.ShowDialog(this) != CommonFileDialogResult.Ok)
                 return;
 
             try

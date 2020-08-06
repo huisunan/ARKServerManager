@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ARK_Server_Manager" GeneratedClassName="Config">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ServerManagerTool" GeneratedClassName="Config">
   <Profiles />
   <Settings>
     <Setting Name="SteamCmdUrl" Type="System.String" Scope="Application">
@@ -50,11 +50,8 @@
     <Setting Name="ProfilesDir" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Profiles</Value>
     </Setting>
-    <Setting Name="ProfileExtensionOld" Type="System.String" Scope="Application">
+    <Setting Name="ProfileExtension" Type="System.String" Scope="Application">
       <Value Profile="(Default)">.profile</Value>
-    </Setting>
-    <Setting Name="DefaultServerMap" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">TheIsland</Value>
     </Setting>
     <Setting Name="DataDir" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -90,13 +87,10 @@
       <Value Profile="(Default)">?MultiHome={0}</Value>
     </Setting>
     <Setting Name="LatestASMVersionUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">http://arkservermanager.s3.amazonaws.com/release/latest.txt</Value>
+      <Value Profile="(Default)">https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/latest.txt</Value>
     </Setting>
     <Setting Name="UpdateCheckTime" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">1440</Value>
-    </Setting>
-    <Setting Name="DefaultSteamAPIKey" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="SavedArksRelativePath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ShooterGame\Saved\SavedArks</Value>
@@ -311,6 +305,9 @@
     <Setting Name="SectionCustomGameUserSettingsIsExpanded" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="SectionCustomGameSettingsIsExpanded" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="ServerUpdate_OnServerStart" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -345,16 +342,16 @@
       <Value Profile="(Default)">Clusters</Value>
     </Setting>
     <Setting Name="LatestASMBetaVersionUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">http://arkservermanager.s3.amazonaws.com/beta/latest.txt</Value>
+      <Value Profile="(Default)">https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/beta/latest.txt</Value>
     </Setting>
     <Setting Name="LatestASMBetaDownloadUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">http://arkservermanager.s3.amazonaws.com/beta/latest.zip</Value>
+      <Value Profile="(Default)">https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/beta/latest.zip</Value>
     </Setting>
     <Setting Name="LatestASMDownloadUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">http://arkservermanager.s3.amazonaws.com/release/latest.zip</Value>
+      <Value Profile="(Default)">https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/latest.zip</Value>
     </Setting>
     <Setting Name="LatestASMPatchNotesUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">http://arkservermanager.freeforums.net/thread/3/downloads</Value>
+      <Value Profile="(Default)">http://arkservermanager.freeforums.net/thread/5193/downloads</Value>
     </Setting>
     <Setting Name="LatestASMBetaPatchNotesUrl" Type="System.String" Scope="Application">
       <Value Profile="(Default)">http://arkservermanager.freeforums.net/board/11/beta-testers</Value>
@@ -396,7 +393,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="BackupDir" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">_Backup</Value>
+      <Value Profile="(Default)">_backup_</Value>
     </Setting>
     <Setting Name="ServerGameConfigFile" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Game.ini</Value>
@@ -412,9 +409,6 @@
     </Setting>
     <Setting Name="SectionSupplyCrateOverridesIsExpanded" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="ServerCallUrlFormat" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="SteamAPIKey" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -503,11 +497,11 @@
     <Setting Name="Alert_UpdateProcessError" Type="System.String" Scope="User">
       <Value Profile="(Default)">The server update process was performed but an error occurred.</Value>
     </Setting>
+    <Setting Name="Alert_ModUpdateDetected" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Mod updates have been detected:</Value>
+    </Setting>
     <Setting Name="ASMPluginUrl" Type="System.String" Scope="Application">
       <Value Profile="(Default)">http://arkservermanager.freeforums.net/board/22/plugins</Value>
-    </Setting>
-    <Setting Name="ProfileExtension" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">.asmprofile</Value>
     </Setting>
     <Setting Name="PlayerFileExtension" Type="System.String" Scope="Application">
       <Value Profile="(Default)">.arkprofile</Value>
@@ -533,7 +527,7 @@
     <Setting Name="ServerShutdown_WorldSaveDelay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">60</Value>
     </Setting>
-    <Setting Name="ServerShutdown_UseDoExit" Type="System.Boolean" Scope="User">
+    <Setting Name="ServerShutdown_UseShutdownCommand" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="Alert_ServerStatusChange" Type="System.String" Scope="User">
@@ -549,7 +543,7 @@
       <Value Profile="(Default)">A wild dino wipe is scheduled after the server starts and may delay login until it is complete. Please be patient.</Value>
     </Setting>
     <Setting Name="ServerManagerCode" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">ED89B8FA-0E0B-46CC-A90B-595E69AE9A7E</Value>
     </Setting>
     <Setting Name="BackupPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -565,6 +559,9 @@
     </Setting>
     <Setting Name="FirewallRulePrefix" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ARK Server:</Value>
+    </Setting>
+    <Setting Name="DonationUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=bletch1971%40hotmail%2ecom&amp;lc=US&amp;item_name=Server%20Manager&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted</Value>
     </Setting>
     <Setting Name="GameDataApplication" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ark</Value>
@@ -585,16 +582,10 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="ServerManagerVersionFeedUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/VersionFeed.xml</Value>
     </Setting>
     <Setting Name="ServerManagerVersionBetaFeedUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="RCON_MaximumPlayerAvatars" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">300</Value>
-    </Setting>
-    <Setting Name="RCON_ShowPlayerAvatars" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">https://raw.githubusercontent.com/Bletch1971/ServerManagers/master/ASM/beta/VersionFeed.xml</Value>
     </Setting>
     <Setting Name="DefaultServerBranchName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">live</Value>
@@ -622,6 +613,93 @@
     </Setting>
     <Setting Name="SectionSOTFEnabled" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DefaultGlobalizationFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Globalization\en-US\en-US.xaml</Value>
+    </Setting>
+    <Setting Name="ServerShutdownCommand" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">doexit</Value>
+    </Setting>
+    <Setting Name="ServerSaveCommand" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">saveworld</Value>
+    </Setting>
+    <Setting Name="ServerStatus_EnableActions" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ServerStatus_ShowActionConfirmation" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="DefaultStyleFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Styles\Default.xaml</Value>
+    </Setting>
+    <Setting Name="ScheduledTaskFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ArkServerManager</Value>
+    </Setting>
+    <Setting Name="AutoUpdate_SequencialDelayPeriod" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="SectionStackSizeOverridesEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SectionStackSizeOverridesIsExpanded" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="BackupWorldFile" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AutoUpdate_VerifyServerAfterUpdate" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="GameDataUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://arkservermanager.freeforums.net/board/25/game-data</Value>
+    </Setting>
+    <Setting Name="MainWindow_Width" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">1100</Value>
+    </Setting>
+    <Setting Name="MainWindow_Height" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">900</Value>
+    </Setting>
+    <Setting Name="ServerMonitorWindow_Width" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">900</Value>
+    </Setting>
+    <Setting Name="ServerMonitorWindow_Height" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">500</Value>
+    </Setting>
+    <Setting Name="UpdateDirectoryPermissions" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ServerShutdown_CheckForOnlinePlayers" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ServerShutdown_SendShutdownMessages" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="AutoRestart_EnabledGracePeriod" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AutoRestart_GracePeriod" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="ServerStatusWatcher_LocalStatusQueryDelay" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">15000</Value>
+    </Setting>
+    <Setting Name="ServerStatusWatcher_RemoteStatusQueryDelay" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">120000</Value>
+    </Setting>
+    <Setting Name="MainWindow_MinimizeToTray" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ServerEngineConfigFile" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Engine.ini</Value>
+    </Setting>
+    <Setting Name="SectionCustomEngineSettingsIsExpanded" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SectionCustomEngineSettingsEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ServerMonitorMessageOutput_Height" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">100</Value>
     </Setting>
   </Settings>
 </SettingsFile>

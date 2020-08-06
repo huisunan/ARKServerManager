@@ -11,8 +11,10 @@
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/ru-ru/ru-ru.xaml")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/es-es/es-es.xaml")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/zh-cn/zh-cn.xaml")]
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/en-gb/en-gb.xaml")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/fr-fr/fr-fr.xaml")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/pt-br/pt-br.xaml")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/en-au/en-au.xaml")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("gamedata/crystalisles.gamedata")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("styles/default.xaml")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/de-de/de-de.xaml")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("globalization/en-us/en-us.xaml")]
@@ -23,5 +25,9 @@
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("gamedata/scorchedearth.gamedata")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("gamedata/survivalevolved.gamedata")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("gamedata/thecenter.gamedata")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("gamedata/extinction.gamedata")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("gamedata/genesis.gamedata")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("gamedata/valguero.gamedata")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("nlog.config")]
 
 

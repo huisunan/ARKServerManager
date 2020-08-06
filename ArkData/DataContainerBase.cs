@@ -49,7 +49,7 @@ namespace ArkData
 
                 for (var i = 0; i < Players.Count; i++)
                 {
-                    var online_player = online.SingleOrDefault(p => p.Name == Players[i].SteamName);
+                    var online_player = online.SingleOrDefault(p => p.Name == Players[i].PlayerName);
                     if (online_player != null)
                         Players[i].Online = true;
                     else
@@ -70,14 +70,14 @@ namespace ArkData
             for (var i = 0; i < Players.Count; i++)
             {
                 var player = Players[i];
-                player.OwnedTribes = Tribes.Where(t => t.OwnerId == player.Id).ToList();
+                player.OwnedTribes = Tribes.Where(t => t.OwnerId == player.CharacterId).ToList();
                 player.Tribe = Tribes.SingleOrDefault(t => t.Id == player.TribeId);
             }
 
             for (var i = 0; i < Tribes.Count; i++)
             {
                 var tribe = Tribes[i];
-                tribe.Owner = Players.SingleOrDefault(p => p.Id == tribe.OwnerId);
+                tribe.Owner = Players.SingleOrDefault(p => p.CharacterId == tribe.OwnerId);
                 tribe.Players = Players.Where(p => p.TribeId == tribe.Id).ToList();
             }
         }
@@ -92,29 +92,9 @@ namespace ArkData
 
             for (var i = 0; i < profiles.Count; i++)
             {
-                var player = Players.Single(p => p.SteamId == profiles[i].steamid);
-                player.SteamName = profiles[i].personaname;
-                player.ProfileUrl = profiles[i].profileurl;
-                player.AvatarUrl = profiles[i].avatar;
-                player.LastSteamUpdateUtc = lastSteamUpdateUtc;
-            }
-        }
-
-        /// <summary>
-        /// Deserializes JSON from Steam API and links Steam ban data to player profile.
-        /// </summary>
-        /// <param name="jsonString">The JSON data string.</param>
-        private void LinkSteamBans(string jsonString)
-        {
-            var bans = JsonConvert.DeserializeObject<Models.SteamPlayerResponse<Models.SteamBan>>(jsonString).players;
-            for (var i = 0; i < bans.Count; i++)
-            {
-                var player = Players.Single(p => p.SteamId == bans[i].SteamId);
-                player.CommunityBanned = bans[i].CommunityBanned;
-                player.VACBanned = bans[i].VACBanned;
-                player.NumberOfVACBans = bans[i].NumberOfVACBans;
-                player.NumberOfGameBans = bans[i].NumberOfGameBans;
-                player.DaysSinceLastBan = bans[i].DaysSinceLastBan;
+                var player = Players.Single(p => p.PlayerId == profiles[i].steamid);
+                player.PlayerName = profiles[i].personaname;
+                player.LastPlatformUpdateUtc = lastSteamUpdateUtc;
             }
         }
     }

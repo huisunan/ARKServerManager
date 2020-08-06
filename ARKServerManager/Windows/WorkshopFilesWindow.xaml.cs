@@ -1,4 +1,8 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Lib;
+using ServerManagerTool.Lib.Model;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -9,11 +13,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Navigation;
-using ARK_Server_Manager.Lib;
-using ARK_Server_Manager.Lib.Model;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for WorkshopFilesWindow.xaml
@@ -35,7 +37,7 @@ namespace ARK_Server_Manager
         public WorkshopFilesWindow(ModDetailList modDetails, ServerProfile profile)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             _profile = profile;
             _isSotF = _profile?.SOTF_Enabled ?? false;
@@ -49,7 +51,7 @@ namespace ARK_Server_Manager
         public WorkshopFilesWindow(ModDetailsWindow window, ServerProfile profile)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             _window = window;
             _profile = profile;
@@ -103,11 +105,6 @@ namespace ARK_Server_Manager
             }
         }
 
-        private void Filter_SourceUpdated(object sender, DataTransferEventArgs e)
-        {
-            WorkshopFilesView?.Refresh();
-        }
-
         private void ModDetails_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             WorkshopFilesView?.Refresh();
@@ -155,23 +152,6 @@ namespace ARK_Server_Manager
             e.Handled = true;
         }
 
-        public bool Filter(object obj)
-        {
-            var data = obj as WorkshopFileItem;
-            if (data == null)
-                return false;
-
-            if (WorkshopFilterExisting && _modDetails.Any(m => m.ModId.Equals(data.WorkshopId)))
-                return false;
-
-            var filterString = WorkshopFilterString.ToLower();
-
-            if (string.IsNullOrWhiteSpace(filterString))
-                return true;
-
-            return data.WorkshopId.Contains(filterString) || data.TitleFilterString.Contains(filterString);
-        }
-
         private async Task LoadWorkshopItems(bool loadFromCacheFile)
         {
             var cursor = this.Cursor;
@@ -195,7 +175,7 @@ namespace ARK_Server_Manager
                         steamCache = localCache;
 
                         // check if the cache is old
-                        if (localCache != null && localCache.cached.AddHours(Config.Default.WorkshopCache_ExpiredHours) < DateTime.UtcNow)
+                        if (localCache != null && Config.Default.WorkshopCache_ExpiredHours > 0 && localCache.cached.AddHours(Config.Default.WorkshopCache_ExpiredHours) < DateTime.UtcNow)
                             // cache is considered old, clear cache variable so it will reload from internet
                             steamCache = null;
                     }
@@ -233,5 +213,29 @@ namespace ARK_Server_Manager
 
             WorkshopFilesView?.Refresh();
         }
+
+        #region Filtering
+        private void FilterWorkshopFiles_Click(object sender, RoutedEventArgs e)
+        {
+            WorkshopFilesView?.Refresh();
+        }
+
+        public bool Filter(object obj)
+        {
+            var data = obj as WorkshopFileItem;
+            if (data == null)
+                return false;
+
+            if (WorkshopFilterExisting && _modDetails.Any(m => m.ModId.Equals(data.WorkshopId)))
+                return false;
+
+            var filterString = WorkshopFilterString.ToLower();
+
+            if (string.IsNullOrWhiteSpace(filterString))
+                return true;
+
+            return data.WorkshopId.Contains(filterString) || data.TitleFilterString.Contains(filterString);
+        }
+        #endregion
     }
 }

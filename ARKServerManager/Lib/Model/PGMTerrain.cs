@@ -1,10 +1,13 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Attibutes;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Utils;
+using System;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     public class PGMTerrain : AggregateIniValue

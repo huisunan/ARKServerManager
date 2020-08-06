@@ -1,4 +1,4 @@
-﻿namespace ArkServerManager.Plugin.Common
+﻿namespace ServerManagerTool.Plugin.Common
 {
     public sealed class PluginItem
     {

@@ -5,12 +5,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ARK Server Manager")]
-[assembly: AssemblyDescription("The ARK Server Manager makes it easy to setup and manage your ARK: Survival Evolved™ dedicated servers.")]
+[assembly: AssemblyTitle("ARK: Survival Evolved™ Server Manager")]
+[assembly: AssemblyDescription("The server manager makes it easy to setup and manage your ARK: Survival Evolved™ dedicated servers.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ARK Server Manager")]
-[assembly: AssemblyCopyright("Copyright © 2015-2017")]
+[assembly: AssemblyCompany("Bletch1971")]
+[assembly: AssemblyProduct("Server Managers")]
+[assembly: AssemblyCopyright("Copyright © 2015-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -50,6 +50,6 @@ using System.Windows;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyFileVersion("1.0.*")]
+// [assembly: AssemblyVersion("1.0")]
+[assembly: AssemblyVersion("1.0")]
+[assembly: AssemblyFileVersion("1.0.0.1")]

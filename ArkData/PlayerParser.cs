@@ -17,14 +17,19 @@ namespace ArkData
             return BitConverter.ToUInt64(data, num + bytes2.Length + 9);
         }
 
-        private static string GetSteamId(byte[] data)
+        private static string GetPlatformId(byte[] data)
         {
             byte[] bytes1 = Encoding.Default.GetBytes("UniqueNetIdRepl");
             int num = Extensions.LocateFirst(data, bytes1, 0);
-            byte[] bytes2 = new byte[17];
 
-            Array.Copy((Array)data, num + bytes1.Length + 9, (Array)bytes2, 0, 17);
-            return Encoding.Default.GetString(bytes2);
+            byte[] bytes2 = new byte[9];
+            Array.Copy(data, num + bytes1.Length, bytes2, 0, 9);
+
+            var length = BitConverter.ToUInt32(bytes2, 5) - 1;
+            byte[] bytes3 = new byte[length];
+
+            Array.Copy(data, num + bytes1.Length + bytes2.Length, bytes3, 0, length);
+            return Encoding.Default.GetString(bytes3);
         }
 
         public static PlayerData ParsePlayer(string fileName)
@@ -34,13 +39,16 @@ namespace ArkData
                 return null;
             byte[] data = File.ReadAllBytes(fileName);
 
+            var tribeId = Helpers.GetInt(data, "TribeId");
+
             return new PlayerData()
             {
-                Id = Convert.ToInt64(GetId(data)),
-                SteamId = GetSteamId(data),
-                SteamName = Helpers.GetString(data, "PlayerName"),
+                //PlayerId = GetPlatformId(data),
+                PlayerId = Path.GetFileNameWithoutExtension(fileInfo.Name),
+                PlayerName = Helpers.GetString(data, "PlayerName"),
+                CharacterId = Convert.ToInt64(GetId(data)),
                 CharacterName = Helpers.GetString(data, "PlayerCharacterName"),
-                TribeId = Helpers.GetInt(data, "TribeID"),
+                TribeId = tribeId > -1 ? tribeId : Helpers.GetInt(data, "TribeID"),
                 Level = (short)(1 + Convert.ToInt32(Helpers.GetUInt16(data, "CharacterStatusComponent_ExtraCharacterLevel"))),
 
                 File = fileName,
@@ -52,10 +60,7 @@ namespace ArkData
 
         public static Task<PlayerData> ParsePlayerAsync(string fileName)
         {
-            return Task.Run<PlayerData>(() =>
-            {
-                return ParsePlayer(fileName);
-            });
+            return Task.Run(() => ParsePlayer(fileName)); 
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using ARK_Server_Manager.Lib;
+﻿using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Utils;
 using System;
 using System.Threading;
 using System.Windows;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for AutoUpdateWindow.xaml
@@ -19,13 +20,13 @@ namespace ARK_Server_Manager
         public AutoUpdateWindow()
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             cancelSource = new CancellationTokenSource();
-            updater.UpdateSteamCmdAsync(new Progress<SteamCmdUpdater.Update>(async u =>
+            updater.UpdateSteamCmdAsync(Config.Default.DataDir, new Progress<SteamCmdUpdater.Update>(async u =>
                 {
                     var message = string.IsNullOrWhiteSpace(u.StatusKey) ? string.Empty : _globalizer.GetResourceString(u.StatusKey) ?? u.StatusKey;
                     this.StatusLabel.Content = message;

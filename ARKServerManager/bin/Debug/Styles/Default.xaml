@@ -50,4 +50,6 @@
     <SolidColorBrush x:Key="SliderThumb.Tick.Bottom" Color="#FFD8CCBC"/>
     <SolidColorBrush x:Key="SliderThumb.Track.Background" Color="#FFBFA786"/>
 
+    <SolidColorBrush x:Key="WarningMessage" Color="Red"/>
+
 </Globalization:StyleResourceDictionary>

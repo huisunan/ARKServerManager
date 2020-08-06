@@ -1,14 +1,12 @@
-﻿using ARK_Server_Manager.Lib;
+﻿using ServerManagerTool.Common;
+using ServerManagerTool.Common.Utils;
 using System;
-using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using WPFSharp.Globalizer;
-using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for SettingsWindow.xaml
@@ -20,7 +18,7 @@ namespace ARK_Server_Manager
         public SettingsWindow()
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
         }
 
         protected override void OnClosed(EventArgs e)
@@ -87,6 +85,11 @@ namespace ARK_Server_Manager
             }
 
             Config.Default.Save();
+            CommonConfig.Default.Save();
+
+            Config.Default.Reload();
+            CommonConfig.Default.Reload();
+
             base.OnClosed(e);
         }
     }

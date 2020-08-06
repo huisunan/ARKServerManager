@@ -18,6 +18,7 @@ namespace WPFSharp.Globalizer
         #endregion
 
         #region Contructor
+
         public ResourceDictionaryManagerBase(Collection<ResourceDictionary> inMergedDictionaries)
         {
             MergedDictionaries = inMergedDictionaries;
@@ -26,17 +27,18 @@ namespace WPFSharp.Globalizer
         #endregion
 
         #region Properties
-        public virtual String SubDirectory { get; set; }
 
-        public virtual String DefaultPath
+        public virtual string SubDirectory { get; set; }
+
+        public virtual string DefaultPath
         {
-            get { return _DefaultPath ?? (_DefaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), SubDirectory)); }
-        } private String _DefaultPath;
-
+            get { return _defaultPath ?? (_defaultPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), SubDirectory)); }
+        }
+        private String _defaultPath;
 
         public Collection<ResourceDictionary> MergedDictionaries { get; set; }
 
-        public virtual List<String> FileNames
+        public virtual List<string> FileNames
         {
             get { return _FileNames ?? (_FileNames = new List<string>()); }
             set { _FileNames = value; }
@@ -65,10 +67,7 @@ namespace WPFSharp.Globalizer
 
         public virtual void NotifyResourceDictionaryChanged(ResourceDictionaryChangedEventArgs inEventArgs = null)
         {
-            if (null != ResourceDictionaryChangedEvent)
-            {
-                ResourceDictionaryChangedEvent(this, inEventArgs ?? new ResourceDictionaryChangedEventArgs());
-            }
+            ResourceDictionaryChangedEvent?.Invoke(this, inEventArgs ?? new ResourceDictionaryChangedEventArgs());
         }
 
         public abstract EnhancedResourceDictionary LoadFromFile(string inFile);

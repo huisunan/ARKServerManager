@@ -1,28 +1,34 @@
-﻿using ARK_Server_Manager.Lib;
-using Microsoft.WindowsAPICodePack.Dialogs;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using ServerManagerTool.Common;
+using ServerManagerTool.Common.Lib;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Common.Serialization;
+using ServerManagerTool.Common.Utils;
+using ServerManagerTool.Enums;
+using ServerManagerTool.Lib;
+using ServerManagerTool.Lib.Model;
+using ServerManagerTool.Lib.ViewModel;
+using ServerManagerTool.Plugin.Common;
+using ServerManagerTool.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using ARK_Server_Manager.Lib.ViewModel;
-using WPFSharp.Globalizer;
-using System.Threading.Tasks;
-using ARK_Server_Manager.Lib.Utils;
-using System.Text;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
-using ARK_Server_Manager.Lib.Model;
-using static ARK_Server_Manager.Lib.ServerApp;
-using ArkServerManager.Plugin.Common;
+using System.Windows.Input;
+using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     public enum ServerSettingsCustomLevelsAction
     {
@@ -52,6 +58,7 @@ namespace ARK_Server_Manager
         MapSpawnerOverridesSection,
         CraftingOverridesSection,
         SupplyCrateOverridesSection,
+        StackSizeOverridesSection,
 
         // Properties
         MapNameTotalConversionProperty,
@@ -79,7 +86,9 @@ namespace ARK_Server_Manager
         private CancellationTokenSource _upgradeCancellationSource = null;
 
         // Using a DependencyProperty as the backing store for ServerManager.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty BaseArkApplicationListProperty = DependencyProperty.Register(nameof(BaseArkApplicationList), typeof(ArkApplicationComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty BaseDinoModListProperty = DependencyProperty.Register(nameof(BaseDinoModList), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty BaseEngramModListProperty = DependencyProperty.Register(nameof(BaseEngramModList), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty BaseResourceModListProperty = DependencyProperty.Register(nameof(BaseResourceModList), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
         public static readonly DependencyProperty BaseDinoSettingsDinoListProperty = DependencyProperty.Register(nameof(BaseDinoSettingsDinoList), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
         public static readonly DependencyProperty BaseMapSpawnerListProperty = DependencyProperty.Register(nameof(BaseMapSpawnerList), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
         public static readonly DependencyProperty BaseMapSpawnerDinoListProperty = DependencyProperty.Register(nameof(BaseMapSpawnerDinoList), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
@@ -88,6 +97,7 @@ namespace ARK_Server_Manager
         public static readonly DependencyProperty BaseGameMapsProperty = DependencyProperty.Register(nameof(BaseGameMaps), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
         public static readonly DependencyProperty BaseTotalConversionsProperty = DependencyProperty.Register(nameof(BaseTotalConversions), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
         public static readonly DependencyProperty BaseBranchesProperty = DependencyProperty.Register(nameof(BaseBranches), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty BaseEventsProperty = DependencyProperty.Register(nameof(BaseEvents), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
         public static readonly DependencyProperty CurrentConfigProperty = DependencyProperty.Register(nameof(CurrentConfig), typeof(Config), typeof(ServerSettingsControl));
         public static readonly DependencyProperty IsAdministratorProperty = DependencyProperty.Register(nameof(IsAdministrator), typeof(bool), typeof(ServerSettingsControl), new PropertyMetadata(false));
         public static readonly DependencyProperty NetworkInterfacesProperty = DependencyProperty.Register(nameof(NetworkInterfaces), typeof(List<NetworkAdapterEntry>), typeof(ServerSettingsControl), new PropertyMetadata(new List<NetworkAdapterEntry>()));
@@ -95,22 +105,44 @@ namespace ARK_Server_Manager
         public static readonly DependencyProperty ServerManagerProperty = DependencyProperty.Register(nameof(ServerManager), typeof(ServerManager), typeof(ServerSettingsControl), new PropertyMetadata(null));
         public static readonly DependencyProperty ServerProperty = DependencyProperty.Register(nameof(Server), typeof(Server), typeof(ServerSettingsControl), new PropertyMetadata(null, ServerPropertyChanged));
         public static readonly DependencyProperty SettingsProperty = DependencyProperty.Register(nameof(Settings), typeof(ServerProfile), typeof(ServerSettingsControl));
-        public static readonly DependencyProperty SelectedArkApplicationDinoProperty = DependencyProperty.Register(nameof(SelectedArkApplicationDino), typeof(ArkApplication), typeof(ServerSettingsControl), new PropertyMetadata(ArkApplication.All));
-        public static readonly DependencyProperty SelectedArkApplicationEngramProperty = DependencyProperty.Register(nameof(SelectedArkApplicationEngram), typeof(ArkApplication), typeof(ServerSettingsControl), new PropertyMetadata(ArkApplication.All));
-        public static readonly DependencyProperty SelectedArkApplicationResourceProperty = DependencyProperty.Register(nameof(SelectedArkApplicationResource), typeof(ArkApplication), typeof(ServerSettingsControl), new PropertyMetadata(ArkApplication.All));
+        public static readonly DependencyProperty SelectedModDinoProperty = DependencyProperty.Register(nameof(SelectedModDino), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata("All"));
+        public static readonly DependencyProperty SelectedModEngramProperty = DependencyProperty.Register(nameof(SelectedModEngram), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata("All"));
+        public static readonly DependencyProperty SelectedModResourceProperty = DependencyProperty.Register(nameof(SelectedModResource), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata("All"));
         public static readonly DependencyProperty SelectedCraftingOverrideProperty = DependencyProperty.Register(nameof(SelectedCraftingOverride), typeof(CraftingOverride), typeof(ServerSettingsControl));
-        public static readonly DependencyProperty SelectedCustomSectionProperty = DependencyProperty.Register(nameof(SelectedCustomSection), typeof(CustomSection), typeof(ServerSettingsControl));
+        public static readonly DependencyProperty SelectedCustomEngineSettingProperty = DependencyProperty.Register(nameof(SelectedCustomEngineSetting), typeof(CustomSection), typeof(ServerSettingsControl));
+        public static readonly DependencyProperty SelectedCustomGameSettingProperty = DependencyProperty.Register(nameof(SelectedCustomGameSetting), typeof(CustomSection), typeof(ServerSettingsControl));
+        public static readonly DependencyProperty SelectedCustomGameUserSettingProperty = DependencyProperty.Register(nameof(SelectedCustomGameUserSetting), typeof(CustomSection), typeof(ServerSettingsControl));
         public static readonly DependencyProperty SelectedNPCSpawnSettingProperty = DependencyProperty.Register(nameof(SelectedNPCSpawnSetting), typeof(NPCSpawnSettings), typeof(ServerSettingsControl));
         public static readonly DependencyProperty SelectedSupplyCrateOverrideProperty = DependencyProperty.Register(nameof(SelectedSupplyCrateOverride), typeof(SupplyCrateOverride), typeof(ServerSettingsControl));
         public static readonly DependencyProperty SelectedSupplyCrateItemSetProperty = DependencyProperty.Register(nameof(SelectedSupplyCrateItemSet), typeof(SupplyCrateItemSet), typeof(ServerSettingsControl));
         public static readonly DependencyProperty SelectedSupplyCrateItemSetEntryProperty = DependencyProperty.Register(nameof(SelectedSupplyCrateItemSetEntry), typeof(SupplyCrateItemSetEntry), typeof(ServerSettingsControl));
         public static readonly DependencyProperty FilterOnlySelectedEngramsProperty = DependencyProperty.Register(nameof(FilterOnlySelectedEngrams), typeof(bool), typeof(ServerSettingsControl), new PropertyMetadata(false));
+        public static readonly DependencyProperty ProcessPrioritiesProperty = DependencyProperty.Register(nameof(ProcessPriorities), typeof(ComboBoxItemList), typeof(ServerSettingsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty CurrentCultureProperty = DependencyProperty.Register(nameof(CurrentCulture), typeof(CultureInfo), typeof(ServerSettingsControl), new PropertyMetadata(null));
+        public static readonly DependencyProperty DisplayModInformationProperty = DependencyProperty.Register(nameof(DisplayModInformation), typeof(bool), typeof(ServerSettingsControl), new PropertyMetadata(false));
+        public static readonly DependencyProperty CustomLevelProgressionsInformationProperty = DependencyProperty.Register(nameof(CustomLevelProgressionsInformation), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata(""));
+        public static readonly DependencyProperty ProfileLastStartedProperty = DependencyProperty.Register(nameof(ProfileLastStarted), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata(""));
+        public static readonly DependencyProperty DinoFilterStringProperty = DependencyProperty.Register(nameof(DinoFilterString), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata(""));
+        public static readonly DependencyProperty EngramFilterStringProperty = DependencyProperty.Register(nameof(EngramFilterString), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata(""));
+        public static readonly DependencyProperty ResourceFilterStringProperty = DependencyProperty.Register(nameof(ResourceFilterString), typeof(string), typeof(ServerSettingsControl), new PropertyMetadata(""));
 
         #region Properties
-        public ArkApplicationComboBoxItemList BaseArkApplicationList
+        public ComboBoxItemList BaseDinoModList
         {
-            get { return (ArkApplicationComboBoxItemList)GetValue(BaseArkApplicationListProperty); }
-            set { SetValue(BaseArkApplicationListProperty, value); }
+            get { return (ComboBoxItemList)GetValue(BaseDinoModListProperty); }
+            set { SetValue(BaseDinoModListProperty, value); }
+        }
+
+        public ComboBoxItemList BaseEngramModList
+        {
+            get { return (ComboBoxItemList)GetValue(BaseEngramModListProperty); }
+            set { SetValue(BaseEngramModListProperty, value); }
+        }
+
+        public ComboBoxItemList BaseResourceModList
+        {
+            get { return (ComboBoxItemList)GetValue(BaseResourceModListProperty); }
+            set { SetValue(BaseResourceModListProperty, value); }
         }
 
         public ComboBoxItemList BaseDinoSettingsDinoList
@@ -161,6 +193,12 @@ namespace ARK_Server_Manager
             set { SetValue(BaseBranchesProperty, value); }
         }
 
+        public ComboBoxItemList BaseEvents
+        {
+            get { return (ComboBoxItemList)GetValue(BaseEventsProperty); }
+            set { SetValue(BaseEventsProperty, value); }
+        }
+
         public Config CurrentConfig
         {
             get { return GetValue(CurrentConfigProperty) as Config; }
@@ -203,22 +241,22 @@ namespace ARK_Server_Manager
             set { SetValue(SettingsProperty, value); }
         }
 
-        public ArkApplication SelectedArkApplicationDino
+        public string SelectedModDino
         {
-            get { return (ArkApplication)GetValue(SelectedArkApplicationDinoProperty); }
-            set { SetValue(SelectedArkApplicationDinoProperty, value); }
+            get { return (string)GetValue(SelectedModDinoProperty); }
+            set { SetValue(SelectedModDinoProperty, value); }
         }
 
-        public ArkApplication SelectedArkApplicationEngram
+        public string SelectedModEngram
         {
-            get { return (ArkApplication)GetValue(SelectedArkApplicationEngramProperty); }
-            set { SetValue(SelectedArkApplicationEngramProperty, value); }
+            get { return (string)GetValue(SelectedModEngramProperty); }
+            set { SetValue(SelectedModEngramProperty, value); }
         }
 
-        public ArkApplication SelectedArkApplicationResource
+        public string SelectedModResource
         {
-            get { return (ArkApplication)GetValue(SelectedArkApplicationResourceProperty); }
-            set { SetValue(SelectedArkApplicationResourceProperty, value); }
+            get { return (string)GetValue(SelectedModResourceProperty); }
+            set { SetValue(SelectedModResourceProperty, value); }
         }
 
         public CraftingOverride SelectedCraftingOverride
@@ -227,10 +265,22 @@ namespace ARK_Server_Manager
             set { SetValue(SelectedCraftingOverrideProperty, value); }
         }
 
-        public CustomSection SelectedCustomSection
+        public CustomSection SelectedCustomEngineSetting
         {
-            get { return GetValue(SelectedCustomSectionProperty) as CustomSection; }
-            set { SetValue(SelectedCustomSectionProperty, value); }
+            get { return GetValue(SelectedCustomEngineSettingProperty) as CustomSection; }
+            set { SetValue(SelectedCustomEngineSettingProperty, value); }
+        }
+
+        public CustomSection SelectedCustomGameSetting
+        {
+            get { return GetValue(SelectedCustomGameSettingProperty) as CustomSection; }
+            set { SetValue(SelectedCustomGameSettingProperty, value); }
+        }
+
+        public CustomSection SelectedCustomGameUserSetting
+        {
+            get { return GetValue(SelectedCustomGameUserSettingProperty) as CustomSection; }
+            set { SetValue(SelectedCustomGameUserSettingProperty, value); }
         }
 
         public NPCSpawnSettings SelectedNPCSpawnSetting
@@ -262,18 +312,73 @@ namespace ARK_Server_Manager
             get { return (bool)GetValue(FilterOnlySelectedEngramsProperty); }
             set { SetValue(FilterOnlySelectedEngramsProperty, value); }
         }
+
+        public ComboBoxItemList ProcessPriorities
+        {
+            get { return (ComboBoxItemList)GetValue(ProcessPrioritiesProperty); }
+            set { SetValue(ProcessPrioritiesProperty, value); }
+        }
+
+        public CultureInfo CurrentCulture
+        {
+            get { return (CultureInfo)GetValue(CurrentCultureProperty); }
+            set { SetValue(CurrentCultureProperty, value); }
+        }
+
+        public bool DisplayModInformation
+        {
+            get { return (bool)GetValue(DisplayModInformationProperty); }
+            set { SetValue(DisplayModInformationProperty, value); }
+        }
+
+        public string CustomLevelProgressionsInformation
+        {
+            get { return (string)GetValue(CustomLevelProgressionsInformationProperty); }
+            set { SetValue(CustomLevelProgressionsInformationProperty, value); }
+        }
+
+        public string ProfileLastStarted
+        {
+            get { return (string)GetValue(ProfileLastStartedProperty); }
+            set { SetValue(ProfileLastStartedProperty, value); }
+        }
+
+        public string DinoFilterString
+        {
+            get { return (string)GetValue(DinoFilterStringProperty); }
+            set { SetValue(DinoFilterStringProperty, value); }
+        }
+
+        public string EngramFilterString
+        {
+            get { return (string)GetValue(EngramFilterStringProperty); }
+            set { SetValue(EngramFilterStringProperty, value); }
+        }
+
+        public string ResourceFilterString
+        {
+            get { return (string)GetValue(ResourceFilterStringProperty); }
+            set { SetValue(ResourceFilterStringProperty, value); }
+        }
         #endregion
 
         public ServerSettingsControl()
         {
             this.CurrentConfig = Config.Default;
+            this.CurrentCulture = Thread.CurrentThread.CurrentCulture;
+
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             this.ServerManager = ServerManager.Instance;
             this.IsAdministrator = SecurityUtils.IsAdministrator();
+            this.DisplayModInformation = !string.IsNullOrWhiteSpace(SteamUtils.SteamWebApiKey);
 
-            RefreshBaseArkApplicationList();
+            RefreshBaseDinoModList();
+            RefreshBaseEngramModList();
+            RefreshBaseResourceModList();
+            RefreshCustomLevelProgressionsInformation();
+
             this.BaseDinoSettingsDinoList = new ComboBoxItemList();
             this.BaseMapSpawnerList = new ComboBoxItemList();
             this.BaseMapSpawnerDinoList = new ComboBoxItemList();
@@ -282,6 +387,10 @@ namespace ARK_Server_Manager
             this.BaseGameMaps = new ComboBoxItemList();
             this.BaseTotalConversions = new ComboBoxItemList();
             this.BaseBranches = new ComboBoxItemList();
+            this.BaseEvents = new ComboBoxItemList();
+            this.ProcessPriorities = new ComboBoxItemList();
+
+            UpdateLastStartedDetails(false);
 
             // hook into the language change event
             GlobalizedApplication.Instance.GlobalizationManager.ResourceDictionaryChangedEvent += ResourceDictionaryChangedEvent;
@@ -309,18 +418,28 @@ namespace ARK_Server_Manager
                         ssc.RefreshBaseGameMapsList();
                         ssc.RefreshBaseTotalConversionsList();
                         ssc.RefreshBaseBranchesList();
-                        ssc.LoadServerFiles();
+                        ssc.RefreshBaseEventsList();
+                        ssc.RefreshProcessPrioritiesList();
+                        ssc.DisplayModInformation = !string.IsNullOrWhiteSpace(SteamUtils.SteamWebApiKey);
+                        ssc.UpdateLastStartedDetails(false);
                     }).DoNotWait();
             }
         }
 
         private void ResourceDictionaryChangedEvent(object source, ResourceDictionaryChangedEventArgs e)
         {
+            this.CurrentCulture = Thread.CurrentThread.CurrentCulture;
+
             this.Settings.DinoSettings.UpdateForLocalization();
+            this.Settings.EngramSettings.UpdateForLocalization();
             this.Settings.NPCSpawnSettings.UpdateForLocalization();
             this.Settings.ConfigOverrideSupplyCrateItems.UpdateForLocalization();
+            this.Settings.ConfigOverrideItemMaxQuantity.UpdateForLocalization();
 
-            this.RefreshBaseArkApplicationList();
+            this.RefreshBaseDinoModList();
+            this.RefreshBaseEngramModList();
+            this.RefreshBaseResourceModList();
+
             this.RefreshBaseDinoList();
             this.RefreshBaseMapSpawnerList();
             this.RefreshBasePrimalItemList();
@@ -328,9 +447,13 @@ namespace ARK_Server_Manager
             this.RefreshBaseGameMapsList();
             this.RefreshBaseTotalConversionsList();
             this.RefreshBaseBranchesList();
+            this.RefreshBaseEventsList();
+            this.RefreshProcessPrioritiesList();
 
             this.HarvestResourceItemAmountClassMultipliersListBox.Items.Refresh();
-            this.EngramsOverrideListView.Items.Refresh();
+
+            this.RefreshCustomLevelProgressionsInformation();
+            this.UpdateLastStartedDetails(false);
 
             Runtime.UpdateServerStatusString();
         }
@@ -368,10 +491,10 @@ namespace ARK_Server_Manager
 
             switch (this.Runtime.Status)
             {
-                case ServerRuntime.ServerStatus.Initializing:
-                case ServerRuntime.ServerStatus.Running:
+                case ServerStatus.Initializing:
+                case ServerStatus.Running:
                     // check if the server is initialising.
-                    if (this.Runtime.Status == ServerRuntime.ServerStatus.Initializing)
+                    if (this.Runtime.Status == ServerStatus.Initializing)
                     {
                         result = MessageBox.Show(_globalizer.GetResourceString("ServerSettings_StartServer_StartingLabel"), _globalizer.GetResourceString("ServerSettings_StartServer_StartingTitle"), MessageBoxButton.YesNo, MessageBoxImage.Warning);
                         if (result == MessageBoxResult.No)
@@ -411,7 +534,7 @@ namespace ARK_Server_Manager
                     }
                     break;
 
-                case ServerRuntime.ServerStatus.Stopped:
+                case ServerStatus.Stopped:
                     Mutex mutex = null;
                     bool createdNew = false;
 
@@ -429,7 +552,7 @@ namespace ARK_Server_Manager
                             {
                                 if (!await UpdateServer(false, true, Config.Default.ServerUpdate_UpdateModsWhenUpdatingServer, true))
                                 {
-                                    if (MessageBox.Show("There was a problem while performing the server update. This may leave your server in a incomplete state.\r\n\r\nDo you want to continue with the server start, this could cause problems?", "Server Update", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                                    if (MessageBox.Show(_globalizer.GetResourceString("ServerUpdate_WarningLabel"), _globalizer.GetResourceString("ServerUpdate_Title"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                                         return;
                                 }
                             }
@@ -437,11 +560,15 @@ namespace ARK_Server_Manager
                             string validateMessage;
                             if (!this.Server.Profile.Validate(false, out validateMessage))
                             {
-                                if (MessageBox.Show($"The following validation problems were encountered.\r\n\r\n{validateMessage}\r\n\r\nDo you want to continue with the server start, this could cause problems?", "Profile Validation", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                                var outputMessage = _globalizer.GetResourceString("ProfileValidation_WarningLabel").Replace("{validateMessage}", validateMessage);
+                                if (MessageBox.Show(outputMessage, _globalizer.GetResourceString("ProfileValidation_Title"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                                     return;
                             }
 
                             await this.Server.StartAsync();
+
+                            // update the profile's last started time
+                            UpdateLastStartedDetails(true);
 
                             PluginHelper.Instance.ProcessAlert(AlertType.Startup, this.Settings.ProfileName, Config.Default.Alert_ServerStartedMessage);
                             if (this.Settings.ForceRespawnDinos)
@@ -478,19 +605,19 @@ namespace ARK_Server_Manager
         {
             switch (this.Runtime.Status)
             {
-                case ServerRuntime.ServerStatus.Stopped:
-                case ServerRuntime.ServerStatus.Uninstalled:
+                case ServerStatus.Stopped:
+                case ServerStatus.Uninstalled:
                     break;
 
-                case ServerRuntime.ServerStatus.Running:
-                case ServerRuntime.ServerStatus.Initializing:
+                case ServerStatus.Running:
+                case ServerStatus.Initializing:
                     var result = MessageBox.Show(_globalizer.GetResourceString("ServerSettings_UpgradeServer_RunningLabel"), _globalizer.GetResourceString("ServerSettings_UpgradeServer_RunningTitle"), MessageBoxButton.YesNo, MessageBoxImage.Warning);
                     if (result == MessageBoxResult.No)
                         return;
 
                     break;
 
-                case ServerRuntime.ServerStatus.Updating:
+                case ServerStatus.Updating:
                     return;
             }
 
@@ -502,8 +629,8 @@ namespace ARK_Server_Manager
         {
             switch (this.Runtime.Status)
             {
-                case ServerRuntime.ServerStatus.Stopped:
-                case ServerRuntime.ServerStatus.Uninstalled:
+                case ServerStatus.Stopped:
+                case ServerStatus.Uninstalled:
                     break;
 
                 default:
@@ -584,9 +711,9 @@ namespace ARK_Server_Manager
 
         private void OpenLogFolder_Click(object sender, RoutedEventArgs e)
         {
-            var logFolder = Path.Combine(SteamCmdUpdater.GetLogFolder(), this.Server.Profile.ProfileName);
+            var logFolder = Path.Combine(App.GetLogFolder(), this.Server.Profile.ProfileID.ToLower());
             if (!Directory.Exists(logFolder))
-                logFolder = SteamCmdUpdater.GetLogFolder();
+                logFolder = App.GetLogFolder();
             if (!Directory.Exists(logFolder))
                 logFolder = Config.Default.DataDir;
             Process.Start("explorer.exe", logFolder);
@@ -632,7 +759,7 @@ namespace ARK_Server_Manager
                 }
 
                 // <server>\ShooterGame\Saved\Config\WindowsServer
-                file = Path.Combine(this.Settings.InstallDirectory, Config.Default.ServerConfigRelativePath, "Game.ini");
+                file = Path.Combine(this.Settings.GetProfileServerConfigDir(), Config.Default.ServerGameConfigFile);
                 if (File.Exists(file))
                 {
                     var iniFile = IniFileUtils.ReadFromFile(file);
@@ -641,7 +768,7 @@ namespace ARK_Server_Manager
                         obfuscateFiles.Add(file, iniFile.ToOutputString());
                     }
                 }
-                file = Path.Combine(this.Settings.InstallDirectory, Config.Default.ServerConfigRelativePath, "GameUserSettings.ini");
+                file = Path.Combine(this.Settings.GetProfileServerConfigDir(), Config.Default.ServerGameUserSettingsConfigFile);
                 if (File.Exists(file))
                 {
                     var iniFile = IniFileUtils.ReadFromFile(file);
@@ -653,16 +780,8 @@ namespace ARK_Server_Manager
                         obfuscateFiles.Add(file, iniFile.ToOutputString());
                     }
                 }
-                file = Path.Combine(this.Settings.InstallDirectory, Config.Default.ServerConfigRelativePath, "RunServer.cmd");
+                file = Path.Combine(this.Settings.GetProfileServerConfigDir(), Config.Default.LauncherFile);
                 if (File.Exists(file)) files.Add(file);
-
-                //// <server>\ShooterGame\Saved\Logs
-                //folder = Path.Combine(this.Settings.InstallDirectory, Config.Default.SavedRelativePath, "Logs");
-                //dirInfo = new DirectoryInfo(folder);
-                //if (dirInfo.Exists)
-                //{
-                //    files.AddRange(dirInfo.GetFiles("*.log").Where(f => f.LastWriteTime > DateTime.Today.AddDays(-MAX_DAYS)).Select(logFile => logFile.FullName));
-                //}
 
                 // Logs
                 folder = Path.Combine(Config.Default.DataDir, Config.Default.LogsDir, ServerApp.LOGPREFIX_AUTOBACKUP);
@@ -687,7 +806,7 @@ namespace ARK_Server_Manager
                 }
 
                 // Logs/<server>
-                folder = Path.Combine(Config.Default.DataDir, Config.Default.LogsDir, this.Settings.ProfileName);
+                folder = Path.Combine(Config.Default.DataDir, Config.Default.LogsDir, this.Settings.ProfileID.ToLower());
                 dirInfo = new DirectoryInfo(folder);
                 if (dirInfo.Exists)
                 {
@@ -698,7 +817,7 @@ namespace ARK_Server_Manager
                 file = this.Settings.GetProfileFile();
                 if (File.Exists(file))
                 {
-                    var profileFile = ServerProfile.LoadFromProfileFile(file);
+                    var profileFile = ServerProfile.LoadFromProfileFile(file, null);
                     if (profileFile != null)
                     {
                         profileFile.AdminPassword = "obfuscated";
@@ -736,18 +855,50 @@ namespace ARK_Server_Manager
                     }
                 }
 
+                // scheduled tasks (profile level)
+                var taskKey = this.Settings.GetProfileKey();
+
+                var taskXML = TaskSchedulerUtils.GetScheduleTaskInformation(TaskSchedulerUtils.TaskType.AutoStart, taskKey, null);
+                if (!string.IsNullOrWhiteSpace(taskXML))
+                    obfuscateFiles.Add($"Task-{TaskSchedulerUtils.TaskType.AutoStart}.xml", taskXML);
+
+                taskXML = TaskSchedulerUtils.GetScheduleTaskInformation(TaskSchedulerUtils.TaskType.AutoShutdown, taskKey, "#1");
+                if (!string.IsNullOrWhiteSpace(taskXML))
+                    obfuscateFiles.Add($"Task-{TaskSchedulerUtils.TaskType.AutoShutdown}-#1.xml", taskXML);
+
+                taskXML = TaskSchedulerUtils.GetScheduleTaskInformation(TaskSchedulerUtils.TaskType.AutoShutdown, taskKey, "#2");
+                if (!string.IsNullOrWhiteSpace(taskXML))
+                    obfuscateFiles.Add($"Task-{TaskSchedulerUtils.TaskType.AutoShutdown}-#2.xml", taskXML);
+
+                // scheduled tasks (manager level)
+                taskKey = TaskSchedulerUtils.ComputeKey(Config.Default.DataDir);
+
+                taskXML = TaskSchedulerUtils.GetScheduleTaskInformation(TaskSchedulerUtils.TaskType.AutoBackup, taskKey, null);
+                if (!string.IsNullOrWhiteSpace(taskXML))
+                    obfuscateFiles.Add($"Task-{TaskSchedulerUtils.TaskType.AutoBackup}.xml", taskXML);
+
+                taskXML = TaskSchedulerUtils.GetScheduleTaskInformation(TaskSchedulerUtils.TaskType.AutoUpdate, taskKey, null);
+                if (!string.IsNullOrWhiteSpace(taskXML))
+                    obfuscateFiles.Add($"Task-{TaskSchedulerUtils.TaskType.AutoUpdate}.xml", taskXML);
+
+                // archive comment - mostly global config settings
                 var comment = new StringBuilder();
                 comment.AppendLine($"Windows Platform: {Environment.OSVersion.Platform}");
                 comment.AppendLine($"Windows Version: {Environment.OSVersion.VersionString}");
 
-                comment.AppendLine($"ARK Version: {this.Settings.LastInstalledVersion}");
-                comment.AppendLine($"ASM Version: {App.Version}");
-                comment.AppendLine($"ASM Key: {Config.Default.ASMUniqueKey}");
+                comment.AppendLine($"Game Server Version: {this.Settings.LastInstalledVersion}");
+                comment.AppendLine($"Server Manager Version: {App.Instance.Version}");
+                comment.AppendLine($"Server Manager Code: {Config.Default.ServerManagerCode}");
+                comment.AppendLine($"Server Manager Key: {Config.Default.ASMUniqueKey}");
+                comment.AppendLine($"Server Manager Directory: {Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
 
                 comment.AppendLine($"MachinePublicIP: {Config.Default.MachinePublicIP}");
-                comment.AppendLine($"ASM Directory: {Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
                 comment.AppendLine($"Data Directory: {Config.Default.DataDir}");
-                comment.AppendLine($"Config Directory: {Config.Default.ConfigDirectory}");
+                comment.AppendLine($"Profiles Directory: {Config.Default.ConfigDirectory}");
+                if (!string.IsNullOrWhiteSpace(Config.Default.BackupPath))
+                    comment.AppendLine($"Backup Directory: {Config.Default.BackupPath}");
+                else
+                    comment.AppendLine($"Backup Directory: *{Path.Combine(Config.Default.DataDir, Config.Default.BackupDir)}");
                 comment.AppendLine($"Server Directory: {this.Settings.InstallDirectory}");
 
                 comment.AppendLine($"SotF Server: {this.Settings.SOTF_Enabled}");
@@ -756,10 +907,20 @@ namespace ARK_Server_Manager
                 comment.AppendLine($"IsAdministrator: {SecurityUtils.IsAdministrator()}");
                 comment.AppendLine($"RunAsAdministratorPrompt: {Config.Default.RunAsAdministratorPrompt}");
                 comment.AppendLine($"ManageFirewallAutomatically: {Config.Default.ManageFirewallAutomatically}");
+                comment.AppendLine($"ValidateProfileOnServerStart: {Config.Default.ValidateProfileOnServerStart}");
+                comment.AppendLine($"SteamCMD File: {SteamCmdUpdater.GetSteamCmdFile(Config.Default.DataDir)}");
                 comment.AppendLine($"SteamCmdRedirectOutput: {Config.Default.SteamCmdRedirectOutput}");
                 comment.AppendLine($"SteamCmd_UseAnonymousCredentials: {Config.Default.SteamCmd_UseAnonymousCredentials}");
-                comment.AppendLine($"SteamAPIKey: {!string.IsNullOrWhiteSpace(Config.Default.SteamAPIKey)}");
-                comment.AppendLine($"ValidateProfileOnServerStart: {Config.Default.ValidateProfileOnServerStart}");
+                comment.AppendLine($"SteamCmd_Username Set: {!string.IsNullOrWhiteSpace(Config.Default.SteamCmd_Username)}");
+                comment.AppendLine($"SteamCmd_Password Set: {!string.IsNullOrWhiteSpace(Config.Default.SteamCmd_Password)}");
+                comment.AppendLine($"SteamAPIKey: {!string.IsNullOrWhiteSpace(CommonConfig.Default.SteamAPIKey)}");
+
+                comment.AppendLine($"SectionSOTFEnabled: {Config.Default.SectionSOTFEnabled}");
+                comment.AppendLine($"SectionPGMEnabled: {Config.Default.SectionPGMEnabled}");
+                comment.AppendLine($"SectionCraftingOverridesEnabled: {Config.Default.SectionCraftingOverridesEnabled}");
+                comment.AppendLine($"SectionMapSpawnerOverridesEnabled: {Config.Default.SectionMapSpawnerOverridesEnabled}");
+                comment.AppendLine($"SectionSupplyCrateOverridesEnabled: {Config.Default.SectionSupplyCrateOverridesEnabled}");
+                comment.AppendLine($"SectionStackSizeOverridesEnabled: {Config.Default.SectionStackSizeOverridesEnabled}");
 
                 comment.AppendLine($"AutoBackup_EnableBackup: {Config.Default.AutoBackup_EnableBackup}");
                 comment.AppendLine($"AutoBackup_BackupPeriod: {Config.Default.AutoBackup_BackupPeriod}");
@@ -775,24 +936,29 @@ namespace ARK_Server_Manager
                 comment.AppendLine($"AutoUpdate_ValidateServerFiles: {Config.Default.AutoUpdate_ValidateServerFiles}");
                 comment.AppendLine($"AutoUpdate_OverrideServerStartup: {Config.Default.AutoUpdate_OverrideServerStartup}");
 
+                comment.AppendLine($"AutoRestart_EnabledGracePeriod: {Config.Default.AutoRestart_EnabledGracePeriod}");
+                comment.AppendLine($"AutoRestart_GracePeriod: {Config.Default.AutoRestart_GracePeriod}");
+
                 comment.AppendLine($"ServerShutdown_EnableWorldSave: {Config.Default.ServerShutdown_EnableWorldSave}");
+                comment.AppendLine($"ServerShutdown_CheckForOnlinePlayers: {Config.Default.ServerShutdown_CheckForOnlinePlayers}");
+                comment.AppendLine($"ServerShutdown_SendShutdownMessages: {Config.Default.ServerShutdown_SendShutdownMessages}");
                 comment.AppendLine($"ServerShutdown_GracePeriod: {Config.Default.ServerShutdown_GracePeriod}");
                 comment.AppendLine($"ServerUpdate_UpdateModsWhenUpdatingServer: {Config.Default.ServerUpdate_UpdateModsWhenUpdatingServer}");
                 comment.AppendLine($"ServerUpdate_ForceCopyMods: {Config.Default.ServerUpdate_ForceCopyMods}");
                 comment.AppendLine($"ServerUpdate_ForceUpdateMods: {Config.Default.ServerUpdate_ForceUpdateMods}");
                 comment.AppendLine($"ServerUpdate_ForceUpdateModsIfNoSteamInfo: {Config.Default.ServerUpdate_ForceUpdateModsIfNoSteamInfo}");
                 comment.AppendLine($"ServerUpdate_OnServerStart: {Config.Default.ServerUpdate_OnServerStart}");
+
                 comment.AppendLine($"EmailNotify_AutoRestart: {Config.Default.EmailNotify_AutoRestart}");
                 comment.AppendLine($"EmailNotify_AutoBackup: {Config.Default.EmailNotify_AutoBackup}");
                 comment.AppendLine($"EmailNotify_AutoUpdate: {Config.Default.EmailNotify_AutoUpdate}");
                 comment.AppendLine($"EmailNotify_ShutdownRestart: {Config.Default.EmailNotify_ShutdownRestart}");
 
-                comment.AppendLine($"ServerShutdown_UseDoExit: {Config.Default.ServerShutdown_UseDoExit}");
+                comment.AppendLine($"ServerShutdown_UseShutdownCommand: {Config.Default.ServerShutdown_UseShutdownCommand}");
                 comment.AppendLine($"ServerShutdown_WorldSaveDelay: {Config.Default.ServerShutdown_WorldSaveDelay}");
-
-                comment.AppendLine($"SectionCraftingOverridesEnabled: {Config.Default.SectionCraftingOverridesEnabled}");
-                comment.AppendLine($"SectionMapSpawnerOverridesEnabled: {Config.Default.SectionMapSpawnerOverridesEnabled}");
-                comment.AppendLine($"SectionSupplyCrateOverridesEnabled: {Config.Default.SectionSupplyCrateOverridesEnabled}");
+                comment.AppendLine($"BackupWorldFile: {Config.Default.BackupWorldFile}");
+                comment.AppendLine($"AutoUpdate_VerifyServerAfterUpdate: {Config.Default.AutoUpdate_VerifyServerAfterUpdate}");
+                comment.AppendLine($"UpdateDirectoryPermissions: {Config.Default.UpdateDirectoryPermissions}");
 
                 var zipFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), this.Settings.ProfileID + ".zip");
                 if (File.Exists(zipFile)) File.Delete(zipFile);
@@ -803,11 +969,12 @@ namespace ARK_Server_Manager
                     ZipUtils.ZipAFile(zipFile, kvp.Key, kvp.Value);
                 }
 
-                MessageBox.Show($"The support zip file has been created and saved to your desktop.\r\nThe filename is {Path.GetFileName(zipFile)}", "Support ZipFile Creation", MessageBoxButton.OK, MessageBoxImage.Information);
+                var message = _globalizer.GetResourceString("ServerSettings_SupportZipSuccessLabel").Replace("{filename}", Path.GetFileName(zipFile));
+                MessageBox.Show(message, _globalizer.GetResourceString("ServerSettings_SupportZipTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Support ZipFile Creation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_SupportZipErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -828,13 +995,13 @@ namespace ARK_Server_Manager
                 var result = this.Settings.Validate(true, out validationMessage);
 
                 if (result)
-                    MessageBox.Show("The profile passed the basic validation.", "Profile Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ProfileValidateSuccessLabel"), _globalizer.GetResourceString("ServerSettings_ProfileValidateTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
                 else
-                    MessageBox.Show(validationMessage, "Profile Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(validationMessage, _globalizer.GetResourceString("ServerSettings_ProfileValidateTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Profile Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_ProfileValidateErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -852,7 +1019,7 @@ namespace ARK_Server_Manager
                 dialog.InitialDirectory = Settings.InstallDirectory;
             }
 
-            var result = dialog.ShowDialog();
+            var result = dialog.ShowDialog(Window.GetWindow(this));
             if (result == CommonFileDialogResult.Ok)
             {
                 Settings.ChangeInstallationFolder(dialog.FileName);
@@ -861,23 +1028,25 @@ namespace ARK_Server_Manager
 
         private void Load_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new CommonOpenFileDialog();
-            dialog.EnsureFileExists = true;
-            dialog.Multiselect = false;
-            dialog.Title = _globalizer.GetResourceString("ServerSettings_LoadConfig_Title");
-            dialog.Filters.Add(new CommonFileDialogFilter("Profile", Config.Default.LoadProfileExtensionList));
             if (!Directory.Exists(Config.Default.ConfigDirectory))
             {
-                System.IO.Directory.CreateDirectory(Config.Default.ConfigDirectory);
+                Directory.CreateDirectory(Config.Default.ConfigDirectory);
             }
 
-            dialog.InitialDirectory = Config.Default.ConfigDirectory;
-            var result = dialog.ShowDialog();
-            if (result == CommonFileDialogResult.Ok)
+            var dialog = new CommonOpenFileDialog
+            {
+                EnsureFileExists = true,
+                InitialDirectory = Config.Default.ConfigDirectory,
+                Multiselect = false,
+                Title = _globalizer.GetResourceString("ServerSettings_LoadConfig_Title")
+            };
+            dialog.Filters.Add(new CommonFileDialogFilter("Profile", Config.Default.LoadProfileExtensionList));
+
+            if (dialog.ShowDialog(Window.GetWindow(this)) == CommonFileDialogResult.Ok)
             {
                 try
                 {
-                    this.Server.ImportFromPath(dialog.FileName);
+                    this.Server.ImportFromPath(dialog.FileName, Settings);
                     this.Server.Profile.ResetProfileId();
 
                     this.Settings = this.Server.Profile;
@@ -922,7 +1091,7 @@ namespace ARK_Server_Manager
                 if (exitCode != ServerApp.EXITCODE_NORMALEXIT && exitCode != ServerApp.EXITCODE_CANCELLED)
                     throw new ApplicationException($"An error occured during the backup process - ExitCode: {exitCode}");
 
-                MessageBox.Show("The backup was successful.", _globalizer.GetResourceString("ServerSettings_BackupServer_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(_globalizer.GetResourceString("ServerSettings_BackupServer_SuccessfulLabel"), _globalizer.GetResourceString("ServerSettings_BackupServer_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -1023,7 +1192,7 @@ namespace ARK_Server_Manager
                 var text = comboBox.Text;
 
                 var source = comboBox.ItemsSource as ComboBoxItemList;
-                source?.Add(new Lib.ViewModel.ComboBoxItem
+                source?.Add(new Common.Model.ComboBoxItem
                 {
                     ValueMember = text,
                     DisplayMember = text,
@@ -1042,6 +1211,11 @@ namespace ARK_Server_Manager
         private void OutOfDateModUpdate_Click(object sender, RoutedEventArgs e)
         {
             this.Runtime?.ResetModCheckTimer();
+        }
+
+        private void ProfileName_SourceUpdated(object sender, DataTransferEventArgs e)
+        {
+            Settings.UpdateProfileToolTip();
         }
 
         private void ServerName_SourceUpdated(object sender, DataTransferEventArgs e)
@@ -1068,14 +1242,32 @@ namespace ARK_Server_Manager
             if (checkBox == null || checkBox != EnableSOTFCheckbox)
                 return;
 
-            this.Settings.ServerMap = Config.Default.DefaultServerMap;
+            this.Settings.ServerMap = string.Empty;
             this.Settings.TotalConversionModId = string.Empty;
             this.Settings.ServerModIds = string.Empty;
             this.Settings.BranchName = string.Empty;
             this.Settings.BranchPassword = string.Empty;
+            this.Settings.EventName = string.Empty;
+
             RefreshBaseGameMapsList();
             RefreshBaseTotalConversionsList();
             RefreshBaseBranchesList();
+            RefreshBaseEventsList();
+        }
+
+        private void OpenAffinity_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new ProcessorAffinityWindow(Server.Profile.ProfileName, Server.Profile.ProcessAffinity)
+            {
+                Owner = Window.GetWindow(this)
+            };
+            window.Closed += Window_Closed;
+            var result = window.ShowDialog();
+
+            if (result.HasValue && result.Value)
+            {
+                Server.Profile.ProcessAffinity = window.AffinityValue;
+            }
         }
 
         #region Dinos
@@ -1088,16 +1280,12 @@ namespace ARK_Server_Manager
             RefreshBaseDinoList();
         }
 
-        private void DinoArkApplications_OnFilter(object sender, FilterEventArgs e)
+        private void DinoMod_OnFilter(object sender, FilterEventArgs e)
         {
-            var item = e.Item as DinoSettings;
-            if (item == null)
-                e.Accepted = false;
-            else
-                e.Accepted = (SelectedArkApplicationDino == ArkApplication.All || item.ArkApplication == SelectedArkApplicationDino);
+            e.Accepted = FilterInDino(e.Item as DinoSettings);
         }
 
-        private void DinoArkApplications_SourceUpdated(object sender, DataTransferEventArgs e)
+        private void FilterDino_Click(object sender, RoutedEventArgs e)
         {
             var view = this.DinoSettingsGrid.ItemsSource as ListCollectionView;
             view?.Refresh();
@@ -1119,7 +1307,7 @@ namespace ARK_Server_Manager
             Server.Profile.DinoSettings.RenderToModel();
 
             // cycle through the sections, adding them to the engrams list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
                 var dinoSpawnWeightMultipliers = new AggregateIniValueList<DinoSpawn>(nameof(Server.Profile.DinoSpawnWeightMultipliers), null);
                 dinoSpawnWeightMultipliers.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{dinoSpawnWeightMultipliers.IniCollectionKey}=")));
@@ -1196,6 +1384,14 @@ namespace ARK_Server_Manager
             window.Owner = Window.GetWindow(this);
             window.ShowDialog();
         }
+
+        private bool FilterInDino(DinoSettings dino)
+        {
+            if (dino == null)
+                return false;
+
+            return (SelectedModDino == GameData.MOD_ALL || dino.Mod == SelectedModDino) && (string.IsNullOrWhiteSpace(DinoFilterString) || dino.DisplayName.ToLower().Contains(DinoFilterString.ToLower()));
+        }
         #endregion
 
         #region Resources
@@ -1221,7 +1417,7 @@ namespace ARK_Server_Manager
             var iniFile = IniFileUtils.ReadString(window.ConfigData);
 
             // cycle through the sections, adding them to the engrams list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
                 var harvestResourceItemAmountClassMultipliers = new AggregateIniValueList<ResourceClassMultiplier>(nameof(Server.Profile.HarvestResourceItemAmountClassMultipliers), null);
                 harvestResourceItemAmountClassMultipliers.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{harvestResourceItemAmountClassMultipliers.IniCollectionKey}=")));
@@ -1240,16 +1436,12 @@ namespace ARK_Server_Manager
                 this.Settings.HarvestResourceItemAmountClassMultipliers.Remove(resource);
         }
 
-        private void ResourceArkApplications_OnFilter(object sender, FilterEventArgs e)
+        private void ResourceMod_OnFilter(object sender, FilterEventArgs e)
         {
-            var item = e.Item as ResourceClassMultiplier;
-            if (item == null)
-                e.Accepted = false;
-            else
-                e.Accepted = (SelectedArkApplicationResource == ArkApplication.All || item.ArkApplication == SelectedArkApplicationResource);
+            e.Accepted = FilterInResource(e.Item as ResourceClassMultiplier);
         }
 
-        private void ResourceArkApplications_SourceUpdated(object sender, DataTransferEventArgs e)
+        private void FilterResource_Click(object sender, RoutedEventArgs e)
         {
             var view = this.HarvestResourceItemAmountClassMultipliersListBox.ItemsSource as ListCollectionView;
             view?.Refresh();
@@ -1267,6 +1459,14 @@ namespace ARK_Server_Manager
             window.Owner = Window.GetWindow(this);
             window.ShowDialog();
         }
+
+        private bool FilterInResource(ResourceClassMultiplier resource)
+        {
+            if (resource == null)
+                return false;
+
+            return (SelectedModResource == GameData.MOD_ALL || resource.Mod == SelectedModResource) && (string.IsNullOrWhiteSpace(ResourceFilterString) || resource.DisplayName.ToLower().Contains(ResourceFilterString.ToLower()));
+        }
         #endregion
 
         #region Engrams
@@ -1283,9 +1483,10 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_EngramsOverride_SelectAllConfirmLabel"), _globalizer.GetResourceString("ServerSettings_EngramsOverride_SelectAllConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            foreach (var engram in Settings.OverrideNamedEngramEntries)
+            foreach (var engram in Settings.EngramSettings)
             {
-                engram.SaveEngramOverride = true;
+                if (FilterInEngram(engram))
+                    engram.SaveEngramOverride = true;
             }
         }
 
@@ -1294,25 +1495,137 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_EngramsOverride_UnselectAllConfirmLabel"), _globalizer.GetResourceString("ServerSettings_EngramsOverride_UnselectAllConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            foreach (var engram in Settings.OverrideNamedEngramEntries)
+            foreach (var engram in Settings.EngramSettings)
             {
-                engram.SaveEngramOverride = false;
+                if (FilterInEngram(engram))
+                    engram.SaveEngramOverride = false;
             }
         }
 
-        private void EngramArkApplications_OnFilter(object sender, FilterEventArgs e)
+        private void EngramMod_OnFilter(object sender, FilterEventArgs e)
         {
-            var item = e.Item as EngramEntry;
-            if (item == null)
-                e.Accepted = false;
-            else
-                e.Accepted = (SelectedArkApplicationEngram == ArkApplication.All || item.ArkApplication == SelectedArkApplicationEngram) && (!Settings.OnlyAllowSpecifiedEngrams || !FilterOnlySelectedEngrams || item.SaveEngramOverride);
+            e.Accepted = FilterInEngram(e.Item as EngramSettings);
         }
 
-        private void EngramArkApplications_SourceUpdated(object sender, DataTransferEventArgs e)
+        private async void ExportCustomEngrams_Click(object sender, RoutedEventArgs e)
         {
-            var view = this.EngramsOverrideListView.ItemsSource as ListCollectionView;
+            // ask user for a filename to save the engram data to
+            var dialog = new CommonSaveFileDialog
+            {
+                Title = GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ExportDialogTitle"),
+                DefaultExtension = GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ExportDefaultExtension")
+            };
+            dialog.Filters.Add(new CommonFileDialogFilter(GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ExportFilterLabel"), GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ExportFilterExtension")));
+
+            if (dialog == null || dialog.ShowDialog(Window.GetWindow(this)) != CommonFileDialogResult.Ok)
+                return;
+
+            var cursor = this.Cursor;
+
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => this.Cursor = Cursors.Wait);
+                await Task.Delay(500);
+
+                // update the data export
+                Settings.EngramSettings.OnlyAllowSpecifiedEngrams = Settings.OnlyAllowSpecifiedEngrams;
+
+                // perform the json serialization
+                Common.Utils.JsonUtils.SerializeToFile(new
+                {
+                    Settings.EngramSettings.OnlyAllowSpecifiedEngrams,
+                    EngramSettings = Settings.EngramSettings.ToList(),
+                }, dialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ExportErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                Application.Current.Dispatcher.Invoke(() => this.Cursor = cursor);
+            }
+        }
+
+        private void FilterEngram_Click(object sender, RoutedEventArgs e)
+        {
+            var view = this.EngramsOverrideGrid.ItemsSource as ListCollectionView;
             view?.Refresh();
+        }
+
+        private async void ImportCustomEngrams_Click(object sender, RoutedEventArgs e)
+        {
+            // ask user for a filename to load the engram data from
+            var dialog = new CommonOpenFileDialog
+            {
+                Title = GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ImportDialogTitle"),
+                DefaultExtension = GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ImportDefaultExtension")
+            };
+            dialog.Filters.Add(new CommonFileDialogFilter(GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ImportFilterLabel"), GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ImportFilterExtension")));
+
+            if (dialog == null || dialog.ShowDialog(Window.GetWindow(this)) != CommonFileDialogResult.Ok)
+                return;
+
+            // confirm with user which option to use - Overwrite, Merge or Cancel
+            var result = MessageBox.Show(GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ImportConfirmationLabel"), GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ImportConfirmationTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            var cursor = this.Cursor;
+
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() => this.Cursor = Cursors.Wait);
+                await Task.Delay(500);
+
+                // perform the json deserialization
+                var input = Common.Utils.JsonUtils.DeserializeFromFile(dialog.FileName, new
+                {
+                    OnlyAllowSpecifiedEngrams = false,
+                    EngramSettings = new List<EngramSettings>(),
+                });
+
+                if (input?.EngramSettings != null)
+                {
+                    // perform the class population
+                    Settings.OnlyAllowSpecifiedEngrams = input.OnlyAllowSpecifiedEngrams;
+                    Settings.EngramSettings.OnlyAllowSpecifiedEngrams = input.OnlyAllowSpecifiedEngrams;
+
+                    foreach (var engramSetting in input.EngramSettings.Where(engram => !string.IsNullOrWhiteSpace(engram.EngramClassName)))
+                    {
+                        var foundEngramSetting = Settings.EngramSettings.FirstOrDefault(engram => engram.EngramClassName.Equals(engramSetting.EngramClassName, StringComparison.OrdinalIgnoreCase));
+                        if (foundEngramSetting == null)
+                        {
+                            // engram not found, add to the list
+                            Settings.EngramSettings.Add(engramSetting);
+                        }
+                        else
+                        {
+                            // engram was found, update the values
+                            foundEngramSetting.Mod = engramSetting.Mod;
+                            foundEngramSetting.IsTekgram = engramSetting.IsTekgram;
+                            foundEngramSetting.EngramLevelRequirement = engramSetting.EngramLevelRequirement;
+                            foundEngramSetting.EngramPointsCost = engramSetting.EngramPointsCost;
+                            foundEngramSetting.EngramHidden = engramSetting.EngramHidden;
+                            foundEngramSetting.RemoveEngramPreReq = engramSetting.RemoveEngramPreReq;
+                            foundEngramSetting.EngramAutoUnlock = engramSetting.EngramAutoUnlock;
+                            foundEngramSetting.LevelToAutoUnlock = engramSetting.LevelToAutoUnlock;
+                            foundEngramSetting.SaveEngramOverride = engramSetting.SaveEngramOverride;
+                        }
+                    }
+
+                    // perform a model reload
+                    Settings.EngramSettings.RenderToModel();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, GlobalizedApplication.Instance.GetResourceString("ServerSettings_EngramsOverride_ImportErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                Application.Current.Dispatcher.Invoke(() => this.Cursor = cursor);
+            }
         }
 
         private void PasteCustomEngrams_Click(object sender, RoutedEventArgs e)
@@ -1328,14 +1641,26 @@ namespace ARK_Server_Manager
             // read the pasted data into an ini file.
             var iniFile = IniFileUtils.ReadString(window.ConfigData);
 
+            Server.Profile.EngramSettings.OnlyAllowSpecifiedEngrams = Server.Profile.OnlyAllowSpecifiedEngrams;
+            Server.Profile.EngramSettings.RenderToModel();
+
             // cycle through the sections, adding them to the engrams list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
-                var overrideNamedEngramEntries = new AggregateIniValueList<EngramEntry>(nameof(Server.Profile.OverrideNamedEngramEntries), null);
+                var overrideNamedEngramEntries = new EngramEntryList(nameof(Server.Profile.OverrideNamedEngramEntries));
                 overrideNamedEngramEntries.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{overrideNamedEngramEntries.IniCollectionKey}=")));
                 Server.Profile.OverrideNamedEngramEntries.AddRange(overrideNamedEngramEntries);
                 Server.Profile.OverrideNamedEngramEntries.IsEnabled |= overrideNamedEngramEntries.IsEnabled;
+
+                var engramEntryAutoUnlocks = new EngramAutoUnlockList(nameof(Server.Profile.EngramEntryAutoUnlocks));
+                engramEntryAutoUnlocks.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{engramEntryAutoUnlocks.IniCollectionKey}=")));
+                Server.Profile.EngramEntryAutoUnlocks.AddRange(engramEntryAutoUnlocks);
+                Server.Profile.EngramEntryAutoUnlocks.IsEnabled |= engramEntryAutoUnlocks.IsEnabled;
             }
+
+            Server.Profile.EngramSettings = new EngramSettingsList(Server.Profile.OverrideNamedEngramEntries, Server.Profile.EngramEntryAutoUnlocks);
+            Server.Profile.EngramSettings.OnlyAllowSpecifiedEngrams = Server.Profile.OnlyAllowSpecifiedEngrams;
+            Server.Profile.EngramSettings.RenderToView();
         }
 
         private void RemoveEngramOverride_Click(object sender, RoutedEventArgs e)
@@ -1343,16 +1668,18 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_EngramsOverride_EngramsRemoveRecordLabel"), _globalizer.GetResourceString("ServerSettings_EngramsOverride_EngramsRemoveRecordTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            var engram = ((EngramEntry)((Button)e.Source).DataContext);
+            var engram = ((EngramSettings)((Button)e.Source).DataContext);
             if (!engram.KnownEngram)
-                this.Settings.OverrideNamedEngramEntries.Remove(engram);
+                this.Settings.EngramSettings.Remove(engram);
         }
 
         private void SaveCustomEngrams_Click(object sender, RoutedEventArgs e)
         {
-            Settings.OverrideNamedEngramEntries.OnlyAllowSelectedEngrams = Settings.OnlyAllowSpecifiedEngrams;
+            Settings.EngramSettings.OnlyAllowSpecifiedEngrams = Settings.OnlyAllowSpecifiedEngrams;
+            Settings.EngramSettings.RenderToModel();
 
             var iniValues = Settings.OverrideNamedEngramEntries.ToIniValues().ToList();
+            iniValues.AddRange(Settings.EngramEntryAutoUnlocks.ToIniValues());
             var iniValue = string.Join("\r\n", iniValues);
 
             var window = new CommandLineWindow(iniValue);
@@ -1361,6 +1688,14 @@ namespace ARK_Server_Manager
             window.Title = _globalizer.GetResourceString("ServerSettings_CustomEngrams_SaveTitle");
             window.Owner = Window.GetWindow(this);
             window.ShowDialog();
+        }
+
+        private bool FilterInEngram(EngramSettings engram)
+        {
+            if (engram == null)
+                return false;
+
+            return (SelectedModEngram == GameData.MOD_ALL || engram.Mod == SelectedModEngram) && (!Settings.OnlyAllowSpecifiedEngrams || !FilterOnlySelectedEngrams || engram.SaveEngramOverride) && (string.IsNullOrWhiteSpace(EngramFilterString) || engram.DisplayName.ToLower().Contains(EngramFilterString.ToLower()));
         }
         #endregion
 
@@ -1373,7 +1708,13 @@ namespace ARK_Server_Manager
 
         private void AddCraftingOverrideResource_Click(object sender, RoutedEventArgs e)
         {
-            SelectedCraftingOverride?.BaseCraftingResourceRequirements.Add(new CraftingResourceRequirement());
+            if (SelectedCraftingOverride == null)
+            {
+                MessageBox.Show(_globalizer.GetResourceString("ServerSettings_AddChildErrorLabel"), _globalizer.GetResourceString("ServerSettings_AddChildErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            SelectedCraftingOverride.BaseCraftingResourceRequirements.Add(new CraftingResourceRequirement());
         }
 
         private void ClearCraftingOverrides_Click(object sender, RoutedEventArgs e)
@@ -1408,7 +1749,7 @@ namespace ARK_Server_Manager
             var iniFile = IniFileUtils.ReadString(window.ConfigData.Replace(" ", ""));
 
             // cycle through the sections, adding them to the engrams list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
                 var configOverrideItemCraftingCosts = new AggregateIniValueList<CraftingOverride>(nameof(Server.Profile.ConfigOverrideItemCraftingCosts), null);
                 configOverrideItemCraftingCosts.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{configOverrideItemCraftingCosts.IniCollectionKey}=")));
@@ -1473,34 +1814,34 @@ namespace ARK_Server_Manager
         #endregion
 
         #region Custom GameUserSettings
-        private void AddCustomItem_Click(object sender, RoutedEventArgs e)
+        private void AddCustomGameUserSettingItem_Click(object sender, RoutedEventArgs e)
         {
-            SelectedCustomSection?.Add(string.Empty, string.Empty);
+            SelectedCustomGameUserSetting?.Add(string.Empty, string.Empty);
         }
 
-        private void AddCustomSection_Click(object sender, RoutedEventArgs e)
+        private void AddCustomGameUserSettingSection_Click(object sender, RoutedEventArgs e)
         {
-            Settings.CustomGameUserSettingsSections.Add(string.Empty, new string[0]);
+            Settings.CustomGameUserSettings.Add(string.Empty, new string[0]);
         }
 
-        private void ClearCustomItems_Click(object sender, RoutedEventArgs e)
-        {
-            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
-                return;
-
-            SelectedCustomSection?.Clear();
-        }
-
-        private void ClearCustomSections_Click(object sender, RoutedEventArgs e)
+        private void ClearCustomGameUserSettingItems_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            SelectedCustomSection = null;
-            Settings.CustomGameUserSettingsSections.Clear();
+            SelectedCustomGameUserSetting?.Clear();
         }
 
-        private void ImportCustomSections_Click(object sender, RoutedEventArgs e)
+        private void ClearCustomGameUserSettingSections_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            SelectedCustomGameUserSetting = null;
+            Settings.CustomGameUserSettings.Clear();
+        }
+
+        private void ImportCustomGameUserSettingSections_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new CommonOpenFileDialog();
             dialog.EnsureFileExists = true;
@@ -1508,7 +1849,7 @@ namespace ARK_Server_Manager
             dialog.Title = _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Title");
             dialog.Filters.Add(new CommonFileDialogFilter("Ini Files", "*.ini"));
             dialog.InitialDirectory = Settings.InstallDirectory;
-            var result = dialog.ShowDialog();
+            var result = dialog.ShowDialog(Window.GetWindow(this));
             if (result == CommonFileDialogResult.Ok)
             {
                 try
@@ -1517,9 +1858,9 @@ namespace ARK_Server_Manager
                     var iniFile = IniFileUtils.ReadFromFile(dialog.FileName);
 
                     // cycle through the sections, adding them to the custom section list. Will bypass any sections that are named as per the ARK default sections.
-                    foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+                    foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
                     {
-                        Settings.CustomGameUserSettingsSections.Add(section.SectionName, section.KeysToStringArray(), false);
+                        Settings.CustomGameUserSettings.Add(section.SectionName, section.KeysToStringArray(), false);
                     }
 
                     MessageBox.Show(_globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Label"), _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1531,9 +1872,9 @@ namespace ARK_Server_Manager
             }
         }
 
-        private void PasteCustomItems_Click(object sender, RoutedEventArgs e)
+        private void PasteCustomGameUserSettingItems_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedCustomSection == null)
+            if (SelectedCustomGameUserSetting == null)
                 return;
 
             var window = new CustomConfigDataWindow();
@@ -1547,7 +1888,7 @@ namespace ARK_Server_Manager
             // read the pasted data into an ini file.
             var iniFile = IniFileUtils.ReadString(window.ConfigData);
             // get the section with the same name as the currently selected custom section.
-            var section = iniFile?.GetSection(SelectedCustomSection.SectionName);
+            var section = iniFile?.GetSection(SelectedCustomGameUserSetting.SectionName);
             // check if the section exists.
             if (section == null)
                 // section is not exists, get the section with the empty name.
@@ -1558,11 +1899,11 @@ namespace ARK_Server_Manager
             {
                 // check if the key name has been defined.
                 if (!string.IsNullOrWhiteSpace(key.KeyName))
-                    SelectedCustomSection.Add(key.KeyName, key.KeyValue);
+                    SelectedCustomGameUserSetting.Add(key.KeyName, key.KeyValue);
             }
         }
 
-        private void PasteCustomSections_Click(object sender, RoutedEventArgs e)
+        private void PasteCustomGameUserSettingSections_Click(object sender, RoutedEventArgs e)
         {
             var window = new CustomConfigDataWindow();
             window.Owner = Window.GetWindow(this);
@@ -1576,35 +1917,477 @@ namespace ARK_Server_Manager
             var iniFile = IniFileUtils.ReadString(window.ConfigData);
 
             // cycle through the sections, adding them to the custom section list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
-                Settings.CustomGameUserSettingsSections.Add(section.SectionName, section.KeysToStringArray(), false);
+                Settings.CustomGameUserSettings.Add(section.SectionName, section.KeysToStringArray(), false);
             }
         }
 
-        private void RemoveCustomItem_Click(object sender, RoutedEventArgs e)
+        private void ReloadCustomGameUserSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ReloadLabel"), _globalizer.GetResourceString("ServerSettings_ReloadTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                // build a full exclusion list
+                var exclusions = new List<Enum>();
+                foreach (var serverProfileCategory in Enum.GetValues(typeof(ServerProfileCategory)))
+                {
+                    if ((ServerProfileCategory)serverProfileCategory == ServerProfileCategory.CustomGameUserSettings)
+                        continue;
+
+                    exclusions.Add((ServerProfileCategory)serverProfileCategory);
+                }
+
+                var configIniFile = Path.Combine(ServerProfile.GetProfileServerConfigDir(Settings), Config.Default.ServerGameUserSettingsConfigFile);
+                // load only this section, using the full exclusion list
+                var tempServerProfile = ServerProfile.LoadFromINIFiles(configIniFile, null, exclusions.ToArray());
+                // perform a profile sync
+                Settings.SyncSettings(ServerProfileCategory.CustomGameUserSettings, tempServerProfile);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_ReloadErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RemoveCustomGameUserSettingItem_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            if (SelectedCustomSection == null)
+            if (SelectedCustomGameUserSetting == null)
                 return;
 
             var item = ((CustomItem)((Button)e.Source).DataContext);
-            SelectedCustomSection.Remove(item);
+            SelectedCustomGameUserSetting.Remove(item);
         }
 
-        private void RemoveCustomSection_Click(object sender, RoutedEventArgs e)
+        private void RemoveCustomGameUserSettingSection_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
             var section = ((CustomSection)((Button)e.Source).DataContext);
-            Settings.CustomGameUserSettingsSections.Remove(section);
+            Settings.CustomGameUserSettings.Remove(section);
+        }
+        #endregion
+
+        #region Custom GameSettings
+        private void AddCustomGameSettingItem_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedCustomGameSetting?.Add(string.Empty, string.Empty);
+        }
+
+        private void AddCustomGameSettingSection_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.CustomGameSettings.Add(string.Empty, new string[0]);
+        }
+
+        private void ClearCustomGameSettingItems_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            SelectedCustomGameSetting?.Clear();
+        }
+
+        private void ClearCustomGameSettingSections_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            SelectedCustomGameSetting = null;
+            Settings.CustomGameSettings.Clear();
+        }
+
+        private void ImportCustomGameSettingSections_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog();
+            dialog.EnsureFileExists = true;
+            dialog.Multiselect = false;
+            dialog.Title = _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Title");
+            dialog.Filters.Add(new CommonFileDialogFilter("Ini Files", "*.ini"));
+            dialog.InitialDirectory = Settings.InstallDirectory;
+            var result = dialog.ShowDialog(Window.GetWindow(this));
+            if (result == CommonFileDialogResult.Ok)
+            {
+                try
+                {
+                    // read the selected ini file.
+                    var iniFile = IniFileUtils.ReadFromFile(dialog.FileName);
+
+                    // cycle through the sections, adding them to the custom section list. Will bypass any sections that are named as per the ARK default sections.
+                    foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
+                    {
+                        Settings.CustomGameSettings.Add(section.SectionName, section.KeysToStringArray(), false);
+                    }
+
+                    MessageBox.Show(_globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Label"), _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                }
+            }
+        }
+
+        private void PasteCustomGameSettingItems_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedCustomGameSetting == null)
+                return;
+
+            var window = new CustomConfigDataWindow();
+            window.Owner = Window.GetWindow(this);
+            window.Closed += Window_Closed;
+            var result = window.ShowDialog();
+
+            if (!result.HasValue || !result.Value)
+                return;
+
+            // read the pasted data into an ini file.
+            var iniFile = IniFileUtils.ReadString(window.ConfigData);
+            // get the section with the same name as the currently selected custom section.
+            var section = iniFile?.GetSection(SelectedCustomGameSetting.SectionName);
+            // check if the section exists.
+            if (section == null)
+                // section is not exists, get the section with the empty name.
+                section = iniFile?.GetSection(string.Empty) ?? new IniSection();
+
+            // cycle through the section keys, adding them to the selected custom section.
+            foreach (var key in section.Keys)
+            {
+                // check if the key name has been defined.
+                if (!string.IsNullOrWhiteSpace(key.KeyName))
+                    SelectedCustomGameSetting.Add(key.KeyName, key.KeyValue);
+            }
+        }
+
+        private void PasteCustomGameSettingSections_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new CustomConfigDataWindow();
+            window.Owner = Window.GetWindow(this);
+            window.Closed += Window_Closed;
+            var result = window.ShowDialog();
+
+            if (!result.HasValue || !result.Value)
+                return;
+
+            // read the pasted data into an ini file.
+            var iniFile = IniFileUtils.ReadString(window.ConfigData);
+
+            // cycle through the sections, adding them to the custom section list. Will bypass any sections that are named as per the ARK default sections.
+            foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
+            {
+                Settings.CustomGameSettings.Add(section.SectionName, section.KeysToStringArray(), false);
+            }
+        }
+
+        private void ReloadCustomGameSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ReloadLabel"), _globalizer.GetResourceString("ServerSettings_ReloadTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                // build a full exclusion list
+                var exclusions = new List<Enum>();
+                foreach (var serverProfileCategory in Enum.GetValues(typeof(ServerProfileCategory)))
+                {
+                    if ((ServerProfileCategory)serverProfileCategory == ServerProfileCategory.CustomGameSettings)
+                        continue;
+
+                    exclusions.Add((ServerProfileCategory)serverProfileCategory);
+                }
+
+                var configIniFile = Path.Combine(ServerProfile.GetProfileServerConfigDir(Settings), Config.Default.ServerGameUserSettingsConfigFile);
+                // load only this section, using the full exclusion list
+                var tempServerProfile = ServerProfile.LoadFromINIFiles(configIniFile, null, exclusions.ToArray());
+                // perform a profile sync
+                Settings.SyncSettings(ServerProfileCategory.CustomGameSettings, tempServerProfile);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_ReloadErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RemoveCustomGameSettingItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            if (SelectedCustomGameSetting == null)
+                return;
+
+            var item = ((CustomItem)((Button)e.Source).DataContext);
+            SelectedCustomGameSetting.Remove(item);
+        }
+
+        private void RemoveCustomGameSettingSection_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            var section = ((CustomSection)((Button)e.Source).DataContext);
+            Settings.CustomGameSettings.Remove(section);
+        }
+        #endregion
+
+        #region Custom EngineSettings
+        private void AddCustomEngineSettingItem_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedCustomEngineSetting?.Add(string.Empty, string.Empty);
+        }
+
+        private void AddCustomEngineSettingSection_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.CustomEngineSettings.Add(string.Empty, new string[0]);
+        }
+
+        private void ClearCustomEngineSettingItems_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            SelectedCustomEngineSetting?.Clear();
+        }
+
+        private void ClearCustomEngineSettingSections_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            SelectedCustomEngineSetting = null;
+            Settings.CustomEngineSettings.Clear();
+        }
+
+        private void ImportCustomEngineSettingSections_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog();
+            dialog.EnsureFileExists = true;
+            dialog.Multiselect = false;
+            dialog.Title = _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Title");
+            dialog.Filters.Add(new CommonFileDialogFilter("Ini Files", "*.ini"));
+            dialog.InitialDirectory = Settings.InstallDirectory;
+            var result = dialog.ShowDialog(Window.GetWindow(this));
+            if (result == CommonFileDialogResult.Ok)
+            {
+                try
+                {
+                    // read the selected ini file.
+                    var iniFile = IniFileUtils.ReadFromFile(dialog.FileName);
+
+                    // cycle through the sections, adding them to the custom section list. Will bypass any sections that are named as per the ARK default sections.
+                    foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
+                    {
+                        Settings.CustomEngineSettings.Add(section.SectionName, section.KeysToStringArray(), false);
+                    }
+
+                    MessageBox.Show(_globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Label"), _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_Title"), MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_LoadCustomConfig_ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                }
+            }
+        }
+
+        private void PasteCustomEngineSettingItems_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedCustomEngineSetting == null)
+                return;
+
+            var window = new CustomConfigDataWindow();
+            window.Owner = Window.GetWindow(this);
+            window.Closed += Window_Closed;
+            var result = window.ShowDialog();
+
+            if (!result.HasValue || !result.Value)
+                return;
+
+            // read the pasted data into an ini file.
+            var iniFile = IniFileUtils.ReadString(window.ConfigData);
+            // get the section with the same name as the currently selected custom section.
+            var section = iniFile?.GetSection(SelectedCustomEngineSetting.SectionName);
+            // check if the section exists.
+            if (section == null)
+                // section is not exists, get the section with the empty name.
+                section = iniFile?.GetSection(string.Empty) ?? new IniSection();
+
+            // cycle through the section keys, adding them to the selected custom section.
+            foreach (var key in section.Keys)
+            {
+                // check if the key name has been defined.
+                if (!string.IsNullOrWhiteSpace(key.KeyName))
+                    SelectedCustomEngineSetting.Add(key.KeyName, key.KeyValue);
+            }
+        }
+
+        private void PasteCustomEngineSettingSections_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new CustomConfigDataWindow();
+            window.Owner = Window.GetWindow(this);
+            window.Closed += Window_Closed;
+            var result = window.ShowDialog();
+
+            if (!result.HasValue || !result.Value)
+                return;
+
+            // read the pasted data into an ini file.
+            var iniFile = IniFileUtils.ReadString(window.ConfigData);
+
+            // cycle through the sections, adding them to the custom section list. Will bypass any sections that are named as per the ARK default sections.
+            foreach (var section in iniFile.Sections.Where(s => !string.IsNullOrWhiteSpace(s.SectionName) && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
+            {
+                Settings.CustomEngineSettings.Add(section.SectionName, section.KeysToStringArray(), false);
+            }
+        }
+
+        private void ReloadCustomEngineSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ReloadLabel"), _globalizer.GetResourceString("ServerSettings_ReloadTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                // build a full exclusion list
+                var exclusions = new List<Enum>();
+                foreach (var serverProfileCategory in Enum.GetValues(typeof(ServerProfileCategory)))
+                {
+                    if ((ServerProfileCategory)serverProfileCategory == ServerProfileCategory.CustomEngineSettings)
+                        continue;
+
+                    exclusions.Add((ServerProfileCategory)serverProfileCategory);
+                }
+
+                var configIniFile = Path.Combine(ServerProfile.GetProfileServerConfigDir(Settings), Config.Default.ServerGameUserSettingsConfigFile);
+                // load only this section, using the full exclusion list
+                var tempServerProfile = ServerProfile.LoadFromINIFiles(configIniFile, null, exclusions.ToArray());
+                // perform a profile sync
+                Settings.SyncSettings(ServerProfileCategory.CustomEngineSettings, tempServerProfile);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, _globalizer.GetResourceString("ServerSettings_ReloadErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RemoveCustomEngineSettingItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            if (SelectedCustomEngineSetting == null)
+                return;
+
+            var item = ((CustomItem)((Button)e.Source).DataContext);
+            SelectedCustomEngineSetting.Remove(item);
+        }
+
+        private void RemoveCustomEngineSettingSection_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            var section = ((CustomSection)((Button)e.Source).DataContext);
+            Settings.CustomEngineSettings.Remove(section);
         }
         #endregion
 
         #region Custom Levels 
+        private CommonFileDialog GetCustomLevelCommonFileDialog(ServerSettingsCustomLevelsAction action)
+        {
+            CommonFileDialog dialog = null;
+
+            switch (action)
+            {
+                case ServerSettingsCustomLevelsAction.ExportDinoLevels:
+                case ServerSettingsCustomLevelsAction.ExportPlayerLevels:
+                    dialog = new CommonSaveFileDialog();
+                    dialog.Title = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportDialogTitle");
+                    dialog.DefaultExtension = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportDefaultExtension");
+                    dialog.Filters.Add(new CommonFileDialogFilter(GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportFilterLabel"), GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportFilterExtension")));
+                    break;
+
+                case ServerSettingsCustomLevelsAction.ImportDinoLevels:
+                case ServerSettingsCustomLevelsAction.ImportPlayerLevels:
+                    dialog = new CommonOpenFileDialog();
+                    dialog.Title = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportDialogTitle");
+                    dialog.DefaultExtension = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportDefaultExtension");
+                    dialog.Filters.Add(new CommonFileDialogFilter(GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportFilterLabel"), GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportFilterExtension")));
+                    break;
+            }
+
+            return dialog;
+        }
+
+        public ICommand CustomLevelActionCommand
+        {
+            get
+            {
+                return new RelayCommand<ServerSettingsCustomLevelsAction>(
+                    execute: (action) =>
+                    {
+                        var errorTitle = GlobalizedApplication.Instance.GetResourceString("Generic_ErrorLabel");
+
+                        try
+                        {
+                            var dialog = GetCustomLevelCommonFileDialog(action);
+                            var dialogValue = string.Empty;
+                            if (dialog != null && dialog.ShowDialog(Window.GetWindow(this)) == CommonFileDialogResult.Ok)
+                                dialogValue = dialog.FileName;
+
+                            switch (action)
+                            {
+                                case ServerSettingsCustomLevelsAction.ExportDinoLevels:
+                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportErrorTitle");
+
+                                    this.Settings.ExportDinoLevels(dialogValue);
+                                    break;
+
+                                case ServerSettingsCustomLevelsAction.ImportDinoLevels:
+                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportErrorTitle");
+
+                                    this.Settings.ImportDinoLevels(dialogValue);
+                                    break;
+
+                                case ServerSettingsCustomLevelsAction.UpdateDinoXPCap:
+                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_UpdateErrorTitle");
+
+                                    this.Settings.UpdateOverrideMaxExperiencePointsDino();
+                                    break;
+
+                                case ServerSettingsCustomLevelsAction.ExportPlayerLevels:
+                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportErrorTitle");
+
+                                    this.Settings.ExportPlayerLevels(dialogValue);
+                                    break;
+
+                                case ServerSettingsCustomLevelsAction.ImportPlayerLevels:
+                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportErrorTitle");
+
+                                    this.Settings.ImportPlayerLevels(dialogValue);
+                                    break;
+
+                                case ServerSettingsCustomLevelsAction.UpdatePlayerXPCap:
+                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_UpdateErrorTitle");
+
+                                    this.Settings.UpdateOverrideMaxExperiencePointsPlayer();
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, errorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    },
+                    canExecute: (action) => true
+                );
+            }
+        }
+
         private void AddDinoLevel_Click(object sender, RoutedEventArgs e)
         {
             var level = ((Level)((Button)e.Source).DataContext);
@@ -1702,12 +2485,20 @@ namespace ARK_Server_Manager
                 this.Settings.PlayerLevels.RemoveLevel(level);
             }
         }
+
+        private void EnableLevelProgressions_SourceUpdated(object sender, DataTransferEventArgs e)
+        {
+            if (!Settings.EnableLevelProgressions)
+            {
+                Settings.EnableDinoLevelProgressions = false;
+            }
+        }
         #endregion
 
         #region Server Files 
         private void AddAdminPlayer_Click(object sender, RoutedEventArgs e)
         {
-            var window = new AddSteamUserWindow();
+            var window = new AddUserWindow();
             window.Owner = Window.GetWindow(this);
             window.Closed += Window_Closed;
             var result = window.ShowDialog();
@@ -1716,10 +2507,12 @@ namespace ARK_Server_Manager
             {
                 try
                 {
-                    var steamIdsString = window.SteamUsers;
+                    Settings.DestroyServerFilesWatcher();
+
+                    var steamIdsString = window.Users;
                     var steamIds = steamIdsString.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                     var steamUsers = SteamUtils.GetSteamUserDetails(steamIds.ToList());
-                    var steamUserList = SteamUserList.GetList(steamUsers, steamIds);
+                    var steamUserList = PlayerUserList.GetList(steamUsers, steamIds);
                     Settings.ServerFilesAdmins.AddRange(steamUserList);
 
                     Settings.SaveServerFileAdministrators();
@@ -1728,12 +2521,16 @@ namespace ARK_Server_Manager
                 {
                     MessageBox.Show(ex.Message, "Add Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+                finally
+                {
+                    Settings.SetupServerFilesWatcher();
+                }
             }
         }
 
         private void AddExclusivePlayer_Click(object sender, RoutedEventArgs e)
         {
-            var window = new AddSteamUserWindow();
+            var window = new AddUserWindow();
             window.Owner = Window.GetWindow(this);
             window.Closed += Window_Closed;
             var result = window.ShowDialog();
@@ -1742,10 +2539,12 @@ namespace ARK_Server_Manager
             {
                 try
                 {
-                    var steamIdsString = window.SteamUsers;
+                    Settings.DestroyServerFilesWatcher();
+
+                    var steamIdsString = window.Users;
                     var steamIds = steamIdsString.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                     var steamUsers = SteamUtils.GetSteamUserDetails(steamIds.ToList());
-                    var steamUserList = SteamUserList.GetList(steamUsers, steamIds);
+                    var steamUserList = PlayerUserList.GetList(steamUsers, steamIds);
                     Settings.ServerFilesExclusive.AddRange(steamUserList);
 
                     Settings.SaveServerFileExclusive();
@@ -1754,12 +2553,16 @@ namespace ARK_Server_Manager
                 {
                     MessageBox.Show(ex.Message, "Add Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+                finally
+                {
+                    Settings.SetupServerFilesWatcher();
+                }
             }
         }
 
         private void AddWhitelistPlayer_Click(object sender, RoutedEventArgs e)
         {
-            var window = new AddSteamUserWindow();
+            var window = new AddUserWindow();
             window.Owner = Window.GetWindow(this);
             window.Closed += Window_Closed;
             var result = window.ShowDialog();
@@ -1768,10 +2571,12 @@ namespace ARK_Server_Manager
             {
                 try
                 {
-                    var steamIdsString = window.SteamUsers;
+                    Settings.DestroyServerFilesWatcher();
+
+                    var steamIdsString = window.Users;
                     var steamIds = steamIdsString.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
                     var steamUsers = SteamUtils.GetSteamUserDetails(steamIds.ToList());
-                    var steamUserList = SteamUserList.GetList(steamUsers, steamIds);
+                    var steamUserList = PlayerUserList.GetList(steamUsers, steamIds);
                     Settings.ServerFilesWhitelisted.AddRange(steamUserList);
 
                     Settings.SaveServerFileWhitelisted();
@@ -1779,6 +2584,10 @@ namespace ARK_Server_Manager
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message, "Add Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    Settings.SetupServerFilesWatcher();
                 }
             }
         }
@@ -1788,9 +2597,17 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            Settings.ServerFilesAdmins.Clear();
+            try
+            {
+                Settings.DestroyServerFilesWatcher();
 
-            Settings.SaveServerFileAdministrators();
+                Settings.ServerFilesAdmins.Clear();
+                Settings.SaveServerFileAdministrators();
+            }
+            finally
+            {
+                Settings.SetupServerFilesWatcher();
+            }
         }
 
         private void ClearExclusivePlayers_Click(object sender, RoutedEventArgs e)
@@ -1798,9 +2615,17 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            Settings.ServerFilesExclusive.Clear();
+            try
+            {
+                Settings.DestroyServerFilesWatcher();
 
-            Settings.SaveServerFileExclusive();
+                Settings.ServerFilesExclusive.Clear();
+                Settings.SaveServerFileExclusive();
+            }
+            finally
+            {
+                Settings.SetupServerFilesWatcher();
+            }
         }
 
         private void ClearWhitelistPlayers_Click(object sender, RoutedEventArgs e)
@@ -1808,9 +2633,17 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            Settings.ServerFilesWhitelisted.Clear();
+            try
+            {
+                Settings.DestroyServerFilesWatcher();
 
-            Settings.SaveServerFileWhitelisted();
+                Settings.ServerFilesWhitelisted.Clear();
+                Settings.SaveServerFileWhitelisted();
+            }
+            finally
+            {
+                Settings.SetupServerFilesWatcher();
+            }
         }
 
         private async void ReloadAdminPlayers_Click(object sender, RoutedEventArgs e)
@@ -1881,10 +2714,19 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            var mod = ((SteamUserItem)((Button)e.Source).DataContext);
-            Settings.ServerFilesAdmins.Remove(mod.SteamId);
+            try
+            {
+                Settings.DestroyServerFilesWatcher();
 
-            Settings.SaveServerFileAdministrators();
+                var mod = ((PlayerUserItem)((Button)e.Source).DataContext);
+                Settings.ServerFilesAdmins.Remove(mod.PlayerId);
+
+                Settings.SaveServerFileAdministrators();
+            }
+            finally
+            {
+                Settings.SetupServerFilesWatcher();
+            }
         }
 
         private void RemoveExclusivePlayer_Click(object sender, RoutedEventArgs e)
@@ -1892,10 +2734,19 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            var mod = ((SteamUserItem)((Button)e.Source).DataContext);
-            Settings.ServerFilesExclusive.Remove(mod.SteamId);
+            try
+            {
+                Settings.DestroyServerFilesWatcher();
 
-            Settings.SaveServerFileExclusive();
+                var mod = ((PlayerUserItem)((Button)e.Source).DataContext);
+                Settings.ServerFilesExclusive.Remove(mod.PlayerId);
+
+                Settings.SaveServerFileExclusive();
+            }
+            finally
+            {
+                Settings.SetupServerFilesWatcher();
+            }
         }
 
         private void RemoveWhitelistPlayer_Click(object sender, RoutedEventArgs e)
@@ -1903,18 +2754,19 @@ namespace ARK_Server_Manager
             if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                 return;
 
-            var mod = ((SteamUserItem)((Button)e.Source).DataContext);
-            Settings.ServerFilesWhitelisted.Remove(mod.SteamId);
+            try
+            {
+                Settings.DestroyServerFilesWatcher();
 
-            Settings.SaveServerFileWhitelisted();
-        }
+                var mod = ((PlayerUserItem)((Button)e.Source).DataContext);
+                Settings.ServerFilesWhitelisted.Remove(mod.PlayerId);
 
-        private void SteamProfileNavigate_Click(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
-        {
-            var item = ((SteamUserItem)((Hyperlink)e.Source).DataContext);
-
-            Process.Start(new ProcessStartInfo(item.ProfileUrl));
-            e.Handled = true;
+                Settings.SaveServerFileWhitelisted();
+            }
+            finally
+            {
+                Settings.SetupServerFilesWatcher();
+            }
         }
         #endregion
 
@@ -1944,7 +2796,7 @@ namespace ARK_Server_Manager
             var keyName = string.IsNullOrWhiteSpace(attr?.Key) ? prop.Name : attr.Key;
 
             // cycle through the sections, adding them to the engrams list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
                 foreach (var key in section.Keys.Where(s => s.KeyName.Equals(keyName)))
                 {
@@ -1984,7 +2836,13 @@ namespace ARK_Server_Manager
 
         private void AddNPCSpawnEntry_Click(object sender, RoutedEventArgs e)
         {
-            SelectedNPCSpawnSetting?.NPCSpawnEntrySettings.Add(new NPCSpawnEntrySettings());
+            if (SelectedNPCSpawnSetting == null)
+            {
+                MessageBox.Show(_globalizer.GetResourceString("ServerSettings_AddChildErrorLabel"), _globalizer.GetResourceString("ServerSettings_AddChildErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            SelectedNPCSpawnSetting.NPCSpawnEntrySettings.Add(new NPCSpawnEntrySettings());
         }
 
         private void ClearNPCSpawn_Click(object sender, RoutedEventArgs e)
@@ -2020,7 +2878,7 @@ namespace ARK_Server_Manager
             Server.Profile.NPCSpawnSettings.RenderToModel();
 
             // cycle through the sections, adding them to the custom section list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
                 var configAddNPCSpawnEntriesContainer = new NPCSpawnContainerList<NPCSpawnContainer>(nameof(Server.Profile.ConfigAddNPCSpawnEntriesContainer), NPCSpawnContainerType.Add);
                 configAddNPCSpawnEntriesContainer.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{configAddNPCSpawnEntriesContainer.IniCollectionKey}=")));
@@ -2132,17 +2990,35 @@ namespace ARK_Server_Manager
 
         private void AddSupplyCrateItemSet_Click(object sender, RoutedEventArgs e)
         {
-            SelectedSupplyCrateOverride?.ItemSets.Add(new SupplyCrateItemSet());
+            if (SelectedSupplyCrateOverride == null)
+            {
+                MessageBox.Show(_globalizer.GetResourceString("ServerSettings_AddChildErrorLabel"), _globalizer.GetResourceString("ServerSettings_AddChildErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            SelectedSupplyCrateOverride.ItemSets.Add(new SupplyCrateItemSet());
         }
 
         private void AddSupplyCrateItemSetEntry_Click(object sender, RoutedEventArgs e)
         {
-            SelectedSupplyCrateItemSet?.ItemEntries.Add(new SupplyCrateItemSetEntry());
+            if (SelectedSupplyCrateItemSet == null)
+            {
+                MessageBox.Show(_globalizer.GetResourceString("ServerSettings_AddChildErrorLabel"), _globalizer.GetResourceString("ServerSettings_AddChildErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            SelectedSupplyCrateItemSet.ItemEntries.Add(new SupplyCrateItemSetEntry());
         }
 
         private void AddSupplyCrateItem_Click(object sender, RoutedEventArgs e)
         {
-            SelectedSupplyCrateItemSetEntry?.Items.Add(new SupplyCrateItemEntrySettings());
+            if (SelectedSupplyCrateItemSetEntry == null)
+            {
+                MessageBox.Show(_globalizer.GetResourceString("ServerSettings_AddChildErrorLabel"), _globalizer.GetResourceString("ServerSettings_AddChildErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            SelectedSupplyCrateItemSetEntry.Items.Add(new SupplyCrateItemEntrySettings());
         }
 
         private void ClearSupplyCrates_Click(object sender, RoutedEventArgs e)
@@ -2200,7 +3076,7 @@ namespace ARK_Server_Manager
             Server.Profile.ConfigOverrideSupplyCrateItems.RenderToModel();
 
             // cycle through the sections, adding them to the engrams list. Will bypass any sections that are named as per the ARK default sections.
-            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.SectionNames.ContainsValue(s.SectionName)))
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
             {
                 var configOverrideSupplyCrateItems = new SupplyCrateOverrideList(nameof(Server.Profile.ConfigOverrideSupplyCrateItems));
                 configOverrideSupplyCrateItems.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{configOverrideSupplyCrateItems.IniCollectionKey}=")));
@@ -2307,119 +3183,197 @@ namespace ARK_Server_Manager
         }
         #endregion
 
+        #region Stack Size Overrides
+        private void AddStackSizeOverride_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.ConfigOverrideItemMaxQuantity.Add(new StackSizeOverride());
+            Settings.ConfigOverrideItemMaxQuantity.IsEnabled = true;
+        }
+
+        private void ClearStackSizeOverrides_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_ClearLabel"), _globalizer.GetResourceString("ServerSettings_ClearTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            Settings.ConfigOverrideItemMaxQuantity.Clear();
+            Settings.ConfigOverrideItemMaxQuantity.IsEnabled = false;
+        }
+
+        private void PasteStackSizeOverride_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new CustomConfigDataWindow();
+            window.Owner = Window.GetWindow(this);
+            window.Closed += Window_Closed;
+            var result = window.ShowDialog();
+
+            if (!result.HasValue || !result.Value)
+                return;
+
+            // read the pasted data into an ini file.
+            var iniFile = IniFileUtils.ReadString(window.ConfigData.Replace(" ", ""));
+
+            Server.Profile.ConfigOverrideItemMaxQuantity.RenderToModel();
+
+            // cycle through the sections, adding them to the list. Will bypass any sections that are named as per the ARK default sections.
+            foreach (var section in iniFile.Sections.Where(s => s.SectionName != null && !SystemIniFile.IniSectionNames.ContainsValue(s.SectionName)))
+            {
+                var configOverrideItemMaxQuantity = new AggregateIniValueList<StackSizeOverride>(nameof(Server.Profile.ConfigOverrideItemMaxQuantity), null);
+                configOverrideItemMaxQuantity.FromIniValues(section.KeysToStringArray().Where(s => s.StartsWith($"{configOverrideItemMaxQuantity.IniCollectionKey}=")));
+                Server.Profile.ConfigOverrideItemMaxQuantity.AddRange(configOverrideItemMaxQuantity);
+                Server.Profile.ConfigOverrideItemMaxQuantity.IsEnabled |= configOverrideItemMaxQuantity.IsEnabled;
+            }
+
+            var errors = Server.Profile.ConfigOverrideItemMaxQuantity.RenderToView();
+
+            RefreshBasePrimalItemList();
+
+            if (errors.Length > 0)
+            {
+                var error = $"The following errors have been found:\r\n\r\n{string.Join("\r\n", errors)}";
+
+                var window2 = new CommandLineWindow(error);
+                window2.OutputTextWrapping = TextWrapping.NoWrap;
+                window2.Height = 500;
+                window2.Title = "Import Errors";
+                window2.Owner = Window.GetWindow(this);
+                window2.ShowDialog();
+            }
+        }
+
+        private void RemoveStackSizeOverrideItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(_globalizer.GetResourceString("ServerSettings_DeleteLabel"), _globalizer.GetResourceString("ServerSettings_DeleteTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                return;
+
+            var item = ((StackSizeOverride)((Button)e.Source).DataContext);
+            Settings.ConfigOverrideItemMaxQuantity.Remove(item);
+            Settings.ConfigOverrideItemMaxQuantity.IsEnabled = Settings.ConfigOverrideItemMaxQuantity.Count > 0;
+        }
+
+        private void SaveStackSizeOverride_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.ConfigOverrideItemMaxQuantity.RenderToModel();
+
+            var iniValues = Settings.ConfigOverrideItemMaxQuantity.ToIniValues().ToList();
+            var iniValue = string.Join("\r\n", iniValues);
+
+            var window = new CommandLineWindow(iniValue);
+            window.OutputTextWrapping = TextWrapping.NoWrap;
+            window.Height = 500;
+            window.Title = _globalizer.GetResourceString("ServerSettings_StackSizeOverrides_SaveTitle");
+            window.Owner = Window.GetWindow(this);
+            window.ShowDialog();
+        }
+
+        private void SaveStackSizeOverrideItem_Click(object sender, RoutedEventArgs e)
+        {
+            var item = ((StackSizeOverride)((Button)e.Source).DataContext);
+            if (item == null)
+                return;
+
+            var iniName = Settings.ConfigOverrideItemMaxQuantity.IniCollectionKey;
+            var iniValue = $"{iniName}={item.ToINIValue()}";
+
+            var window = new CommandLineWindow(iniValue);
+            window.OutputTextWrapping = TextWrapping.Wrap;
+            window.Height = 500;
+            window.Title = _globalizer.GetResourceString("ServerSettings_StackSizeOverrides_SaveTitle");
+            window.Owner = Window.GetWindow(this);
+            window.ShowDialog();
+        }
+        #endregion
+
         #endregion
 
         #region Methods
-        private CommonFileDialog GetCustomLevelCommonFileDialog(ServerSettingsCustomLevelsAction action)
+        public void RefreshBaseDinoModList()
         {
-            CommonFileDialog dialog = null;
+            var selectedValue = SelectedModDino;
+            var newList = new ComboBoxItemList();
 
-            switch (action)
+            var value = GameData.MOD_ALL;
+            var name = _globalizer.GetResourceString($"Mod_{value}");
+            newList.Add(new Common.Model.ComboBoxItem(value, name));
+
+            var values = GameData.GetDinoSpawns().GroupBy(d => d.Mod).OrderBy(g => g.Key).Select(g => g.Key).ToList();
+            foreach (var modValue in values)
             {
-                case ServerSettingsCustomLevelsAction.ExportDinoLevels:
-                case ServerSettingsCustomLevelsAction.ExportPlayerLevels:
-                    dialog = new CommonSaveFileDialog();
-                    dialog.Title = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportDialogTitle");
-                    dialog.DefaultExtension = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportDefaultExtension");
-                    dialog.Filters.Add(new CommonFileDialogFilter(GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportFilterLabel"), GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportFilterExtension")));
-                    break;
+                if (string.IsNullOrWhiteSpace(modValue))
+                    continue;
 
-                case ServerSettingsCustomLevelsAction.ImportDinoLevels:
-                case ServerSettingsCustomLevelsAction.ImportPlayerLevels:
-                    dialog = new CommonOpenFileDialog();
-                    dialog.Title = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportDialogTitle");
-                    dialog.DefaultExtension = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportDefaultExtension");
-                    dialog.Filters.Add(new CommonFileDialogFilter(GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportFilterLabel"), GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportFilterExtension")));
-                    break;
+                var modName = _globalizer.GetResourceString($"Mod_{modValue}");
+                if (string.IsNullOrWhiteSpace(modName))
+                    modName = modValue;
+
+                newList.Add(new Common.Model.ComboBoxItem(modValue, modName));
             }
 
-            return dialog;
+            value = GameData.MOD_UNKNOWN;
+            name = _globalizer.GetResourceString($"Mod_{value}");
+            newList.Add(new Common.Model.ComboBoxItem(value, name));
+
+            this.BaseDinoModList = newList;
+            this.ModDinoComboBox.SelectedValue = selectedValue;
         }
 
-        public ICommand CustomLevelActionCommand
+        public void RefreshBaseEngramModList()
         {
-            get
+            var selectedValue = SelectedModEngram;
+            var newList = new ComboBoxItemList();
+
+            var value = GameData.MOD_ALL;
+            var name = _globalizer.GetResourceString($"Mod_{value}");
+            newList.Add(new Common.Model.ComboBoxItem(value, name));
+
+            var values = GameData.GetEngrams().GroupBy(d => d.Mod).OrderBy(g => g.Key).Select(g => g.Key).ToList();
+            foreach (var modValue in values)
             {
-                return new RelayCommand<ServerSettingsCustomLevelsAction>(
-                    execute: (action) =>
-                    {
-                        var errorTitle = GlobalizedApplication.Instance.GetResourceString("Generic_ErrorLabel");
+                if (string.IsNullOrWhiteSpace(modValue))
+                    continue;
 
-                        try
-                        {
-                            var dialog = GetCustomLevelCommonFileDialog(action);
-                            var dialogValue = string.Empty;
-                            if (dialog != null && dialog.ShowDialog() == CommonFileDialogResult.Ok)
-                                dialogValue = dialog.FileName;
+                var modName = _globalizer.GetResourceString($"Mod_{modValue}");
+                if (string.IsNullOrWhiteSpace(modName))
+                    modName = modValue;
 
-                            switch (action)
-                            {
-                                case ServerSettingsCustomLevelsAction.ExportDinoLevels:
-                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportErrorTitle");
-
-                                    this.Settings.ExportDinoLevels(dialogValue);
-                                    break;
-
-                                case ServerSettingsCustomLevelsAction.ImportDinoLevels:
-                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportErrorTitle");
-
-                                    this.Settings.ImportDinoLevels(dialogValue);
-                                    break;
-
-                                case ServerSettingsCustomLevelsAction.UpdateDinoXPCap:
-                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_UpdateErrorTitle");
-
-                                    this.Settings.UpdateOverrideMaxExperiencePointsDino();
-                                    break;
-
-                                case ServerSettingsCustomLevelsAction.ExportPlayerLevels:
-                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ExportErrorTitle");
-
-                                    this.Settings.ExportPlayerLevels(dialogValue);
-                                    break;
-
-                                case ServerSettingsCustomLevelsAction.ImportPlayerLevels:
-                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_ImportErrorTitle");
-
-                                    this.Settings.ImportPlayerLevels(dialogValue);
-                                    break;
-
-                                case ServerSettingsCustomLevelsAction.UpdatePlayerXPCap:
-                                    errorTitle = GlobalizedApplication.Instance.GetResourceString("ServerSettings_CustomLevel_UpdateErrorTitle");
-
-                                    this.Settings.UpdateOverrideMaxExperiencePointsPlayer();
-                                    break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, errorTitle, MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                    },
-                    canExecute: (action) => true
-                );
+                newList.Add(new Common.Model.ComboBoxItem(modValue, modName));
             }
+
+            value = GameData.MOD_UNKNOWN;
+            name = _globalizer.GetResourceString($"Mod_{value}");
+            newList.Add(new Common.Model.ComboBoxItem(value, name));
+
+            this.BaseEngramModList = newList;
+            this.ModEngramComboBox.SelectedValue = selectedValue;
         }
 
-        public void RefreshBaseArkApplicationList()
+        public void RefreshBaseResourceModList()
         {
-            var newList = new ArkApplicationComboBoxItemList();
+            var selectedValue = SelectedModResource;
+            var newList = new ComboBoxItemList();
 
-            var values = Enum.GetValues(typeof(ArkApplication)).Cast<ArkApplication>();
-            foreach (var value in values)
+            var value = GameData.MOD_ALL;
+            var name = _globalizer.GetResourceString($"Mod_{value}");
+            newList.Add(new Common.Model.ComboBoxItem(value, name));
+
+            var values = GameData.GetResourceMultipliers().GroupBy(d => d.Mod).OrderBy(g => g.Key).Select(g => g.Key).ToList();
+            foreach (var modValue in values)
             {
-                var name = _globalizer.GetResourceString($"{nameof(ArkApplication)}_{value}");
-                if (string.IsNullOrWhiteSpace(name) && (value == ArkApplication.All || value == ArkApplication.Unknown))
-                    name = value.ToString();
+                if (string.IsNullOrWhiteSpace(modValue))
+                    continue;
 
-                if (!string.IsNullOrWhiteSpace(name))
-                    newList.Add(new ArkApplicationComboBoxItem(value, name));
+                var modName = _globalizer.GetResourceString($"Mod_{modValue}");
+                if (string.IsNullOrWhiteSpace(modName))
+                    modName = modValue;
+
+                newList.Add(new Common.Model.ComboBoxItem(modValue, modName));
             }
 
-            this.BaseArkApplicationList = newList;
-            this.ArkApplicationsDinoComboBox.SelectedValue = SelectedArkApplicationDino;
-            this.ArkApplicationsResourceComboBox.SelectedValue = SelectedArkApplicationResource;
-            this.ArkApplicationsEngramComboBox.SelectedValue = SelectedArkApplicationEngram;
+            value = GameData.MOD_UNKNOWN;
+            name = _globalizer.GetResourceString($"Mod_{value}");
+            newList.Add(new Common.Model.ComboBoxItem(value, name));
+
+            this.BaseResourceModList = newList;
+            this.ModResourceComboBox.SelectedValue = selectedValue;
         }
 
         public void RefreshBaseDinoList()
@@ -2431,9 +3385,9 @@ namespace ARK_Server_Manager
                 if (string.IsNullOrWhiteSpace(dino.ClassName))
                     continue;
 
-                newList.Add(new Lib.ViewModel.ComboBoxItem
+                newList.Add(new Common.Model.ComboBoxItem
                 {
-                    DisplayMember = string.IsNullOrWhiteSpace(dino.Mod) ? $"{dino.DisplayName}" : $"{dino.DisplayName} ({dino.Mod})",
+                    DisplayMember = string.IsNullOrWhiteSpace(dino.Mod) ? $"{dino.DisplayName}" : $"({dino.DisplayMod}) {dino.DisplayName}",
                     ValueMember = dino.ClassName,
                 });
             }
@@ -2447,7 +3401,7 @@ namespace ARK_Server_Manager
 
                 if (!newList.Any(s => s.ValueMember.Equals(dinoSetting.ReplacementClass, StringComparison.OrdinalIgnoreCase)))
                 {
-                    newList.Add(new Lib.ViewModel.ComboBoxItem
+                    newList.Add(new Common.Model.ComboBoxItem
                     {
                         DisplayMember = dinoSetting.ReplacementClass,
                         ValueMember = dinoSetting.ReplacementClass,
@@ -2464,7 +3418,7 @@ namespace ARK_Server_Manager
 
                     if (!newList.Any(s => s.ValueMember.Equals(spawnEntry.NPCClassString, StringComparison.OrdinalIgnoreCase)))
                     {
-                        newList.Add(new Lib.ViewModel.ComboBoxItem
+                        newList.Add(new Common.Model.ComboBoxItem
                         {
                             DisplayMember = spawnEntry.NPCClassString,
                             ValueMember = spawnEntry.NPCClassString,
@@ -2494,9 +3448,9 @@ namespace ARK_Server_Manager
 
             foreach (var mapSpawner in GameData.GetMapSpawners())
             {
-                newList.Add(new Lib.ViewModel.ComboBoxItem
+                newList.Add(new Common.Model.ComboBoxItem
                 {
-                    DisplayMember = string.IsNullOrWhiteSpace(mapSpawner.Mod) ? $"{mapSpawner.DisplayName}" : $"{mapSpawner.DisplayName} ({mapSpawner.Mod})",
+                    DisplayMember = string.IsNullOrWhiteSpace(mapSpawner.Mod) ? $"{mapSpawner.DisplayName}" : $"({mapSpawner.DisplayMod}) {mapSpawner.DisplayName}",
                     ValueMember = mapSpawner.ClassName,
                 });
             }
@@ -2510,7 +3464,7 @@ namespace ARK_Server_Manager
 
                 if (!newList.Any(s => s.ValueMember.Equals(spawnSetting.NPCSpawnEntriesContainerClassString, StringComparison.OrdinalIgnoreCase)))
                 {
-                    newList.Add(new Lib.ViewModel.ComboBoxItem
+                    newList.Add(new Common.Model.ComboBoxItem
                     {
                         DisplayMember = spawnSetting.NPCSpawnEntriesContainerClassString,
                         ValueMember = spawnSetting.NPCSpawnEntriesContainerClassString,
@@ -2536,11 +3490,9 @@ namespace ARK_Server_Manager
 
             foreach (var primalItem in GameData.GetItems())
             {
-                var categoryName = primalItem.ArkApplication == ArkApplication.SurvivalEvolved ? string.Empty : $" ({primalItem.ArkApplication.ToString()})";
-
-                newList.Add(new Lib.ViewModel.ComboBoxItem
+                newList.Add(new Common.Model.ComboBoxItem
                 {
-                    DisplayMember = string.IsNullOrWhiteSpace(primalItem.Mod) ? $"{primalItem.DisplayName}" : $"{primalItem.DisplayName} ({primalItem.Mod})",
+                    DisplayMember = string.IsNullOrWhiteSpace(primalItem.Mod) ? $"{primalItem.DisplayName}" : $"({primalItem.DisplayMod}) {primalItem.DisplayName}",
                     ValueMember = primalItem.ClassName,
                 });
             }
@@ -2554,7 +3506,7 @@ namespace ARK_Server_Manager
 
                 if (!newList.Any(s => s.ValueMember.Equals(craftingItem.ItemClassString, StringComparison.OrdinalIgnoreCase)))
                 {
-                    newList.Add(new Lib.ViewModel.ComboBoxItem
+                    newList.Add(new Common.Model.ComboBoxItem
                     {
                         DisplayMember = craftingItem.ItemClassString,
                         ValueMember = craftingItem.ItemClassString,
@@ -2568,7 +3520,7 @@ namespace ARK_Server_Manager
 
                     if (!newList.Any(s => s.ValueMember.Equals(craftingResource.ResourceItemTypeString, StringComparison.OrdinalIgnoreCase)))
                     {
-                        newList.Add(new Lib.ViewModel.ComboBoxItem
+                        newList.Add(new Common.Model.ComboBoxItem
                         {
                             DisplayMember = craftingResource.ResourceItemTypeString,
                             ValueMember = craftingResource.ResourceItemTypeString,
@@ -2590,7 +3542,7 @@ namespace ARK_Server_Manager
 
                             if (!newList.Any(s => s.ValueMember.Equals(itemClass.ItemClassString, StringComparison.OrdinalIgnoreCase)))
                             {
-                                newList.Add(new Lib.ViewModel.ComboBoxItem
+                                newList.Add(new Common.Model.ComboBoxItem
                                 {
                                     DisplayMember = itemClass.ItemClassString,
                                     ValueMember = itemClass.ItemClassString,
@@ -2601,11 +3553,27 @@ namespace ARK_Server_Manager
                 }
             }
 
+            foreach (var stackSize in this.Settings.ConfigOverrideItemMaxQuantity)
+            {
+                if (string.IsNullOrWhiteSpace(stackSize.ItemClassString))
+                    continue;
+
+                if (!newList.Any(s => s.ValueMember.Equals(stackSize.ItemClassString, StringComparison.OrdinalIgnoreCase)))
+                {
+                    newList.Add(new Common.Model.ComboBoxItem
+                    {
+                        DisplayMember = stackSize.ItemClassString,
+                        ValueMember = stackSize.ItemClassString,
+                    });
+                }
+            }
+
             try
             {
                 this.CraftingOverrideItemGrid.BeginInit();
                 this.CraftingOverrideResourceGrid.BeginInit();
                 this.SupplyCrateItemsGrid.BeginInit();
+                this.StackSizeOverrideGrid.BeginInit();
 
                 this.BasePrimalItemList = newList;
             }
@@ -2614,6 +3582,7 @@ namespace ARK_Server_Manager
                 this.CraftingOverrideItemGrid.EndInit();
                 this.CraftingOverrideResourceGrid.EndInit();
                 this.SupplyCrateItemsGrid.EndInit();
+                this.StackSizeOverrideGrid.EndInit();
             }
         }
 
@@ -2623,9 +3592,9 @@ namespace ARK_Server_Manager
 
             foreach (var primalItem in GameData.GetSupplyCrates())
             {
-                newList.Add(new Lib.ViewModel.ComboBoxItem
+                newList.Add(new Common.Model.ComboBoxItem
                 {
-                    DisplayMember = string.IsNullOrWhiteSpace(primalItem.Mod) ? $"{primalItem.DisplayName}" : $"{primalItem.DisplayName} ({primalItem.Mod})",
+                    DisplayMember = string.IsNullOrWhiteSpace(primalItem.Mod) ? $"{primalItem.DisplayName}" : $"({primalItem.DisplayMod}) {primalItem.DisplayName}",
                     ValueMember = primalItem.ClassName,
                 });
             }
@@ -2639,7 +3608,7 @@ namespace ARK_Server_Manager
                     if (string.IsNullOrWhiteSpace(supplyCrate.SupplyCrateClassString))
                         continue;
 
-                    newList.Add(new Lib.ViewModel.ComboBoxItem
+                    newList.Add(new Common.Model.ComboBoxItem
                     {
                         DisplayMember = supplyCrate.SupplyCrateClassString,
                         ValueMember = supplyCrate.SupplyCrateClassString,
@@ -2665,16 +3634,18 @@ namespace ARK_Server_Manager
 
             if (this.Settings.SOTF_Enabled)
             {
-                foreach (var gameMap in GameData.GetGameMapsSotF())
+                foreach (var item in GameData.GetGameMapsSotF())
                 {
-                    newList.Add(gameMap);
+                    item.DisplayMember = GameData.FriendlyMapSotFNameForClass(item.ValueMember);
+                    newList.Add(item);
                 }
             }
             else
             {
-                foreach (var gameMap in GameData.GetGameMaps())
+                foreach (var item in GameData.GetGameMaps())
                 {
-                    newList.Add(gameMap);
+                    item.DisplayMember = GameData.FriendlyMapNameForClass(item.ValueMember);
+                    newList.Add(item);
                 }
             }
 
@@ -2682,7 +3653,7 @@ namespace ARK_Server_Manager
             {
                 if (!newList.Any(m => m.ValueMember.Equals(this.Settings.ServerMap, StringComparison.OrdinalIgnoreCase)))
                 {
-                    newList.Add(new Lib.ViewModel.ComboBoxItem
+                    newList.Add(new Common.Model.ComboBoxItem
                     {
                         DisplayMember = this.Settings.SOTF_Enabled ? GameData.FriendlyMapSotFNameForClass(this.Settings.ServerMap) : GameData.FriendlyMapNameForClass(this.Settings.ServerMap),
                         ValueMember = this.Settings.ServerMap,
@@ -2700,15 +3671,17 @@ namespace ARK_Server_Manager
 
             if (this.Settings.SOTF_Enabled)
             {
-                foreach (var gameMap in GameData.GetTotalConversionsSotF())
+                foreach (var item in GameData.GetTotalConversionsSotF())
                 {
-                    newList.Add(gameMap);
+                    item.DisplayMember = GameData.FriendlyTotalConversionSotFNameForClass(item.ValueMember);
+                    newList.Add(item);
                 }
             }
             else
             {
                 foreach (var item in GameData.GetTotalConversions())
                 {
+                    item.DisplayMember = GameData.FriendlyTotalConversionNameForClass(item.ValueMember);
                     newList.Add(item);
                 }
             }
@@ -2717,7 +3690,7 @@ namespace ARK_Server_Manager
             {
                 if (!newList.Any(m => m.ValueMember.Equals(this.Settings.TotalConversionModId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    newList.Add(new Lib.ViewModel.ComboBoxItem
+                    newList.Add(new Common.Model.ComboBoxItem
                     {
                         DisplayMember = this.Settings.SOTF_Enabled ? GameData.FriendlyTotalConversionSotFNameForClass(this.Settings.TotalConversionModId) : GameData.FriendlyTotalConversionNameForClass(this.Settings.TotalConversionModId),
                         ValueMember = this.Settings.TotalConversionModId,
@@ -2737,6 +3710,7 @@ namespace ARK_Server_Manager
             {
                 foreach (var item in GameData.GetBranchesSotF())
                 {
+                    item.DisplayMember = GameData.FriendlyBranchSotFName(string.IsNullOrWhiteSpace(item.ValueMember) ? Config.Default.DefaultServerBranchName : item.ValueMember);
                     newList.Add(item);
                 }
             }
@@ -2744,6 +3718,7 @@ namespace ARK_Server_Manager
             {
                 foreach (var item in GameData.GetBranches())
                 {
+                    item.DisplayMember = GameData.FriendlyBranchName(string.IsNullOrWhiteSpace(item.ValueMember) ? Config.Default.DefaultServerBranchName : item.ValueMember);
                     newList.Add(item);
                 }
             }
@@ -2752,7 +3727,7 @@ namespace ARK_Server_Manager
             {
                 if (!newList.Any(m => m.ValueMember.Equals(this.Settings.BranchName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    newList.Add(new Lib.ViewModel.ComboBoxItem
+                    newList.Add(new Common.Model.ComboBoxItem
                     {
                         DisplayMember = this.Settings.SOTF_Enabled ? GameData.FriendlyBranchSotFName(this.Settings.BranchName) : GameData.FriendlyBranchName(this.Settings.BranchName),
                         ValueMember = this.Settings.BranchName,
@@ -2764,6 +3739,64 @@ namespace ARK_Server_Manager
             this.BranchComboBox.SelectedValue = this.Settings.BranchName;
         }
 
+        public void RefreshBaseEventsList()
+        {
+            var newList = new ComboBoxItemList();
+
+            if (this.Settings.SOTF_Enabled)
+            {
+                foreach (var item in GameData.GetEventsSotF())
+                {
+                    item.DisplayMember = GameData.FriendlyEventSotFName(string.IsNullOrWhiteSpace(item.ValueMember) ? string.Empty : item.ValueMember);
+                    newList.Add(item);
+                }
+            }
+            else
+            {
+                foreach (var item in GameData.GetEvents())
+                {
+                    item.DisplayMember = GameData.FriendlyEventName(string.IsNullOrWhiteSpace(item.ValueMember) ? string.Empty : item.ValueMember);
+                    newList.Add(item);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.Settings.EventName))
+            {
+                if (!newList.Any(m => m.ValueMember.Equals(this.Settings.EventName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    newList.Add(new Common.Model.ComboBoxItem
+                    {
+                        DisplayMember = this.Settings.SOTF_Enabled ? GameData.FriendlyEventSotFName(this.Settings.EventName) : GameData.FriendlyEventName(this.Settings.EventName),
+                        ValueMember = this.Settings.EventName,
+                    });
+                }
+            }
+
+            this.BaseEvents = newList;
+            this.EventComboBox.SelectedValue = this.Settings.EventName;
+        }
+
+        public void RefreshProcessPrioritiesList()
+        {
+            var newList = new ComboBoxItemList();
+
+            foreach (var priority in ProcessUtils.GetProcessPriorityList())
+            {
+                newList.Add(new Common.Model.ComboBoxItem(priority, _globalizer.GetResourceString($"Priority_{priority}")));
+            }
+
+            var profilePriority = this.Settings.ProcessPriority;
+
+            this.ProcessPriorities = newList;
+            this.ProcessPriorityComboBox.SelectedValue = profilePriority;
+        }
+
+        public void RefreshCustomLevelProgressionsInformation()
+        {
+            var information = _globalizer.GetResourceString("ServerSettings_CustomLevelProgressions_InformationLabel");
+            CustomLevelProgressionsInformation = information.Replace("{levels}", GameData.LevelsPlayerAdditional.ToString());
+        }
+
         private void ReinitializeNetworkAdapters()
         {
             var adapters = NetworkUtils.GetAvailableIPV4NetworkAdapters();
@@ -2772,32 +3805,22 @@ namespace ARK_Server_Manager
             // Filter out self-assigned addresses
             //
             adapters.RemoveAll(a => a.IPAddress.StartsWith("169.254."));
-            adapters.Insert(0, new NetworkAdapterEntry(String.Empty, _globalizer.GetResourceString("ServerSettings_LocalIPArkChooseLabel")));
+            adapters.Insert(0, new NetworkAdapterEntry(String.Empty, _globalizer.GetResourceString("ServerSettings_LocalIPGameChooseLabel")));
             var savedServerIp = this.Settings.ServerIP;
             this.NetworkInterfaces = adapters;
             this.Settings.ServerIP = savedServerIp;
 
 
-            //
-            // If there isn't already an adapter assigned, pick one
-            //
-            var preferredIP = NetworkUtils.GetPreferredIP(adapters);
-            preferredIP.Description = _globalizer.GetResourceString("ServerSettings_LocalIPRecommendedLabel") + " " + preferredIP.Description;
-            if (String.IsNullOrWhiteSpace(this.Settings.ServerIP))
+            if (!String.IsNullOrWhiteSpace(this.Settings.ServerIP))
             {
-                // removed to enforce the 'Let ARK choose' option.
-                //if (preferredIP != null)
-                //{
-                //    this.Settings.ServerIP = preferredIP.IPAddress;
-                //}
-            }
-            else if (adapters.FirstOrDefault(a => String.Equals(a.IPAddress, this.Settings.ServerIP, StringComparison.OrdinalIgnoreCase)) == null)
-            {
-                MessageBox.Show(
-                    String.Format(_globalizer.GetResourceString("ServerSettings_LocalIP_ErrorLabel"), this.Settings.ServerIP),
-                    _globalizer.GetResourceString("ServerSettings_LocalIP_ErrorTitle"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                if (adapters.FirstOrDefault(a => String.Equals(a.IPAddress, this.Settings.ServerIP, StringComparison.OrdinalIgnoreCase)) == null)
+                {
+                    MessageBox.Show(
+                        String.Format(_globalizer.GetResourceString("ServerSettings_LocalIP_ErrorLabel"), this.Settings.ServerIP),
+                        _globalizer.GetResourceString("ServerSettings_LocalIP_ErrorTitle"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
             }
         }
 
@@ -2822,6 +3845,8 @@ namespace ARK_Server_Manager
                                 RefreshBaseGameMapsList();
                                 RefreshBaseTotalConversionsList();
                                 RefreshBaseBranchesList();
+                                RefreshBaseEventsList();
+                                RefreshProcessPrioritiesList();
                                 break;
 
                             case ServerSettingsResetAction.ChatAndNotificationsSection:
@@ -2881,31 +3906,36 @@ namespace ARK_Server_Manager
                                 break;
 
                             case ServerSettingsResetAction.SupplyCrateOverridesSection:
-                                this.Settings.ResetSupplyCreateOverridesSection();
+                                this.Settings.ResetSupplyCrateOverridesSection();
                                 RefreshBaseSupplyCrateList();
+                                RefreshBasePrimalItemList();
+                                break;
+
+                            case ServerSettingsResetAction.StackSizeOverridesSection:
+                                this.Settings.ResetStackSizeOverridesSection();
                                 RefreshBasePrimalItemList();
                                 break;
 
                             // Properties
                             case ServerSettingsResetAction.MapNameTotalConversionProperty:
                                 // set the map name to the ARK default.
-                                var mapName = Config.Default.DefaultServerMap;
+                                var mapName = string.Empty;
 
                                 // check if we are running an official total conversion mod.
-                                if (!this.Settings.TotalConversionModId.Equals(ModUtils.MODID_PRIMITIVEPLUS))
+                                if (!ModUtils.IsOfficialMod(this.Settings.TotalConversionModId))
                                 {
                                     // we need to read the mod file and retreive the map name
                                     mapName = ModUtils.GetMapName(this.Settings.InstallDirectory, this.Settings.TotalConversionModId);
                                     if (string.IsNullOrWhiteSpace(mapName))
                                     {
-                                        MessageBox.Show("The map name could not be found, please check the total conversion mod id is correct and the mod has been downloaded.", "Find Total Conversion Map Name Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                        MessageBox.Show(_globalizer.GetResourceString("ServerSettings_FindTotalConversionMapNameErrorLabel"), _globalizer.GetResourceString("ServerSettings_FindTotalConversionMapNameErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                                         break;
                                     }
                                 }
 
                                 this.Settings.ServerMap = mapName;
 
-                                MessageBox.Show("The map name has been updated.", "Find Total Conversion Map Name", MessageBoxButton.OK, MessageBoxImage.Information);
+                                MessageBox.Show(_globalizer.GetResourceString("ServerSettings_FindTotalConversionMapNameSuccessLabel"), _globalizer.GetResourceString("ServerSettings_FindTotalConversionMapNameSuccessTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
                                 break;
 
                             case ServerSettingsResetAction.BanListProperty:
@@ -2975,7 +4005,7 @@ namespace ARK_Server_Manager
                             OverlayMessage.Content = _globalizer.GetResourceString("ServerSettings_OverlayMessage_SavingLabel");
                             OverlayGrid.Visibility = Visibility.Visible;
 
-                            await Task.Delay(500);
+                            await Task.Delay(100);
 
                             // NOTE: This parameter is of type object and must be cast in most cases before use.
                             var server = parameter as Server;
@@ -3013,17 +4043,19 @@ namespace ARK_Server_Manager
                                 RefreshBaseGameMapsList();
                                 RefreshBaseTotalConversionsList();
                                 RefreshBaseBranchesList();
+                                RefreshBaseEventsList();
+                                RefreshProcessPrioritiesList();
 
-                                OverlayMessage.Content = _globalizer.GetResourceString("ServerSettings_OverlayMessage_PermissionsLabel");
-                                await Task.Delay(500);
-
-                                if (!server.Profile.UpdateDirectoryPermissions())
+                                if (Config.Default.UpdateDirectoryPermissions)
                                 {
-                                    MessageBox.Show(_globalizer.GetResourceString("ServerSettings_Save_UpdatePermissions_ErrorLabel"), _globalizer.GetResourceString("ServerSettings_Save_UpdatePermissions_ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                                    OverlayMessage.Content = _globalizer.GetResourceString("ServerSettings_OverlayMessage_PermissionsLabel");
+                                    await Task.Delay(100);
+
+                                    server.Profile.UpdateDirectoryPermissions();
                                 }
 
                                 OverlayMessage.Content = _globalizer.GetResourceString("ServerSettings_OverlayMessage_SchedulesLabel");
-                                await Task.Delay(500);
+                                await Task.Delay(100);
 
                                 if (!server.Profile.UpdateSchedules())
                                 {
@@ -3121,11 +4153,17 @@ namespace ARK_Server_Manager
             }
         }
 
-        private void LoadServerFiles()
+        public void UpdateLastStartedDetails(bool updateProfile)
         {
-            Settings.LoadServerFileAdministrators();
-            Settings.LoadServerFileExclusive();
-            Settings.LoadServerFileWhitelisted();
+            if (updateProfile)
+            {
+                // update the profile's last started time
+                this.Settings.LastStarted = DateTime.Now;
+                this.Settings.SaveProfile();
+            }
+
+            var date = Settings == null || Settings.LastStarted == DateTime.MinValue ? string.Empty : $"{Settings.LastStarted:G}";
+            this.ProfileLastStarted = $"{_globalizer.GetResourceString("ServerSettings_LastStartedLabel")} {date}";
         }
         #endregion
     }

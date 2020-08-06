@@ -1,4 +1,4 @@
-﻿namespace ArkServerManager.Plugin.Common
+﻿namespace ServerManagerTool.Plugin.Common
 {
     public enum AlertType
     {
@@ -10,5 +10,6 @@
         Backup,
         UpdateResults,
         ServerStatusChange,
+        ModUpdateDetected,
     }
 }

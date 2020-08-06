@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace ArkServerManager.Plugin.Discord
+namespace ServerManagerTool.Plugin.Discord
 {
     [DataContract]
     internal sealed class DiscordPluginConfig : Bindable
     {
-        public const string CONFIG_FILENAME = "_asmdiscordplugin.cfg";
-
         public DiscordPluginConfig()
             : base()
         {

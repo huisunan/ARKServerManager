@@ -1,7 +1,7 @@
-﻿using ArkServerManager.Plugin.Common;
+﻿using ServerManagerTool.Plugin.Common;
 using System.Runtime.Serialization;
 
-namespace ArkServerManager.Plugin.Discord
+namespace ServerManagerTool.Plugin.Discord
 {
     [DataContract]
     internal class AlertTypeValue : Bindable

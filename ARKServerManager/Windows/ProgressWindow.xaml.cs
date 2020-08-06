@@ -1,10 +1,10 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Utils;
+using System;
 using System.Diagnostics;
 using System.Windows;
-using ARK_Server_Manager.Lib;
 using WPFSharp.Globalizer;
 
-namespace ARK_Server_Manager
+namespace ServerManagerTool
 {
     /// <summary>
     /// Interaction logic for ProgressWindow.xaml
@@ -17,7 +17,7 @@ namespace ARK_Server_Manager
         public ProgressWindow(string windowTitle)
         {
             InitializeComponent();
-            WindowUtils.RemoveDefaultResourceDictionary(this);
+            WindowUtils.RemoveDefaultResourceDictionary(this, Config.Default.DefaultGlobalizationFile);
 
             if (!string.IsNullOrWhiteSpace(windowTitle))
                 Title = windowTitle;

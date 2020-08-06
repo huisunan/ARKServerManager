@@ -1,10 +1,12 @@
-﻿using ARK_Server_Manager.Lib.ViewModel;
+﻿using ServerManagerTool.Common.Attibutes;
+using ServerManagerTool.Common.Model;
+using ServerManagerTool.Lib.ViewModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib
+namespace ServerManagerTool.Lib
 {
     [DataContract]
     public class SupplyCrateOverrideList : AggregateIniValueList<SupplyCrateOverride>

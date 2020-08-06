@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Markup;
@@ -14,7 +15,7 @@ namespace WPFSharp.Globalizer
     {
         #region Members
 
-        public const string FallBackLanguage = "en-US";
+        internal const string FallBackLanguage = "en-US";
 
         #endregion
 
@@ -37,9 +38,9 @@ namespace WPFSharp.Globalizer
             if (CultureInfo.CurrentCulture.Name.Equals(inFiveCharLang) && !inForceSwitch)
                 return;
 
-            if(!AvailableLanguages.Instance.Contains(inFiveCharLang))
+            if (!AvailableLanguages.Instance.Contains(inFiveCharLang))
             {
-                throw new CultureNotFoundException(String.Format("The language {0} is not available.", inFiveCharLang));
+                throw new CultureNotFoundException(string.Format("The language {0} is not available.", inFiveCharLang));
             }
 
             // Set the new language
@@ -54,35 +55,36 @@ namespace WPFSharp.Globalizer
             if (!inFiveCharLang.Equals(FallBackLanguage))
             {
                 // switch to language is different, must load the fallback language first
-                xamlFiles = Directory.GetFiles(Path.Combine(DefaultPath, FallBackLanguage), "*.xaml");
+                xamlFiles = Directory.GetFiles(Path.Combine(DefaultPath, FallBackLanguage), $"{FallBackLanguage}.xaml");
                 if (xamlFiles.Length > 0)
                     FileNames.AddRange(xamlFiles);
             }
 
             // load the switch to language
-            xamlFiles = Directory.GetFiles(Path.Combine(DefaultPath, inFiveCharLang), "*.xaml");
+            xamlFiles = Directory.GetFiles(Path.Combine(DefaultPath, inFiveCharLang), $"{inFiveCharLang}.xaml");
             if (xamlFiles.Length > 0)
                 FileNames.AddRange(xamlFiles);
 
             // Remove previous ResourceDictionaries
-            RemoveGlobalizationResourceDictionaries();
+            RemoveResourceDictionaries();
 
             // Add new Resource Dictionaries
             LoadDictionariesFromFiles(FileNames);
-            var args = new ResourceDictionaryChangedEventArgs { ResourceDictionaryPaths = FileNames };
+            var args = new ResourceDictionaryChangedEventArgs { ResourceDictionaryPaths = FileNames, ResourceDictionaryNames = FileNames.Select(f => Path.GetFileNameWithoutExtension(f)).ToList() };
             NotifyResourceDictionaryChanged(args);
         }
 
-        private void RemoveGlobalizationResourceDictionaries()
+        private void RemoveResourceDictionaries()
         {
             var dictionariesToRemove = new List<ResourceDictionary>();
-            foreach (ResourceDictionary erd in GlobalizedApplication.Instance.Resources.MergedDictionaries)
+            foreach (ResourceDictionary rd in GlobalizedApplication.Instance.Resources.MergedDictionaries)
             {
-                if (erd is GlobalizationResourceDictionary)
+                if (rd is GlobalizationResourceDictionary)
                 {
-                    dictionariesToRemove.Add(erd);
+                    dictionariesToRemove.Add(rd);
                 }
             }
+
             foreach (EnhancedResourceDictionary erd in dictionariesToRemove)
             {
                 GlobalizedApplication.Instance.Resources.MergedDictionaries.Remove(erd);
@@ -93,12 +95,12 @@ namespace WPFSharp.Globalizer
             }
         }
 
-        public override EnhancedResourceDictionary LoadFromFile(String inFile)
+        public override EnhancedResourceDictionary LoadFromFile(string inFile)
         {
             return LoadFromFile(inFile, true);
         }
 
-        public EnhancedResourceDictionary LoadFromFile(String inFile, bool inRequireGlobalizationType = true)
+        public EnhancedResourceDictionary LoadFromFile(string inFile, bool inRequireGlobalizationType = true)
         {
             string file = inFile;
             // Determine if the path is absolute or relative
@@ -110,22 +112,29 @@ namespace WPFSharp.Globalizer
             if (!File.Exists(file))
                 return null;
 
-            using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+            try
             {
-                // Read in an EnhancedResourceDictionary File or preferably an GlobalizationResourceDictionary file
-                var erd = XamlReader.Load(fs) as EnhancedResourceDictionary;
-
-                if (erd != null)
+                using (var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
+                    // Read in an EnhancedResourceDictionary File or preferably an GlobalizationResourceDictionary file
+                    var rd = XamlReader.Load(fs) as EnhancedResourceDictionary;
+                    if (rd == null)
+                        return null;
+
                     if (inRequireGlobalizationType)
                     {
-                        if (erd is GlobalizationResourceDictionary)
-                            return erd;
+                        if (rd is GlobalizationResourceDictionary)
+                            return rd;
 
                         return null;
                     }
+
+                    return rd;
                 }
-                return erd;
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -135,33 +144,33 @@ namespace WPFSharp.Globalizer
             {
                 // Only Globalization resource dictionaries should be added
                 // Ignore other types
-                var globalizationResourceDictionary = LoadFromFile(filePath) as GlobalizationResourceDictionary;
-                if (globalizationResourceDictionary == null)
+                var rd = LoadFromFile(filePath) as GlobalizationResourceDictionary;
+                if (rd == null)
                     continue;
 
-                MergedDictionaries.Add(globalizationResourceDictionary);
+                MergedDictionaries.Add(rd);
 
-                if (globalizationResourceDictionary.LinkedStyle == null)
+                if (rd.LinkedStyle == null)
                     continue;
 
-                var styleFile = globalizationResourceDictionary.LinkedStyle + ".xaml";
-                if (globalizationResourceDictionary.Source != null)
+                var styleFile = rd.LinkedStyle + ".xaml";
+                if (rd.Source != null)
                 {
-                    var path = Path.Combine(Path.GetDirectoryName(globalizationResourceDictionary.Source), styleFile);
+                    var path = Path.Combine(Path.GetDirectoryName(rd.Source), styleFile);
                     // Todo: Check for file and if not there, look in the Styles dir
 
-                    var tempStyleDict = LoadFromFile(path, false);
-                    if (tempStyleDict != null)
+                    var lrd = LoadFromFile(path, false);
+                    if (lrd != null)
                     {
-                        MergedDictionaries.Add(tempStyleDict);
+                        MergedDictionaries.Add(lrd);
                     }
                     return;
                 }
 
-                var styleDict = LoadFromFile(styleFile, false);
-                if (styleDict != null)
+                var srd = LoadFromFile(styleFile, false);
+                if (srd != null)
                 {
-                    MergedDictionaries.Add(styleDict);
+                    MergedDictionaries.Add(srd);
                 }
             }
         }

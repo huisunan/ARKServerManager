@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ArkServerManager Plugin Common Library")]
-[assembly: AssemblyDescription("The ARK Server Manager Plugin Common Library is used to provide a common plugin library for the ARK Server Manager.")]
+[assembly: AssemblyTitle("ServerManager Common Plugin Library")]
+[assembly: AssemblyDescription("The library is used to provide common plugin functionality to the server managers.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ARK Server Manager")]
-[assembly: AssemblyCopyright("Copyright © 2015-2017")]
+[assembly: AssemblyCompany("Bletch1971")]
+[assembly: AssemblyProduct("Server Managers")]
+[assembly: AssemblyCopyright("Copyright © 2015-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -35,3 +35,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.1.0")]
 
 [assembly: InternalsVisibleTo("ARK Server Manager")]
+[assembly: InternalsVisibleTo("ConanServerManager")]
+[assembly: InternalsVisibleTo("ServerManager")]
+[assembly: InternalsVisibleTo("ServerManager.Plugin.Common.UnitTests")]
+[assembly: InternalsVisibleTo("ServerManager.Plugin.Discord.UnitTests")]

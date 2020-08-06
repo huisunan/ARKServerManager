@@ -1,10 +1,11 @@
-﻿<Window x:Class="ARK_Server_Manager.PlayerListWindow"
+﻿<Window x:Class="ServerManagerTool.PlayerListWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"   
-        xmlns:rcon="clr-namespace:ARK_Server_Manager.Lib.ViewModel.RCON"
-        xmlns:lib="clr-namespace:ARK_Server_Manager.Lib"
-        xmlns:vm="clr-namespace:ARK_Server_Manager.Lib.ViewModel"
-        xmlns:local="clr-namespace:ARK_Server_Manager"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:cc="clr-namespace:ServerManagerTool.Common.Converters;assembly=ServerManager.Common"
+        xmlns:clib="clr-namespace:ServerManagerTool.Common.Lib;assembly=ServerManager.Common"
+        xmlns:com="clr-namespace:ServerManagerTool.Common;assembly=ServerManager.Common"
+        xmlns:en="clr-namespace:ServerManagerTool.Enums"
+        xmlns:rcon="clr-namespace:ServerManagerTool.Lib.ViewModel.RCON"
         MinWidth="300" MinHeight="200" Width="300" Height="500" ResizeMode="CanResizeWithGrip" WindowStyle="ToolWindow" 
         SizeChanged="Window_SizeChanged" LocationChanged="Window_LocationChanged"
         Name="PlayerList" Icon="../Art/favicon.ico" Title="{Binding PlayerListParameters.WindowTitle}">
@@ -15,11 +16,11 @@
                 <ResourceDictionary Source="..\Styles\Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <vm:EnumConverter x:Key="EnumConverter"/>
-            <vm:EnumFlagsConverter x:Key="EnumFlagsConverter"/>
-            <vm:IsNullOrWhiteSpaceValueConverter x:Key="IsNullOrWhiteSpaceValueConverter"/>
-            <vm:IsNullValueConverter x:Key="IsNullValueConverter"/>
-            <vm:NullValueConverter x:Key="NullValueConverter"/>
+            <cc:EnumConverter x:Key="EnumConverter"/>
+            <cc:EnumFlagsConverter x:Key="EnumFlagsConverter"/>
+            <cc:IsNullOrWhiteSpaceValueConverter x:Key="IsNullOrWhiteSpaceValueConverter"/>
+            <cc:IsNullValueConverter x:Key="IsNullValueConverter"/>
+            <cc:NullValueConverter x:Key="NullValueConverter"/>
 
             <SolidColorBrush x:Key="HeaderBrush" Color="#FFF0F0F0"/>
 
@@ -39,22 +40,15 @@
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding IsOnline}"      Value="False" />
-                            <Condition Binding="{Binding HasBan}"        Value="True" />
-                        </MultiDataTrigger.Conditions>
-                        <Setter Property="BorderBrush" Value="Red"/>
-                    </MultiDataTrigger>
-                    <MultiDataTrigger>
-                        <MultiDataTrigger.Conditions>
-                            <Condition Binding="{Binding IsOnline}"      Value="False" />
                             <Condition Binding="{Binding IsWhitelisted}" Value="True" />
                         </MultiDataTrigger.Conditions>
                         <Setter Property="BorderBrush" Value="#0066CC"/>
                     </MultiDataTrigger>
                 </Style.Triggers>
             </Style>
-            <Style x:Key="SteamName" TargetType="Label">
-                <Setter Property="Content" Value="{Binding SteamName}"/>
-                <Setter Property="ToolTip" Value="{Binding SteamId}"/>
+            <Style x:Key="PlayerName" TargetType="Label">
+                <Setter Property="Content" Value="{Binding PlayerName}"/>
+                <Setter Property="ToolTip" Value="{Binding PlayerId}"/>
                 <Setter Property="Background" Value="AliceBlue"/>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsAdmin}" Value="True">
@@ -70,7 +64,7 @@
             <Style x:Key="TribeName" TargetType="Label">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding TribeName, Converter={StaticResource IsNullOrWhiteSpaceValueConverter}}" Value="True">
-                        <Setter Property="Content" Value="No team"/>
+                        <Setter Property="Content" Value="No tribe"/>
                         <Setter Property="FontStyle" Value="Italic"/>
                         <Setter Property="Foreground" Value="LightGray"/>
                     </DataTrigger>
@@ -92,30 +86,29 @@
                         <Menu VerticalAlignment="Center" Margin="1" Background="{StaticResource HeaderBrush}">
                             <MenuItem Header="{DynamicResource PlayerList_Menu_Players}">
                                 <MenuItem Header="{DynamicResource PlayerList_Menu_Sort}">
-                                    <!--<MenuItem Header="{DynamicResource PlayerList_Menu_SortOnline}"         IsCheckable="True" Command="{Binding SortPlayersCommand}"   CommandParameter="{x:Static local:PlayerSortType.Online}"         IsChecked="{Binding PlayerSorting, Converter={StaticResource EnumConverter}, ConverterParameter=Online}"/>-->
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_SortName}"           IsCheckable="True" Command="{Binding SortPlayersCommand}"   CommandParameter="{x:Static local:PlayerSortType.Name}"           IsChecked="{Binding PlayerSorting, Converter={StaticResource EnumConverter}, ConverterParameter=Name}"/>
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_SortTribe}"          IsCheckable="True" Command="{Binding SortPlayersCommand}"   CommandParameter="{x:Static local:PlayerSortType.Tribe}"          IsChecked="{Binding PlayerSorting, Converter={StaticResource EnumConverter}, ConverterParameter=Tribe}"/>
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_SortLastUpdated}"    IsCheckable="True" Command="{Binding SortPlayersCommand}"   CommandParameter="{x:Static local:PlayerSortType.LastUpdated}"    IsChecked="{Binding PlayerSorting, Converter={StaticResource EnumConverter}, ConverterParameter=LastUpdated}"/>
+                                    <MenuItem Header="{DynamicResource PlayerList_Menu_SortName}"           IsCheckable="True" Command="{Binding SortPlayersCommand}"   CommandParameter="{x:Static en:PlayerSortType.Name}"           IsChecked="{Binding PlayerSorting, Converter={StaticResource EnumConverter}, ConverterParameter=Name}"/>
+                                    <MenuItem Header="{DynamicResource PlayerList_Menu_SortTribe}"          IsCheckable="True" Command="{Binding SortPlayersCommand}"   CommandParameter="{x:Static en:PlayerSortType.Tribe}"          IsChecked="{Binding PlayerSorting, Converter={StaticResource EnumConverter}, ConverterParameter=Tribe}"/>
+                                    <MenuItem Header="{DynamicResource PlayerList_Menu_SortLastUpdated}"    IsCheckable="True" Command="{Binding SortPlayersCommand}"   CommandParameter="{x:Static en:PlayerSortType.LastUpdated}"    IsChecked="{Binding PlayerSorting, Converter={StaticResource EnumConverter}, ConverterParameter=LastUpdated}"/>
                                 </MenuItem>
                                 <MenuItem Header="{DynamicResource PlayerList_Menu_Filter}">
-                                    <!--<MenuItem Header="{DynamicResource PlayerList_Menu_FilterOnline}"       IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static local:PlayerFilterType.Online}"       IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Online, Mode=OneWay}"/>-->
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterOffline}"      IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static local:PlayerFilterType.Offline}"      IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Offline, Mode=OneWay}"/>
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterAdmin}"        IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static local:PlayerFilterType.Admin}"        IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Admin, Mode=OneWay}"/>
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterBanned}"       IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static local:PlayerFilterType.Banned}"       IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Banned, Mode=OneWay}"/>
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterWhitelisted}"  IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static local:PlayerFilterType.Whitelisted}"  IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Whitelisted, Mode=OneWay}"/>
-                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterInvalid}"      IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static local:PlayerFilterType.Invalid}"      IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Invalid, Mode=OneWay}"/>
+                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterOffline}"      IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static en:PlayerFilterType.Offline}"      IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Offline, Mode=OneWay}"/>
+                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterAdmin}"        IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static en:PlayerFilterType.Admin}"        IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Admin, Mode=OneWay}"/>
+                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterWhitelisted}"  IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static en:PlayerFilterType.Whitelisted}"  IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Whitelisted, Mode=OneWay}"/>
+                                    <MenuItem Header="{DynamicResource PlayerList_Menu_FilterInvalid}"      IsCheckable="True" Command="{Binding FilterPlayersCommand}" CommandParameter="{x:Static en:PlayerFilterType.Invalid}"      IsChecked="{Binding PlayerFiltering, Converter={StaticResource EnumFlagsConverter}, ConverterParameter=Invalid, Mode=OneWay}"/>
                                 </MenuItem>
-                                <MenuItem Header="{DynamicResource PlayerList_Menu_ShowAvatars}"            IsCheckable="True" Command="{Binding ShowAvatarsCommand}" IsChecked="{Binding Config.RCON_ShowPlayerAvatars}"/>
                             </MenuItem>
                         </Menu>
                     </StackPanel>
                 </DockPanel>
             </Border>
 
-            <DockPanel DockPanel.Dock="Right" MinWidth="200" Margin="1,1,2,1" DataContext="{Binding}" SourceUpdated="PlayerListFilter_SourceUpdated">
+            <DockPanel DockPanel.Dock="Right" MinWidth="200" Margin="1,1,2,1" DataContext="{Binding}">
                 <DockPanel DockPanel.Dock="Top">
-                    <Label DockPanel.Dock="Left" Content="{DynamicResource PlayerList_FilterLabel}" HorizontalAlignment="Center"/>
-                    <TextBox DockPanel.Dock="Left" Text="{Binding PlayerListFilterString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True}" BorderBrush="LightGray" VerticalContentAlignment="Center" IsTabStop="True" Margin="0" Padding="2"/>
+                    <Label DockPanel.Dock="Left" Content="{DynamicResource General_FilterLabel}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Button DockPanel.Dock="Right" Margin="5,0,5,0" Width="22" Height="22" HorizontalAlignment="Right" VerticalAlignment="Center" Click="FilterPlayerList_Click" ToolTip="{DynamicResource General_FilterButtonTooltip}">
+                        <Image Source="{com:Icon Path=/Ark Server Manager;component/Art/Filter.ico,Size=32}"/>
+                    </Button>
+                    <TextBox DockPanel.Dock="Left" Text="{Binding PlayerListFilterString, Mode=TwoWay}" BorderBrush="LightGray" VerticalAlignment="Center" VerticalContentAlignment="Center" IsTabStop="True" Margin="0" Padding="2"/>
                 </DockPanel>
 
                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
@@ -126,7 +119,7 @@
                             <Style BasedOn="{StaticResource {x:Type Label}}" TargetType="{x:Type Label}">
                                 <Setter Property="Foreground" Value="Black"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ServerPlayers.CountInvalidPlayers, FallbackValue=0, Converter={vm:GreaterThanIntValueConverter 0}}" Value="true">
+                                    <DataTrigger Binding="{Binding ServerPlayers.CountInvalidPlayers, FallbackValue=0, Converter={cc:GreaterThanIntValueConverter 0}}" Value="true">
                                         <Setter Property="Foreground" Value="Red"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -138,7 +131,7 @@
                             <Style BasedOn="{StaticResource {x:Type Label}}" TargetType="{x:Type Label}">
                                 <Setter Property="Foreground" Value="Black"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ServerPlayers.CountInvalidPlayers, FallbackValue=0, Converter={vm:GreaterThanIntValueConverter 0}}" Value="true">
+                                    <DataTrigger Binding="{Binding ServerPlayers.CountInvalidPlayers, FallbackValue=0, Converter={cc:GreaterThanIntValueConverter 0}}" Value="true">
                                         <Setter Property="Foreground" Value="Red"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -149,8 +142,7 @@
 
                 <ListBox DockPanel.Dock="Top" ItemsSource="{Binding ServerPlayers.Players}" BorderBrush="LightGray" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                     <ListBox.Resources>
-                        <lib:BindingProxy x:Key="proxy" Data="{Binding ElementName=PlayerList}"/>
-                        <BitmapImage x:Key="NoAvatar" UriSource="../Art/NoAvatar.png" />
+                        <clib:BindingProxy x:Key="proxy" Data="{Binding ElementName=PlayerList}"/>
                     </ListBox.Resources>
 
                     <ListBox.ItemContainerStyle>
@@ -158,11 +150,10 @@
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
                                     <ContextMenu>
-                                        <MenuItem Header="{DynamicResource PlayerList_Menu_ViewSteamProfile}" Command="{Binding Source={StaticResource proxy}, Path=Data.ViewPlayerSteamProfileCommand}" CommandParameter="{Binding}" />
                                         <MenuItem Header="{DynamicResource PlayerList_Menu_ViewProfile}"      Command="{Binding Source={StaticResource proxy}, Path=Data.ViewPlayerProfileCommand}" CommandParameter="{Binding}" />
                                         <MenuItem Header="{DynamicResource PlayerList_Menu_ViewTribe}"        Command="{Binding Source={StaticResource proxy}, Path=Data.ViewPlayerTribeCommand}" CommandParameter="{Binding}"/>
                                         <Separator/>
-                                        <MenuItem Header="{DynamicResource PlayerList_Menu_CopySteamId}"      Command="{Binding Source={StaticResource proxy}, Path=Data.CopySteamIDCommand}" CommandParameter="{Binding}"/>
+                                        <MenuItem Header="{DynamicResource PlayerList_Menu_CopyId}"           Command="{Binding Source={StaticResource proxy}, Path=Data.CopyIDCommand}" CommandParameter="{Binding}"/>
                                         <MenuItem Header="{DynamicResource PlayerList_Menu_CopyPlayerId}"     Command="{Binding Source={StaticResource proxy}, Path=Data.CopyPlayerIDCommand}" CommandParameter="{Binding}"/>
                                     </ContextMenu>
                                 </Setter.Value>
@@ -175,13 +166,11 @@
                             <Border BorderThickness="2" Padding="1" Style="{DynamicResource PlayerStatus}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="{Binding PlayerAvatarWidth, ElementName=PlayerList}"/>
                                         <ColumnDefinition Width="1*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Image Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Source="{Binding AvatarImage, Converter={StaticResource ResourceKey=NullValueConverter}, ConverterParameter={StaticResource ResourceKey=NoAvatar}}" Width="48" Height="48" Stretch="Uniform"/>
                                     <StackPanel Grid.Column="1" HorizontalAlignment="Stretch">
-                                        <Label Padding="0,-1,0,-1" Style="{DynamicResource SteamName}"/>
+                                        <Label Padding="0,-1,0,-1" Style="{DynamicResource PlayerName}"/>
                                         <StackPanel Orientation="Horizontal" Margin="0" >
                                             <Label Content="{Binding CharacterName}" Padding="0,-1,0,-1"/>
                                             <TextBlock Text="{Binding PlayerData.Level, StringFormat=({0})}" Margin="5,0,0,0" Padding="0,-1,0,-1" />

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ServerManagerTool.Utils;
+using System;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ARK_Server_Manager.Lib.ViewModel
+namespace ServerManagerTool.Lib.ViewModel
 {
     public class ExtinctionEventDateConverter : IValueConverter
     {

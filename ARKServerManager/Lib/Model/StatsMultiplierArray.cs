@@ -1,22 +1,33 @@
-﻿using System;
+﻿using ServerManagerTool.Common.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ARK_Server_Manager.Lib.Model
+namespace ServerManagerTool.Lib.Model
 {
     public class StatsMultiplierArray : FloatIniValueArray
     {
-        public StatsMultiplierArray(string iniKeyName, Func<IEnumerable<float>> resetFunc, bool[] inclusions)
+        protected StatsMultiplierArray(string iniKeyName, Func<IEnumerable<float>> resetFunc, bool[] inclusions)
             : base(iniKeyName, resetFunc)
         {
             Inclusions = inclusions;
         }
 
-        public bool[] Inclusions
+        public StatsMultiplierArray(string iniKeyName, Func<IEnumerable<float>> resetFunc, bool[] inclusions, bool onlyWriteNonDefaults)
+            : base(iniKeyName, resetFunc)
         {
-            get;
-            private set;
+            Inclusions = inclusions;
+
+            if (onlyWriteNonDefaults && resetFunc != null)
+            {
+                DefaultValues = new StatsMultiplierArray(iniKeyName, null, inclusions);
+                DefaultValues.AddRange(resetFunc());
+            }
         }
+
+        public bool[] Inclusions { get; private set; } = null;
+
+        private StatsMultiplierArray DefaultValues { get; set; } = null;
 
         public override void FromIniValues(IEnumerable<string> values)
         {
@@ -62,6 +73,8 @@ namespace ARK_Server_Manager.Lib.Model
             for (var i = 0; i < this.Count; i++)
             {
                 if (!(Inclusions?.ElementAtOrDefault(i) ?? true))
+                    continue;
+                if (DefaultValues != null && Equals(DefaultValues[i], this[i]))
                     continue;
 
                 if (string.IsNullOrWhiteSpace(IniCollectionKey))

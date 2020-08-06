@@ -1,14 +1,14 @@
-﻿using System;
+﻿using ServerManagerTool.Enums;
+using System;
 using System.Windows;
 
-namespace ARK_Server_Manager.Lib.ViewModel
+namespace ServerManagerTool.Lib.ViewModel
 {
     //
     // This class aggregates many settings related to dinos
     //
     public class DinoSettings : DependencyObject
     {
-        public static readonly DependencyProperty ArkApplicationProperty = DependencyProperty.Register(nameof(ArkApplication), typeof(ArkApplication), typeof(DinoSettings), new PropertyMetadata(ArkApplication.SurvivalEvolved));
         public static readonly DependencyProperty ClassNameProperty = DependencyProperty.Register(nameof(ClassName), typeof(string), typeof(DinoSettings), new PropertyMetadata(String.Empty));
         public static readonly DependencyProperty ModProperty = DependencyProperty.Register(nameof(Mod), typeof(string), typeof(DinoSettings), new PropertyMetadata(String.Empty));
         public static readonly DependencyProperty KnownDinoProperty = DependencyProperty.Register(nameof(KnownDino), typeof(bool), typeof(DinoSettings), new PropertyMetadata(false));
@@ -22,12 +22,6 @@ namespace ARK_Server_Manager.Lib.ViewModel
         public static readonly DependencyProperty TamedResistanceMultiplierProperty = DependencyProperty.Register(nameof(TamedResistanceMultiplier), typeof(float), typeof(DinoSettings), new PropertyMetadata(ClassMultiplier.DEFAULT_MULTIPLIER));
         public static readonly DependencyProperty WildDamageMultiplierProperty = DependencyProperty.Register(nameof(WildDamageMultiplier), typeof(float), typeof(DinoSettings), new PropertyMetadata(ClassMultiplier.DEFAULT_MULTIPLIER));
         public static readonly DependencyProperty WildResistanceMultiplierProperty = DependencyProperty.Register(nameof(WildResistanceMultiplier), typeof(float), typeof(DinoSettings), new PropertyMetadata(ClassMultiplier.DEFAULT_MULTIPLIER));
-
-        public ArkApplication ArkApplication
-        {
-            get { return (ArkApplication)GetValue(ArkApplicationProperty); }
-            set { SetValue(ArkApplicationProperty, value); }
-        }
 
         public string ClassName
         {
@@ -108,44 +102,31 @@ namespace ARK_Server_Manager.Lib.ViewModel
         }
 
         public string DisplayName => GameData.FriendlyCreatureNameForClass(ClassName);
+        public string DisplayMod => GameData.FriendlyNameForClass($"Mod_{Mod}", true) ?? Mod;
         public string NameTag { get; internal set; }
         public bool HasNameTag { get; internal set; }
         public bool HasClassName { get; internal set; }
         public bool IsSpawnable { get; internal set; }
         public DinoTamable IsTameable { get; internal set; }
+        public string DisplayReplacementName => GameData.FriendlyCreatureNameForClass(ReplacementClass);
 
         public float OriginalSpawnWeightMultiplier { get; internal set; }
         public bool OriginalOverrideSpawnLimitPercentage { get; internal set; }
         public float OriginalSpawnLimitPercentage { get; internal set; }
 
-        public DinoSettings Clone()
-        {
-            return new DinoSettings()
-            {
-                ArkApplication = ArkApplication,
-                ClassName = ClassName,
-                Mod = Mod,
-                KnownDino = KnownDino,
-                NameTag = NameTag,
-
-                CanSpawn = CanSpawn,
-                CanTame = CanTame,
-                ReplacementClass = ReplacementClass,
-
-                SpawnWeightMultiplier = SpawnWeightMultiplier,
-                OverrideSpawnLimitPercentage = OverrideSpawnLimitPercentage,
-                SpawnLimitPercentage = SpawnLimitPercentage,
-
-                TamedDamageMultiplier = TamedDamageMultiplier,
-                TamedResistanceMultiplier = TamedResistanceMultiplier,
-                WildDamageMultiplier = WildDamageMultiplier,
-                WildResistanceMultiplier = WildResistanceMultiplier,
-
-                HasNameTag = HasNameTag,
-                HasClassName = HasClassName,
-                IsSpawnable = IsSpawnable,
-                IsTameable = IsTameable,
-            };
-        }
+        #region Sort Properties
+        public string NameSort => $"{DisplayName}|{Mod}";
+        public string ModSort => $"{Mod}|{DisplayName}";
+        public string CanSpawnSort => $"{IsSpawnable}|{CanSpawn}|{DisplayName}|{Mod}";
+        public string CanTameSort => $"{IsTameable != DinoTamable.False}|{CanTame}|{DisplayName}|{Mod}";
+        public string ReplacementNameSort => $"{DisplayReplacementName}|{Mod}";
+        public string SpawnWeightMultiplierSort => $"{SpawnWeightMultiplier:0000000000.0000000000}|{DisplayName}|{Mod}";
+        public string OverrideSpawnLimitPercentageSort => $"{OverrideSpawnLimitPercentage}|{DisplayName}|{Mod}";
+        public string SpawnLimitPercentageSort => $"{SpawnLimitPercentage:0000000000.0000000000}|{DisplayName}|{Mod}";
+        public string TamedDamageMultiplierSort => $"{TamedDamageMultiplier:0000000000.0000000000}|{DisplayName}|{Mod}";
+        public string TamedResistanceMultiplierSort => $"{TamedResistanceMultiplier:0000000000.0000000000}|{DisplayName}|{Mod}";
+        public string WildDamageMultiplierSort => $"{WildDamageMultiplier:0000000000.0000000000}|{DisplayName}|{Mod}";
+        public string WildResistanceMultiplierSort => $"{WildResistanceMultiplier:0000000000.0000000000}|{DisplayName}|{Mod}";
+        #endregion
     }
 }
